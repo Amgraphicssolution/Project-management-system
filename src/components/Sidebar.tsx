@@ -13,9 +13,11 @@ import {
   ChevronDown,
   MessageCircle,
   Search,
-  LogOut
+  LogOut,
+  Robot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -153,6 +155,16 @@ export default function Sidebar() {
           collapsed={collapsed}
           onClick={() => handleItemClick('Home')}
         />
+        
+        <SidebarItem
+          icon={Robot}
+          label="AI Assistant"
+          active={activeItem === 'AI Assistant'}
+          collapsed={collapsed}
+          onClick={() => handleItemClick('AI Assistant')}
+        />
+        
+        <Separator className="my-2" />
         
         <SidebarItem
           icon={Folder}
