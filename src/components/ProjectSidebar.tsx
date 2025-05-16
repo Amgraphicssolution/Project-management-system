@@ -22,12 +22,15 @@ export default function ProjectSidebar({
 }: ProjectSidebarProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<{[key: string]: boolean}>({});
 
+  // Add safety check for project.pages
+  const pages = project.pages || [];
+  
   // Root level pages (no parent)
-  const rootPages = project.pages.filter(page => !page.parentId);
+  const rootPages = pages.filter(page => !page.parentId);
   
   // Group pages by parentId
   const childrenMap: {[key: string]: PageType[]} = {};
-  project.pages.forEach(page => {
+  pages.forEach(page => {
     if (page.parentId) {
       if (!childrenMap[page.parentId]) {
         childrenMap[page.parentId] = [];

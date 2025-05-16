@@ -38,6 +38,28 @@ export const dummyProjects: ProjectType[] = [
         content: 'Increase conversion rate by 30%, improve mobile experience, and ensure ADA compliance.',
       },
     ],
+    pages: [
+      {
+        id: 'page-1',
+        title: 'Project Overview',
+        blocks: [
+          {
+            id: 'block-1',
+            type: 'heading',
+            content: 'Project Overview',
+            level: 1,
+          },
+          {
+            id: 'block-2',
+            type: 'paragraph',
+            content: 'This project aims to completely redesign our website to better reflect our brand identity and improve user experience. We will focus on a minimalist design with enhanced accessibility.',
+          }
+        ],
+        createdAt: '2023-05-12T10:30:00Z',
+        updatedAt: '2023-05-12T10:30:00Z',
+        path: []
+      }
+    ],
     conversations: [
       {
         id: 'msg-1',
@@ -83,6 +105,28 @@ export const dummyProjects: ProjectType[] = [
         content: 'Creating a cohesive brand identity system including logo design, color palette, typography, and usage guidelines.',
       },
     ],
+    pages: [
+      {
+        id: 'page-1',
+        title: 'Brand Identity Project',
+        blocks: [
+          {
+            id: 'block-1',
+            type: 'heading',
+            content: 'Brand Identity Project',
+            level: 1,
+          },
+          {
+            id: 'block-2',
+            type: 'paragraph',
+            content: 'Creating a cohesive brand identity system including logo design, color palette, typography, and usage guidelines.',
+          }
+        ],
+        createdAt: '2023-05-15T14:20:00Z',
+        updatedAt: '2023-05-15T14:20:00Z',
+        path: []
+      }
+    ],
     conversations: [
       {
         id: 'msg-1',
@@ -122,6 +166,28 @@ export const dummyProjects: ProjectType[] = [
         type: 'paragraph',
         content: 'Planning and executing our Q3 marketing campaign for the new product launch.',
       },
+    ],
+    pages: [
+      {
+        id: 'page-1',
+        title: 'Q3 Marketing Campaign',
+        blocks: [
+          {
+            id: 'block-1',
+            type: 'heading',
+            content: 'Q3 Marketing Campaign',
+            level: 1,
+          },
+          {
+            id: 'block-2',
+            type: 'paragraph',
+            content: 'Planning and executing our Q3 marketing campaign for the new product launch.',
+          }
+        ],
+        createdAt: '2023-05-14T09:15:00Z',
+        updatedAt: '2023-05-14T09:15:00Z',
+        path: []
+      }
     ],
     conversations: [
       {
