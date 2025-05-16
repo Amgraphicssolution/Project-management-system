@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -98,6 +99,13 @@ export default function Sidebar() {
 
   const handleItemClick = (label: string) => {
     setActiveItem(label);
+    
+    // Handle navigation based on clicked item
+    if (label === 'Home') {
+      // Navigate to home/projects
+      window.location.href = '/';
+    }
+    // Add more navigation actions for other tabs as needed
   };
 
   const folderItems = [

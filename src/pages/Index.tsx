@@ -5,8 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ChevronLeft, Folder } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import ProjectCard from '@/components/ProjectCard';
-import ActivityFeed from '@/components/ActivityFeed';
-import { dummyProjects, recentActivities } from '@/utils/dummyData';
+import { dummyProjects } from '@/utils/dummyData';
 import { ProjectType, PageType } from '@/types';
 import PageBuilder from '@/components/PageBuilder';
 import ProjectSidebar from '@/components/ProjectSidebar';
@@ -106,41 +105,22 @@ const Index = () => {
 
   const WelcomeView = () => (
     <div className="max-w-5xl mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">👋 Welcome to your workspace</h1>
+      <h1 className="text-3xl font-bold mb-8">Projects</h1>
       
-      <div className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {dummyProjects.slice(0, 3).map(project => (
-            <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleProjectSelect(project)}>
-              <div className="flex items-center mb-3">
-                <Folder className="h-8 w-8 text-blue-500 mr-3" />
-                <h3 className="font-medium">{project.title}</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">{project.pages?.length || 0} pages</p>
-              <p className="text-xs text-muted-foreground">Updated {new Date(project.lastUpdated).toLocaleDateString()}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div>
-        <h2 className="text-xl font-semibold mb-4">All Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {dummyProjects.map(project => (
-            <ProjectCard 
-              key={project.id} 
-              project={project}
-              onClick={() => handleProjectSelect(project)}
-            />
-          ))}
-          <div className="border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary/10 transition-colors">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-              <Plus className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-medium mb-1">Create New Project</h3>
-            <p className="text-sm text-muted-foreground">Start a fresh workspace</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {dummyProjects.map(project => (
+          <ProjectCard 
+            key={project.id} 
+            project={project}
+            onClick={() => handleProjectSelect(project)}
+          />
+        ))}
+        <div className="border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary/10 transition-colors">
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+            <Plus className="h-6 w-6 text-primary" />
           </div>
+          <h3 className="font-medium mb-1">Create New Project</h3>
+          <p className="text-sm text-muted-foreground">Start a fresh workspace</p>
         </div>
       </div>
     </div>
@@ -192,11 +172,8 @@ const Index = () => {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      <div className="flex-1 overflow-auto flex flex-col md:flex-row">
+      <div className="flex-1 overflow-auto flex">
         <MainContent />
-        <div className="w-full md:w-[280px] border-l hidden md:block">
-          <ActivityFeed activities={recentActivities} />
-        </div>
       </div>
     </div>
   );
