@@ -49,6 +49,7 @@ export interface ProjectType {
   lastUpdated: string;
   team: UserType[];
   progress: number;
+  blocks?: BlockType[];  // Adding this as optional to maintain compatibility
   pages: PageType[];
   conversations: ConversationType[];
 }

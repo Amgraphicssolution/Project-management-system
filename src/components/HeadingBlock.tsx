@@ -1,6 +1,7 @@
 
 import { HeadingLevel } from "../types";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 interface HeadingBlockProps {
   content: string;
@@ -38,7 +39,8 @@ export default function HeadingBlock({
 
   const HeadingComponent = `h${level}` as keyof JSX.IntrinsicElements;
 
-  const handleChange = (e: React.FocusEvent<HTMLElement>) => {
+  // Fix the type for the handleChange function to use a more specific element type
+  const handleChange = (e: React.FocusEvent<HTMLHeadingElement>) => {
     if (onChange) {
       onChange(e.currentTarget.textContent || "");
     }
