@@ -120,7 +120,7 @@ const Index = () => {
             <Plus className="h-6 w-6 text-primary" />
           </div>
           <h3 className="font-medium mb-1">Create New Project</h3>
-          <p className="text-sm text-muted-foreground">Start a fresh workspace</p>
+          <p className="text-sm text-muted-foreground">Start a fresh workspace update</p>
         </div>
       </div>
     </div>
