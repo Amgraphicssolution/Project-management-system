@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,7 +13,7 @@ import {
   MessageCircle,
   Search,
   LogOut,
-  Robot
+  Bot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -157,7 +156,7 @@ export default function Sidebar() {
         />
         
         <SidebarItem
-          icon={Robot}
+          icon={Bot}
           label="AI Assistant"
           active={activeItem === 'AI Assistant'}
           collapsed={collapsed}
