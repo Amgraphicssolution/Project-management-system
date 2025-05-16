@@ -38,7 +38,7 @@ export default function HeadingBlock({
 
   const HeadingComponent = `h${level}` as keyof JSX.IntrinsicElements;
 
-  const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
+  const handleChange = (e: React.FocusEvent<HTMLElement>) => {
     if (onChange) {
       onChange(e.currentTarget.textContent || "");
     }
