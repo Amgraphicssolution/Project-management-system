@@ -39,8 +39,8 @@ export default function HeadingBlock({
 
   const HeadingComponent = `h${level}` as keyof JSX.IntrinsicElements;
 
-  // Use a generic type parameter to handle the correct element type
-  const handleChange = (e: React.FocusEvent<any>) => {
+  // Fix the event handler type to work with all heading element types
+  const handleChange = (e: React.FocusEvent<HTMLHeadingElement>) => {
     if (onChange) {
       onChange(e.currentTarget.textContent || "");
     }

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from 'lucide-react';
+import { Plus, ChevronLeft, Folder } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import ProjectCard from '@/components/ProjectCard';
 import ActivityFeed from '@/components/ActivityFeed';
@@ -66,24 +66,27 @@ const Index = () => {
   const handleCreateChat = () => {
     if (!selectedProject) return;
     
-    const newChatPage: PageType = {
-      id: `chat-${Date.now()}`,
-      title: "Chat",
-      icon: "💬",
+    const newFolder = 'New Folder';
+    const newFolderId = `folder-${Date.now()}`;
+    
+    const newPage: PageType = {
+      id: newFolderId,
+      title: "New Folder",
+      icon: "📁",
       blocks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      path: ["chat"]
+      path: [newFolder]
     };
     
-    // Update project with new chat page
+    // Update project with new folder page
     const updatedProject = {
       ...selectedProject,
-      pages: [...(selectedProject.pages || []), newChatPage]
+      pages: [...(selectedProject.pages || []), newPage]
     };
     
     setSelectedProject(updatedProject);
-    setSelectedPage(newChatPage);
+    setSelectedPage(newPage);
   };
 
   const handleUpdatePage = (updatedPage: PageType) => {
@@ -101,56 +104,62 @@ const Index = () => {
     setSelectedPage(updatedPage);
   };
 
-  const MainContent = () => (
-    <div className="flex-1 p-6 overflow-auto">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex justify-between items-center mb-8">
-          <TabsList>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            {selectedProject && (
-              <TabsTrigger value="project">
-                {selectedProject.title}
-              </TabsTrigger>
-            )}
-          </TabsList>
-          
-          {activeTab === "projects" && (
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          )}
+  const WelcomeView = () => (
+    <div className="max-w-5xl mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-8">👋 Welcome to your workspace</h1>
+      
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {dummyProjects.slice(0, 3).map(project => (
+            <div key={project.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleProjectSelect(project)}>
+              <div className="flex items-center mb-3">
+                <Folder className="h-8 w-8 text-blue-500 mr-3" />
+                <h3 className="font-medium">{project.title}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">{project.pages?.length || 0} pages</p>
+              <p className="text-xs text-muted-foreground">Updated {new Date(project.lastUpdated).toLocaleDateString()}</p>
+            </div>
+          ))}
         </div>
-        
-        <TabsContent value="projects" className="animate-fade-in">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dummyProjects.map(project => (
-              <ProjectCard 
-                key={project.id} 
-                project={{
-                  ...project,
-                  // Add pages array if it doesn't exist on dummy projects
-                  pages: project.pages || project.blocks?.map((block, index) => ({
-                    id: `page-${index}`,
-                    title: index === 0 ? project.title : `Page ${index + 1}`,
-                    blocks: [block],
-                    createdAt: project.lastUpdated,
-                    updatedAt: project.lastUpdated,
-                    path: []
-                  })) || []
-                }}
-                onClick={() => handleProjectSelect(project)}
-              />
-            ))}
+      </div>
+      
+      <div>
+        <h2 className="text-xl font-semibold mb-4">All Projects</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {dummyProjects.map(project => (
+            <ProjectCard 
+              key={project.id} 
+              project={project}
+              onClick={() => handleProjectSelect(project)}
+            />
+          ))}
+          <div className="border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary/10 transition-colors">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+              <Plus className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-medium mb-1">Create New Project</h3>
+            <p className="text-sm text-muted-foreground">Start a fresh workspace</p>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const MainContent = () => (
+    <div className="flex-1 overflow-auto">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsContent value="projects" className="animate-fade-in">
+          <WelcomeView />
         </TabsContent>
         
-        <TabsContent value="project" className="animate-fade-in h-[calc(100vh-200px)]">
+        <TabsContent value="project" className="animate-fade-in h-[calc(100vh-100px)]">
           {selectedProject && (
             <>
-              <div className="mb-6">
-                <Button variant="ghost" onClick={handleBackToProjects}>
-                  ← Back to projects
+              <div className="mb-2 p-2 border-b">
+                <Button variant="ghost" onClick={handleBackToProjects} className="text-sm">
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back to projects
                 </Button>
               </div>
               
@@ -180,18 +189,14 @@ const Index = () => {
     </div>
   );
 
-  const SidePanel = () => (
-    <div className="w-full md:w-[320px] p-6 border-l">
-      <ActivityFeed activities={recentActivities} />
-    </div>
-  );
-
   return (
     <div className="min-h-screen flex">
       <Sidebar />
       <div className="flex-1 overflow-auto flex flex-col md:flex-row">
         <MainContent />
-        <SidePanel />
+        <div className="w-full md:w-[280px] border-l hidden md:block">
+          <ActivityFeed activities={recentActivities} />
+        </div>
       </div>
     </div>
   );
