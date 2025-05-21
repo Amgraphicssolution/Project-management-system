@@ -1,5 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700');
 
 @tailwind base;
 @tailwind components;
@@ -7,33 +6,34 @@
 
 @layer base {
   :root {
-    --background: 260 33% 98%;
-    --foreground: 240 10% 4%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 4%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 255 80% 75%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --secondary: 260 60% 96%;
-    --secondary-foreground: 240 10% 4%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
 
-    --muted: 240 10% 96%;
-    --muted-foreground: 240 4% 46%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    --accent: 260 60% 96%;
-    --accent-foreground: 240 10% 4%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --border: 240 10% 90%;
-    --input: 240 10% 90%;
-    --ring: 255 80% 75%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
 
     --radius: 0.5rem;
 
@@ -48,33 +48,34 @@
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 95%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 240 10% 4%;
-    --card-foreground: 0 0% 95%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --popover: 240 10% 4%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 255 80% 75%;
-    --primary-foreground: 240 10% 4%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --secondary: 240 4% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
 
-    --muted: 240 4% 12%;
-    --muted-foreground: 240 5% 65%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
-    --accent: 240 4% 12%;
-    --accent-foreground: 0 0% 95%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 95%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 255 80% 75%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 217.2 32.6% 17.5%;
 
     --sidebar-background: 240 6% 10%;
     --sidebar-foreground: 240 5% 96%;
@@ -92,12 +93,18 @@
     @apply border-border;
   }
 
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-medium tracking-tight;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply font-medium tracking-tight;
   }
 
   /* Custom heading styles with proper hierarchy */
@@ -133,4 +140,76 @@
 .card-shadow:hover {
   box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.1);
   transform: translateY(-2px);
+}
+
+/* Editor styles */
+@layer components {
+  [contenteditable]:empty:before {
+    content: attr(placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  [contenteditable]:focus {
+    outline: none;
+  }
+
+  [data-empty="true"]:not(:focus):before {
+    content: attr(placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  /* Block hover styles */
+  .group:hover .hover-trigger {
+    opacity: 1;
+  }
+
+  /* Scrollbar styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--accent));
+    border-radius: 2px;
+  }
+
+  /* Block menu styles */
+  .block-menu {
+    box-shadow: 0 0 0 1px hsl(var(--border)/40%),
+                0 2px 4px hsl(var(--foreground)/10%),
+                0 8px 24px hsl(var(--foreground)/10%);
+  }
+
+  /* Input styles */
+  .input-transparent {
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  .input-transparent:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Block drag handle */
+  .drag-handle {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
+  }
 }

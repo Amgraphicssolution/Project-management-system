@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,38 +79,48 @@ export default function ProjectSidebar({
     }
     
     return (
-      <div key={page.id}>
-        <div className="flex items-center group">
-          <Button
-            variant={isSelected ? "secondary" : "ghost"}
-            size="sm"
-            className={`w-full justify-start rounded-md ${depth > 0 ? `pl-${depth * 2 + 4}` : ''}`}
-            onClick={() => onPageSelect(page)}
-          >
-            {hasChildren && (
-              <span onClick={(e) => {
-                e.stopPropagation();
-                toggleGroup(page.id);
-              }} className="mr-1">
-                {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </span>
-            )}
-            {!hasChildren && <File className="h-4 w-4 mr-2" />}
-            {page.icon && <span className="mr-2">{page.icon}</span>}
-            {page.emoji && <span className="mr-2">{page.emoji}</span>}
-            <span className="truncate">{page.title || "Untitled"}</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
+      <div key={page.id} style={{ paddingLeft: `${depth * 12}px` }}>
+        <div 
+          className="group flex items-center w-full rounded-md bg-white border border-transparent hover:border-border transition-all cursor-pointer p-1.5"
+          onClick={() => {
+            if (hasChildren) {
+              toggleGroup(page.id);
+            }
+            onPageSelect(page);
+          }}
+        >
+          {/* Left section with icon and title */}
+          <div className="flex-1 flex items-center gap-2 min-w-0">
+            <div className="w-4 h-4 shrink-0 relative">
+              {hasChildren ? (
+                <>
+                  <Folder className={`h-4 w-4 text-[#0E8CFF] absolute transition-opacity ${
+                    isSelected ? 'opacity-0' : 'group-hover:opacity-0'
+                  }`} />
+                  <ChevronRight className={`h-4 w-4 text-[#0E8CFF] absolute transition-opacity ${
+                    isCollapsed ? '' : 'rotate-90'
+                  } ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                </>
+              ) : (
+                <Folder className="h-4 w-4 text-[#0E8CFF]" />
+              )}
+            </div>
+            <span className="truncate text-sm">{page.title || "Untitled"}</span>
+          </div>
+
+          {/* Right section with action buttons */}
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
         
         {hasChildren && !isCollapsed && (
-          <div className="ml-2">
+          <div className="mt-1 space-y-1">
             {childrenMap[page.id].map(childPage => renderPageItem(childPage, depth + 1))}
           </div>
         )}
@@ -129,30 +138,31 @@ export default function ProjectSidebar({
     
     return (
       <div key={title} className="mb-2">
-        <div className="flex items-center group">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start font-medium text-sm"
-            onClick={() => toggleGroup(title)}
-          >
-            {isCollapsed ? 
-              <ChevronRight className="h-4 w-4 mr-2" /> : 
-              <ChevronDown className="h-4 w-4 mr-2" />
-            }
-            <span>{title}</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
+        <div 
+          className="group flex items-center w-full rounded-md bg-white border border-transparent hover:border-border transition-all cursor-pointer p-1.5"
+          onClick={() => toggleGroup(title)}
+        >
+          <div className="flex-1 flex items-center gap-2">
+            <div className="w-4 h-4 shrink-0 relative">
+              <Folder className="h-4 w-4 text-[#0E8CFF] absolute transition-opacity group-hover:opacity-0" />
+              <ChevronRight className={`h-4 w-4 text-[#0E8CFF] absolute transition-opacity opacity-0 group-hover:opacity-100 ${
+                isCollapsed ? '' : 'rotate-90'
+              }`} />
+            </div>
+            <span className="text-sm font-medium">{title}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
         
         {!isCollapsed && (
-          <div className="space-y-1 mt-1">
+          <div className="mt-1 space-y-1">
             {items.map(page => renderPageItem(page, 1))}
           </div>
         )}
@@ -161,52 +171,92 @@ export default function ProjectSidebar({
   };
 
   return (
-    <div className="w-64 border-r h-full flex flex-col bg-background">
-      <div className="p-3 border-b flex items-center">
-        <div className="relative w-full">
-          <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            placeholder="Search..." 
-            className="pl-8 h-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+    <div className="w-64 border-r h-full flex flex-col bg-[#fafafa]">
+      {/* Header */}
+      <div className="p-2 border-b flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">Projects</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Search className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
       </div>
-      
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-4">
-          {/* Pages section */}
-          {renderFolderSection("Pages", rootPages)}
-          
-          {/* Folder sections */}
-          {Object.entries(folderMap).map(([folder, pages]) => 
-            renderFolderSection(folder, pages)
-          )}
-        </div>
+
+      <ScrollArea className="flex-1 p-1">
+        {/* Project Items */}
+        {pages.map((page) => {
+          const hasChildren = childrenMap[page.id]?.length > 0;
+          const isCollapsed = collapsedGroups[page.id];
+          const isSelected = selectedPageId === page.id;
+
+          return (
+            <div key={page.id}>
+              <div 
+                className="group flex items-center w-full rounded-md hover:bg-secondary/5 transition-colors cursor-pointer py-1 px-2"
+                onClick={() => onPageSelect(page)}
+              >
+                <div className="flex items-center gap-2 flex-1">
+                  {hasChildren ? (
+                    <ChevronRight 
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${!isCollapsed ? 'rotate-90' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleGroup(page.id);
+                      }}
+                    />
+                  ) : (
+                    <div className="w-4" />
+                  )}
+                  <div className="flex items-center gap-2 flex-1">
+                    <Folder className="h-4 w-4 text-[#0E8CFF]" />
+                    <span className="text-sm truncate">{page.title || "New Project"}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              {hasChildren && !isCollapsed && (
+                <div className="ml-4 mt-1">
+                  {childrenMap[page.id].map(childPage => (
+                    <div 
+                      key={childPage.id}
+                      className="flex items-center gap-2 py-1 px-2 rounded-md hover:bg-secondary/5 transition-colors cursor-pointer"
+                      onClick={() => onPageSelect(childPage)}
+                    >
+                      <Folder className="h-4 w-4 text-[#0E8CFF]" />
+                      <span className="text-sm truncate">{childPage.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </ScrollArea>
-      
+
+      {/* Footer Actions */}
       <div className="p-2 border-t">
-        <div className="space-y-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start"
-            onClick={onCreatePage}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Page
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start"
-            onClick={onCreateChat}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Folder
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full justify-start"
+          onClick={onCreatePage}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Project
+        </Button>
       </div>
     </div>
   );

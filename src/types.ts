@@ -1,8 +1,7 @@
-
 export interface UserType {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
 }
 
 export interface ConversationType {
@@ -16,9 +15,12 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface BlockType {
   id: string;
-  type: 'heading' | 'paragraph' | 'list' | 'image' | 'file' | 'code' | 'callout' | 'todo' | 'quote' | 'divider' | 'toggle' | 'table';
+  type: 'paragraph' | 'heading-1' | 'heading-2' | 'heading-3' | 'heading-4' | 'heading-5' | 'heading-6' | 
+        'bullet-list' | 'number-list' | 'to-do' | 'toggle' | 'board' | 'quote' | 'table' | 'divider' |
+        'image' | 'video' | 'audio' | 'file' | 'code' | 'form' | 'table-of-contents' | 
+        'two-columns' | 'three-columns' | 'four-columns' | 'five-columns' |
+        'embed' | 'figma' | 'pdf' | 'adobe';
   content: string;
-  level?: HeadingLevel;
   url?: string;
   language?: string;
   checked?: boolean;
@@ -32,26 +34,27 @@ export interface PageType {
   title: string;
   icon?: string;
   cover?: string;
-  emoji?: string;
+  description?: string;
   blocks: BlockType[];
   createdAt: string;
   updatedAt: string;
+  path?: string[];
   parentId?: string;
-  path: string[];
 }
 
 export interface ProjectType {
   id: string;
   title: string;
-  description: string;
-  coverImage?: string;
-  icon?: string;
-  lastUpdated: string;
-  team: UserType[];
-  progress: number;
-  blocks?: BlockType[];  // Adding this as optional to maintain compatibility
   pages: PageType[];
-  conversations: ConversationType[];
+  createdAt: string;
+  updatedAt: string;
+  icon?: string;
+  cover?: {
+    type: 'image' | 'color';
+    value: string;
+  };
+  coverHeight?: string;
+  description?: string;
 }
 
 export interface ActivityType {

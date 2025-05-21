@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { ProjectType, PageType } from "../types";
 import PageEditor from "./PageEditor";
 import ConversationWidget from "./ConversationWidget";
-import AIAssistant from "./AIAssistant";
+import ProjectPage from "./ProjectPage";
 
 interface PageBuilderProps {
   project: ProjectType;
@@ -12,8 +11,9 @@ interface PageBuilderProps {
 }
 
 export default function PageBuilder({ project, selectedPage, onUpdatePage }: PageBuilderProps) {
-  // Determine if the current page is a chat page (could be indicated by a property or path)
+  // Determine if the current page is a chat page or project page
   const isChatPage = selectedPage.path?.includes("chat");
+  const isProjectPage = selectedPage.path?.length === 0 || selectedPage.path?.[0] === "projects";
   
   if (isChatPage) {
     return (
@@ -30,19 +30,17 @@ export default function PageBuilder({ project, selectedPage, onUpdatePage }: Pag
       </div>
     );
   }
+
+  if (isProjectPage && onUpdatePage) {
+    return <ProjectPage page={selectedPage} onUpdatePage={onUpdatePage} />;
+  }
   
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      <div className="flex-1">
-        <PageEditor 
-          page={selectedPage} 
-          onUpdatePage={onUpdatePage}
-        />
-      </div>
-      
-      <div className="w-full lg:w-[320px] space-y-6">
-        <AIAssistant />
-      </div>
+    <div className="w-full">
+      <PageEditor 
+        page={selectedPage} 
+        onUpdatePage={onUpdatePage}
+      />
     </div>
   );
 }
