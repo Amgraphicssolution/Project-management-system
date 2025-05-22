@@ -1,21 +1,9 @@
-<<<<<<< HEAD
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/0489af69-cff4-45d8-8b27-5fe22500b001
+# Welcome to Project Management System
+This is Project Management System like notion 
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/0489af69-cff4-45d8-8b27-5fe22500b001) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
 
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
@@ -60,19 +48,3 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/0489af69-cff4-45d8-8b27-5fe22500b001) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-=======
-# Project-management-system
-My Project management system like notion
->>>>>>> 1d2f7f42b55870d6527b9734b7485dd9bf2a95e1

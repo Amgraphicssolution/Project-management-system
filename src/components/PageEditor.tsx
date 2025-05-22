@@ -23,7 +23,9 @@ import {
   ListTree,
   ExternalLink,
   Figma,
-  FileDigit
+  FileDigit,
+  ChevronRight,
+  CheckSquare
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
@@ -368,27 +370,65 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-[160px]">
                               <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>
+                                <DropdownMenuSubTrigger className="flex items-center justify-between">
                                   Convert to
+                                  <ChevronRight className="h-4 w-4 ml-2" />
                                 </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                  {blockCategories.map((category) => (
-                                    <div key={category.name}>
-                                      <DropdownMenuItem disabled className="font-medium">
-                                        {category.name}
-                                      </DropdownMenuItem>
-                                      {category.blocks.map((blockType) => (
-                                        <DropdownMenuItem 
-                                          key={blockType.type}
-                                          onClick={() => handleConvertBlock(index, blockType.type)}
-                                        >
-                                          <blockType.icon className="h-4 w-4 mr-2" />
-                                          {blockType.label}
-                                        </DropdownMenuItem>
-                                      ))}
-                                      <DropdownMenuSeparator />
-                                    </div>
-                                  ))}
+                                <DropdownMenuSubContent className="w-[220px]">
+                                  <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                                    <Search className="h-4 w-4 text-muted-foreground/70" />
+                                    <input
+                                      type="text"
+                                      placeholder="Filter..."
+                                      value={searchQuery}
+                                      onChange={(e) => setSearchQuery(e.target.value)}
+                                      className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onKeyDown={(e) => {
+                                        e.stopPropagation();
+                                        if (e.key === 'Escape') {
+                                          e.preventDefault();
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                                    {blockCategories.map((category) => {
+                                      const filteredBlocks = category.blocks.filter(block =>
+                                        block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                                      );
+                                      
+                                      if (filteredBlocks.length === 0) return null;
+                                      
+                                      return (
+                                        <div key={category.name}>
+                                          <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                                            {category.name}
+                                          </DropdownMenuItem>
+                                          {filteredBlocks.map((blockType) => (
+                                            <DropdownMenuItem 
+                                              key={blockType.type}
+                                              className="flex items-center gap-2 px-2"
+                                              onClick={() => handleConvertBlock(index, blockType.type)}
+                                            >
+                                              <blockType.icon className="h-4 w-4 shrink-0" />
+                                              <span className="truncate">{blockType.label}</span>
+                                            </DropdownMenuItem>
+                                          ))}
+                                          <DropdownMenuSeparator className="mx-2" />
+                                        </div>
+                                      );
+                                    })}
+                                    {!blockCategories.some(category => 
+                                      category.blocks.some(block => 
+                                        block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                                      )
+                                    ) && (
+                                      <div className="text-sm text-muted-foreground text-center py-2">
+                                        No blocks found
+                                      </div>
+                                    )}
+                                  </div>
                                 </DropdownMenuSubContent>
                               </DropdownMenuSub>
                               <DropdownMenuItem onClick={() => handleMoveBlockUp(index)}>
