@@ -1,6 +1,30 @@
 import { useState } from "react";
 import { PageType, BlockType } from "../types";
-import { Plus, GripVertical, Copy, Trash2, FileText, Type, ListOrdered, Quote, Code, Image, Search } from "lucide-react";
+import { 
+  Plus, 
+  GripVertical, 
+  Copy, 
+  Trash2, 
+  FileText, 
+  Type, 
+  ListOrdered, 
+  Quote, 
+  Code, 
+  Image, 
+  Search,
+  List,
+  Table,
+  Minus,
+  Video,
+  Music,
+  File as FileIcon,
+  Layout,
+  FormInput,
+  ListTree,
+  ExternalLink,
+  Figma,
+  FileDigit
+} from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   DropdownMenu,
@@ -8,6 +32,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Popover,
@@ -15,22 +42,73 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { LucideIcon } from 'lucide-react';
 
 interface PageEditorProps {
   page: PageType;
   onUpdatePage?: (updatedPage: PageType) => void;
 }
 
-const blockTypes = [
-  { type: 'paragraph', icon: FileText, label: 'Text' },
-  { type: 'heading-1', icon: Type, label: 'Heading 1' },
-  { type: 'heading-2', icon: Type, label: 'Heading 2' },
-  { type: 'heading-3', icon: Type, label: 'Heading 3' },
-  { type: 'bullet-list', icon: ListOrdered, label: 'Bullet List' },
-  { type: 'number-list', icon: ListOrdered, label: 'Numbered List' },
-  { type: 'quote', icon: Quote, label: 'Quote' },
-  { type: 'code', icon: Code, label: 'Code' },
-  { type: 'image', icon: Image, label: 'Image' },
+interface BlockCategoryType {
+  name: string;
+  blocks: {
+    type: BlockType['type'];
+    icon: LucideIcon;
+    label: string;
+  }[];
+}
+
+const blockCategories: BlockCategoryType[] = [
+  {
+    name: "Basic Blocks",
+    blocks: [
+      { type: 'paragraph', icon: FileText, label: 'Text' },
+      { type: 'heading-1', icon: Type, label: 'H1 Heading' },
+      { type: 'heading-2', icon: Type, label: 'H2 Heading' },
+      { type: 'heading-3', icon: Type, label: 'H3 Heading' },
+      { type: 'heading-4', icon: Type, label: 'H4 Heading' },
+      { type: 'heading-5', icon: Type, label: 'H5 Heading' },
+      { type: 'heading-6', icon: Type, label: 'H6 Heading' },
+      { type: 'bullet-list', icon: List, label: 'Bullet List' },
+      { type: 'number-list', icon: ListOrdered, label: 'Number List' },
+      { type: 'to-do', icon: List, label: 'To-do List' },
+      { type: 'toggle', icon: List, label: 'Toggle List' },
+      { type: 'board', icon: Layout, label: 'Board' },
+      { type: 'quote', icon: Quote, label: 'Quote' },
+      { type: 'table', icon: Table, label: 'Table' },
+      { type: 'divider', icon: Minus, label: 'Divider' },
+    ]
+  },
+  {
+    name: "Media",
+    blocks: [
+      { type: 'image', icon: Image, label: 'Image' },
+      { type: 'video', icon: Video, label: 'Video' },
+      { type: 'audio', icon: Music, label: 'Audio' },
+      { type: 'file', icon: FileIcon, label: 'File' },
+      { type: 'code', icon: Code, label: 'Code' },
+    ]
+  },
+  {
+    name: "Advanced Blocks",
+    blocks: [
+      { type: 'form', icon: FormInput, label: 'Form' },
+      { type: 'table-of-contents', icon: ListTree, label: 'Table of Content' },
+      { type: 'two-columns', icon: Layout, label: '2 Column' },
+      { type: 'three-columns', icon: Layout, label: '3 Column' },
+      { type: 'four-columns', icon: Layout, label: '4 Column' },
+      { type: 'five-columns', icon: Layout, label: '5 Column' },
+    ]
+  },
+  {
+    name: "Embeds",
+    blocks: [
+      { type: 'embed', icon: ExternalLink, label: 'Embed' },
+      { type: 'figma', icon: Figma, label: 'Figma' },
+      { type: 'pdf', icon: FileDigit, label: 'PDF' },
+      { type: 'adobe', icon: FileIcon, label: 'Adobe' },
+    ]
+  }
 ];
 
 export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
@@ -39,6 +117,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   const [activeInputIndex, setActiveInputIndex] = useState<number | null>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const handleUpdateBlock = (index: number, updatedBlock: BlockType) => {
     const newBlocks = [...blocks];
@@ -90,7 +169,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const handleAddBlock = (index: number, type: string = 'paragraph') => {
+  const handleAddBlock = (index: number, type: BlockType['type'] = 'paragraph') => {
     const newBlock: BlockType = {
       id: `block-${Date.now()}`,
       type,
@@ -136,7 +215,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const handleConvertBlock = (index: number, newType: string) => {
+  const handleConvertBlock = (index: number, newType: BlockType['type']) => {
     const newBlocks = blocks.map((block, i) => 
       i === index ? { ...block, type: newType } : block
     );
@@ -159,38 +238,94 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const filteredBlockTypes = blockTypes.filter(type => 
-    type.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleMoveBlockUp = (index: number) => {
+    if (index === 0) return;
+    const newBlocks = [...blocks];
+    [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+    setBlocks(newBlocks);
+    if (onUpdatePage) {
+      onUpdatePage({ ...page, blocks: newBlocks });
+    }
+  };
 
-  const BlockTypePopover = ({ onSelect }: { onSelect: (type: string) => void }) => (
-    <PopoverContent align="start" className="w-64 p-2">
-      <div className="space-y-2">
+  const handleMoveBlockDown = (index: number) => {
+    if (index === blocks.length - 1) return;
+    const newBlocks = [...blocks];
+    [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+    setBlocks(newBlocks);
+    if (onUpdatePage) {
+      onUpdatePage({ ...page, blocks: newBlocks });
+    }
+  };
+
+  const BlockTypePopover = ({ onSelect }: { onSelect: (type: BlockType['type']) => void }) => (
+    <PopoverContent 
+      align="start" 
+      className="w-64 p-2" 
+      onOpenAutoFocus={(e) => e.preventDefault()}
+      onInteractOutside={(e) => {
+        if (isPopoverOpen) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search blocks..."
+            placeholder="Type to filter..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Escape') {
+                e.preventDefault();
+              }
+            }}
+            autoFocus
           />
         </div>
-        <div className="space-y-1 max-h-[300px] overflow-y-auto">
-          {filteredBlockTypes.map((type) => (
-            <button
-              key={type.type}
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
-              onClick={() => {
-                onSelect(type.type);
-                setSearchQuery("");
-              }}
-            >
-              <type.icon className="h-4 w-4" />
-              {type.label}
-            </button>
-          ))}
-          {filteredBlockTypes.length === 0 && (
+        <div className="space-y-4 max-h-[400px] overflow-y-auto">
+          {blockCategories.map((category) => {
+            const filteredBlocks = category.blocks.filter(block =>
+              block.label.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            
+            if (filteredBlocks.length === 0) return null;
+            
+            return (
+              <div key={category.name} className="space-y-1">
+                <div className="text-sm font-medium text-muted-foreground px-2">
+                  {category.name}
+                </div>
+                {filteredBlocks.map((block) => (
+                  <button
+                    key={block.type}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onSelect(block.type as BlockType['type']);
+                      setSearchQuery("");
+                      setIsPopoverOpen(false);
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <block.icon className="h-4 w-4" />
+                    {block.label}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+          {!blockCategories.some(category => 
+            category.blocks.some(block => 
+              block.label.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+          ) && (
             <div className="text-sm text-muted-foreground text-center py-2">
               No blocks found
             </div>
@@ -231,31 +366,43 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                 <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
                               </div>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-48">
-                              <DropdownMenuItem onClick={() => handleDuplicateBlock(index)}>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicate
+                            <DropdownMenuContent align="start" className="w-[160px]">
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                  Convert to
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  {blockCategories.map((category) => (
+                                    <div key={category.name}>
+                                      <DropdownMenuItem disabled className="font-medium">
+                                        {category.name}
+                                      </DropdownMenuItem>
+                                      {category.blocks.map((blockType) => (
+                                        <DropdownMenuItem 
+                                          key={blockType.type}
+                                          onClick={() => handleConvertBlock(index, blockType.type)}
+                                        >
+                                          <blockType.icon className="h-4 w-4 mr-2" />
+                                          {blockType.label}
+                                        </DropdownMenuItem>
+                                      ))}
+                                      <DropdownMenuSeparator />
+                                    </div>
+                                  ))}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuItem onClick={() => handleMoveBlockUp(index)}>
+                                Move up
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleDeleteBlock(index)}>
-                                <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                Turn into
+                              <DropdownMenuItem onClick={() => handleMoveBlockDown(index)}>
+                                Move down
                               </DropdownMenuItem>
-                              {blockTypes.map((type) => (
-                                <DropdownMenuItem 
-                                  key={type.type}
-                                  onClick={() => handleConvertBlock(index, type.type)}
-                                >
-                                  <type.icon className="h-4 w-4 mr-2" />
-                                  {type.label}
-                                </DropdownMenuItem>
-                              ))}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <Popover>
+                          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                             <PopoverTrigger asChild>
                               <button
                                 className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
@@ -263,7 +410,21 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                 <Plus className="h-[16px] w-[16px] text-muted-foreground" />
                               </button>
                             </PopoverTrigger>
-                            <BlockTypePopover onSelect={(type) => handleAddBlock(index, type)} />
+                            <BlockTypePopover 
+                              onSelect={(type) => {
+                                const newBlock: BlockType = {
+                                  id: `block-${Date.now()}`,
+                                  type: type,
+                                  content: ''
+                                };
+                                setBlocks([newBlock]);
+                                setShowPlaceholder(true);
+                                setActiveInputIndex(0);
+                                if (onUpdatePage) {
+                                  onUpdatePage({ ...page, blocks: [newBlock] });
+                                }
+                              }} 
+                            />
                           </Popover>
                         </div>
                         <div className="flex-1 min-h-[1.5em] outline-none">
@@ -314,7 +475,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
                         <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
                       </div>
-                      <Popover>
+                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                         <PopoverTrigger asChild>
                           <button
                             className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
@@ -326,7 +487,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                           onSelect={(type) => {
                             const newBlock: BlockType = {
                               id: `block-${Date.now()}`,
-                              type,
+                              type: type,
                               content: ''
                             };
                             setBlocks([newBlock]);
