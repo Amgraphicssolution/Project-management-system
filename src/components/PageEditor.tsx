@@ -569,7 +569,48 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             </DropdownMenu>
           </div>
           <div className="flex-1 min-h-[32px]">
-            {isListType(block.type) ? (
+            {block.type === 'divider' ? (
+              <div className="flex items-center px-3 py-2">
+                <div className="flex-1 h-[1px] bg-gray-200" />
+              </div>
+            ) : block.type === 'quote' ? (
+              <div className="flex gap-3 py-1">
+                <div className="w-1 bg-gray-200 rounded-full flex-shrink-0" />
+                <input
+                  type="text"
+                  value={block.content || ''}
+                  onChange={(e) => {
+                    if (isNested && block.parentId) {
+                      const parentIndex = blocks.findIndex(b => b.id === block.parentId);
+                      if (parentIndex !== -1) {
+                        const newBlocks = [...blocks];
+                        const parentBlock = newBlocks[parentIndex];
+                        if (parentBlock.children) {
+                          const blockIndex = parentBlock.children.findIndex(b => b.id === block.id);
+                          parentBlock.children[blockIndex] = {
+                            ...block,
+                            content: e.target.value
+                          };
+                          setBlocks(newBlocks);
+                          if (onUpdatePage) {
+                            onUpdatePage({ ...page, blocks: newBlocks });
+                          }
+                        }
+                      }
+                    } else {
+                      handleUpdateBlock(numericIndex, { 
+                        ...block, 
+                        content: e.target.value 
+                      });
+                    }
+                  }}
+                  onKeyDown={(e) => handleKeyDown(e, numericIndex, block)}
+                  placeholder={getPlaceholderForType(block.type)}
+                  className={getClassNameForType(block.type)}
+                  autoFocus={activeInputIndex === numericIndex}
+                />
+              </div>
+            ) : isListType(block.type) ? (
               renderListItems(block, numericIndex, isNested)
             ) : (
               <input
@@ -809,6 +850,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       case 'heading-4': return 'Heading 4';
       case 'heading-5': return 'Heading 5';
       case 'heading-6': return 'Heading 6';
+      case 'quote': return 'Write a quote...';
       default: return 'Type here...';
     }
   };
@@ -822,6 +864,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       case 'heading-4': return `${baseClasses} text-[1.25rem] font-semibold leading-snug py-3 text-gray-800`;
       case 'heading-5': return `${baseClasses} text-[1.15rem] font-semibold leading-snug py-2 text-gray-800`;
       case 'heading-6': return `${baseClasses} text-[1.05rem] font-semibold leading-snug py-2 text-gray-800`;
+      case 'divider': return `${baseClasses} pointer-events-none h-9 flex items-center`;
+      case 'quote': return `${baseClasses} text-lg font-medium leading-relaxed py-2 text-gray-700 italic`;
       default: return `${baseClasses} text-base font-normal leading-relaxed py-1 text-gray-600`;
     }
   };
