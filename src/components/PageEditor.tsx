@@ -25,7 +25,10 @@ import {
   Figma,
   FileDigit,
   ChevronRight,
-  CheckSquare
+  CheckSquare,
+  ArrowUp,
+  ArrowDown,
+  LayoutGrid
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
@@ -73,7 +76,7 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'heading-6', icon: Type, label: 'H6 Heading' },
       { type: 'bullet-list', icon: List, label: 'Bullet List' },
       { type: 'number-list', icon: ListOrdered, label: 'Number List' },
-      { type: 'to-do', icon: List, label: 'To-do List' },
+      { type: 'to-do', icon: CheckSquare, label: 'To-do List' },
       { type: 'toggle', icon: List, label: 'Toggle List' },
       { type: 'board', icon: Layout, label: 'Board' },
       { type: 'quote', icon: Quote, label: 'Quote' },
@@ -115,7 +118,7 @@ const blockCategories: BlockCategoryType[] = [
 
 export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   const [blocks, setBlocks] = useState<BlockType[]>(page.blocks || []);
-  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+  const [hoveredLine, setHoveredLine] = useState<number | string | null>(null);
   const [activeInputIndex, setActiveInputIndex] = useState<number | null>(null);
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,20 +132,11 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     if (onUpdatePage) {
       onUpdatePage({ ...page, blocks: newBlocks });
     }
-
-    if (!updatedBlock.content && blocks.length > 1 && index !== blocks.length - 1) {
-      const filteredBlocks = blocks.filter((_, i) => i !== index);
-      setBlocks(filteredBlocks);
-      if (onUpdatePage) {
-        onUpdatePage({ ...page, blocks: filteredBlocks });
-      }
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number, block: BlockType) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      setShowPlaceholder(false);
       
       const newBlock: BlockType = {
         id: `block-${Date.now()}`,
@@ -157,14 +151,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       ];
       
       setBlocks(newBlocks);
+      setActiveInputIndex(index + 1);
+      setShowPlaceholder(true);
       if (onUpdatePage) {
         onUpdatePage({ ...page, blocks: newBlocks });
       }
     } else if (e.key === 'Backspace' && !block.content) {
       e.preventDefault();
-      setShowPlaceholder(false);
       const newBlocks = blocks.filter((_, i) => i !== index);
       setBlocks(newBlocks);
+      setActiveInputIndex(index > 0 ? index - 1 : null);
       if (onUpdatePage) {
         onUpdatePage({ ...page, blocks: newBlocks });
       }
@@ -177,17 +173,33 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       type,
       content: ''
     };
-    
-    const newBlocks = [
-      ...blocks.slice(0, index + 1),
-      newBlock,
-      ...blocks.slice(index + 1)
-    ];
+
+    let newBlocks;
+    if (index === -1) {
+      newBlocks = [newBlock];
+    } else {
+      newBlocks = [
+        ...blocks.slice(0, index + 1),
+        newBlock,
+        ...blocks.slice(index + 1)
+      ];
+    }
     
     setBlocks(newBlocks);
+    setActiveInputIndex(index === -1 ? 0 : index + 1);
+    setShowPlaceholder(true);
+    
     if (onUpdatePage) {
       onUpdatePage({ ...page, blocks: newBlocks });
     }
+
+    // Focus the new block
+    requestAnimationFrame(() => {
+      const contentEditableDiv = document.querySelector(`[data-block-id="${newBlock.id}"] [contenteditable="true"]`);
+      if (contentEditableDiv instanceof HTMLElement) {
+        contentEditableDiv.focus();
+      }
+    });
   };
 
   const handleDuplicateBlock = (index: number) => {
@@ -260,82 +272,74 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const BlockTypePopover = ({ onSelect }: { onSelect: (type: BlockType['type']) => void }) => (
-    <PopoverContent 
-      align="start" 
-      className="w-64 p-2" 
-      onOpenAutoFocus={(e) => e.preventDefault()}
-      onInteractOutside={(e) => {
-        if (isPopoverOpen) {
-          e.preventDefault();
-        }
-      }}
-    >
-      <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Type to filter..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Escape') {
-                e.preventDefault();
-              }
-            }}
-            autoFocus
-          />
-        </div>
-        <div className="space-y-4 max-h-[400px] overflow-y-auto">
-          {blockCategories.map((category) => {
-            const filteredBlocks = category.blocks.filter(block =>
-              block.label.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            
-            if (filteredBlocks.length === 0) return null;
-            
-            return (
-              <div key={category.name} className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground px-2">
-                  {category.name}
+  const BlockTypePopover = ({ onSelect }: { onSelect: (type: BlockType['type']) => void }) => {
+    const [localSearchQuery, setLocalSearchQuery] = useState("");
+    
+    return (
+      <PopoverContent 
+        align="start" 
+        className="w-64 p-2"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Type to filter..."
+              value={localSearchQuery}
+              onChange={(e) => setLocalSearchQuery(e.target.value)}
+              className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-4 max-h-[400px] overflow-y-auto">
+            {blockCategories.map((category) => {
+              const filteredBlocks = category.blocks.filter(block =>
+                block.label.toLowerCase().includes(localSearchQuery.toLowerCase())
+              );
+              
+              if (filteredBlocks.length === 0) return null;
+              
+              return (
+                <div key={category.name} className="space-y-1">
+                  <div className="text-sm font-medium text-muted-foreground px-2">
+                    {category.name}
+                  </div>
+                  {filteredBlocks.map((block) => (
+                    <button
+                      key={block.type}
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
+                      onClick={() => {
+                        onSelect(block.type);
+                        setLocalSearchQuery("");
+                      }}
+                    >
+                      <block.icon className="h-4 w-4" />
+                      {block.label}
+                    </button>
+                  ))}
                 </div>
-                {filteredBlocks.map((block) => (
-                  <button
-                    key={block.type}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onSelect(block.type as BlockType['type']);
-                      setSearchQuery("");
-                      setIsPopoverOpen(false);
-                    }}
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
-                    <block.icon className="h-4 w-4" />
-                    {block.label}
-                  </button>
-                ))}
+              );
+            })}
+            {!blockCategories.some(category => 
+              category.blocks.some(block => 
+                block.label.toLowerCase().includes(localSearchQuery.toLowerCase())
+              )
+            ) && (
+              <div className="text-sm text-muted-foreground text-center py-2">
+                No blocks found
               </div>
-            );
-          })}
-          {!blockCategories.some(category => 
-            category.blocks.some(block => 
-              block.label.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          ) && (
-            <div className="text-sm text-muted-foreground text-center py-2">
-              No blocks found
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </PopoverContent>
-  );
+      </PopoverContent>
+    );
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-8 py-10 min-h-screen">
@@ -353,12 +357,12 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                     <div 
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="group relative"
-                      onMouseEnter={() => setHoveredLine(index)}
-                      onMouseLeave={() => setHoveredLine(null)}
+                      data-block-id={block.id}
+                      className="relative group"
                     >
-                      <div className="flex items-start gap-2 py-1 px-2 rounded-sm">
-                        <div className={`flex items-center h-[1.5em] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ${hoveredLine === index ? 'opacity-100' : ''}`}>
+                      {/* Main Block */}
+                      <div className="flex items-start gap-2 py-1 px-2 rounded-sm group-hover:bg-accent/5">
+                        <div className="flex items-center h-[1.5em] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <div 
@@ -370,9 +374,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-[160px]">
                               <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="flex items-center justify-between">
+                                <DropdownMenuSubTrigger className="flex items-center gap-2">
+                                  <LayoutGrid className="h-4 w-4" />
                                   Convert to
-                                  <ChevronRight className="h-4 w-4 ml-2" />
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent className="w-[220px]">
                                   <div className="flex items-center gap-2 px-2 py-1.5 border-b">
@@ -431,18 +435,21 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                   </div>
                                 </DropdownMenuSubContent>
                               </DropdownMenuSub>
-                              <DropdownMenuItem onClick={() => handleMoveBlockUp(index)}>
+                              <DropdownMenuItem onClick={() => handleMoveBlockUp(index)} className="flex items-center gap-2">
+                                <ArrowUp className="h-4 w-4" />
                                 Move up
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteBlock(index)}>
+                              <DropdownMenuItem onClick={() => handleDeleteBlock(index)} className="flex items-center gap-2">
+                                <Trash2 className="h-4 w-4" />
                                 Delete
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMoveBlockDown(index)}>
+                              <DropdownMenuItem onClick={() => handleMoveBlockDown(index)} className="flex items-center gap-2">
+                                <ArrowDown className="h-4 w-4" />
                                 Move down
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                          <Popover>
                             <PopoverTrigger asChild>
                               <button
                                 className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
@@ -451,52 +458,18 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                               </button>
                             </PopoverTrigger>
                             <BlockTypePopover 
-                              onSelect={(type) => {
-                                const newBlock: BlockType = {
-                                  id: `block-${Date.now()}`,
-                                  type: type,
-                                  content: ''
-                                };
-                                setBlocks([newBlock]);
-                                setShowPlaceholder(true);
-                                setActiveInputIndex(0);
-                                if (onUpdatePage) {
-                                  onUpdatePage({ ...page, blocks: [newBlock] });
-                                }
-                              }} 
+                              onSelect={(type) => handleAddBlock(index, type)}
                             />
                           </Popover>
                         </div>
-                        <div className="flex-1 min-h-[1.5em] outline-none">
-                          <div 
-                            className="relative min-h-[24px] w-full"
-                            onClick={() => {
-                              setActiveInputIndex(index);
-                              if (!block.content) {
-                                setShowPlaceholder(true);
-                              }
-                            }}
-                          >
-                            <div
-                              contentEditable
-                              suppressContentEditableWarning
-                              onBlur={(e) => {
-                                handleUpdateBlock(index, { ...block, content: e.currentTarget.textContent || '' });
-                                setShowPlaceholder(false);
-                              }}
-                              onKeyDown={(e) => handleKeyDown(e, index, block)}
-                              onInput={() => setShowPlaceholder(false)}
-                              className="outline-none w-full min-h-[24px] whitespace-pre-wrap break-words"
-                            >
-                              {block.content}
-                            </div>
-                            {!block.content && activeInputIndex === index && showPlaceholder && (
-                              <div className="absolute top-0 left-0 text-muted-foreground pointer-events-none">
-                                Write, press 'space' for AI, '/' for commands...
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        <input
+                          type="text"
+                          value={block.content || ''}
+                          onChange={(e) => handleUpdateBlock(index, { ...block, content: e.target.value })}
+                          onKeyDown={(e) => handleKeyDown(e, index, block)}
+                          className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base"
+                          autoFocus={activeInputIndex === index}
+                        />
                       </div>
                     </div>
                   )}
@@ -505,60 +478,111 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
               {provided.placeholder}
               
               {blocks.length === 0 && (
-                <div 
-                  className="group relative"
-                  onMouseEnter={() => setHoveredLine(-1)}
-                  onMouseLeave={() => setHoveredLine(null)}
-                >
-                  <div className="flex items-start gap-2 py-1 px-2 rounded-sm">
-                    <div className={`flex items-center h-[1.5em] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ${hoveredLine === -1 ? 'opacity-100' : ''}`}>
-                      <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
-                        <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
-                      </div>
-                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
-                          >
-                            <Plus className="h-[16px] w-[16px] text-muted-foreground" />
-                          </button>
-                        </PopoverTrigger>
-                        <BlockTypePopover 
-                          onSelect={(type) => {
-                            const newBlock: BlockType = {
-                              id: `block-${Date.now()}`,
-                              type: type,
-                              content: ''
-                            };
-                            setBlocks([newBlock]);
-                            setShowPlaceholder(true);
-                            setActiveInputIndex(0);
-                            if (onUpdatePage) {
-                              onUpdatePage({ ...page, blocks: [newBlock] });
-                            }
-                          }} 
-                        />
-                      </Popover>
-                    </div>
-                    <div 
-                      className="flex-1 text-sm cursor-text"
-                      onClick={() => {
-                        const newBlock: BlockType = {
-                          id: `block-${Date.now()}`,
-                          type: 'paragraph',
-                          content: ''
-                        };
-                        setBlocks([newBlock]);
-                        setShowPlaceholder(true);
-                        setActiveInputIndex(0);
-                        if (onUpdatePage) {
-                          onUpdatePage({ ...page, blocks: [newBlock] });
-                        }
-                      }}
-                    >
-                      <div className="px-3 py-1 rounded hover:bg-accent/5" />
-                    </div>
+                <div className="flex items-start gap-2 py-1 px-2 rounded-sm hover:bg-accent/5">
+                  <div className="flex items-center h-[1.5em] mt-0.5">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                          <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-[160px]">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="flex items-center gap-2">
+                            <LayoutGrid className="h-4 w-4" />
+                            Convert to
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="w-[220px]">
+                            <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                              <Search className="h-4 w-4 text-muted-foreground/70" />
+                              <input
+                                type="text"
+                                placeholder="Filter..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => {
+                                  e.stopPropagation();
+                                  if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
+                            </div>
+                            <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                              {blockCategories.map((category) => {
+                                const filteredBlocks = category.blocks.filter(block =>
+                                  block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                                );
+                                
+                                if (filteredBlocks.length === 0) return null;
+                                
+                                return (
+                                  <div key={category.name}>
+                                    <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                                      {category.name}
+                                    </DropdownMenuItem>
+                                    {filteredBlocks.map((blockType) => (
+                                      <DropdownMenuItem 
+                                        key={blockType.type}
+                                        className="flex items-center gap-2 px-2"
+                                        onClick={() => handleConvertBlock(-1, blockType.type)}
+                                      >
+                                        <blockType.icon className="h-4 w-4 shrink-0" />
+                                        <span className="truncate">{blockType.label}</span>
+                                      </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuSeparator className="mx-2" />
+                                  </div>
+                                );
+                              })}
+                              {!blockCategories.some(category => 
+                                category.blocks.some(block => 
+                                  block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                                )
+                              ) && (
+                                <div className="text-sm text-muted-foreground text-center py-2">
+                                  No blocks found
+                                </div>
+                              )}
+                            </div>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleMoveBlockUp(-1)} className="flex items-center gap-2">
+                          <ArrowUp className="h-4 w-4" />
+                          Move up
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteBlock(-1)} className="flex items-center gap-2">
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMoveBlockDown(-1)} className="flex items-center gap-2">
+                          <ArrowDown className="h-4 w-4" />
+                          Move down
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
+                        >
+                          <Plus className="h-[16px] w-[16px] text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <BlockTypePopover 
+                        onSelect={(type) => handleAddBlock(-1, type)}
+                      />
+                    </Popover>
                   </div>
+                  <input
+                    type="text"
+                    className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base"
+                    onChange={(e) => handleAddBlock(-1, 'paragraph')}
+                    autoFocus
+                  />
                 </div>
               )}
             </div>
