@@ -25,8 +25,14 @@ export interface BlockType {
   language?: string;
   checked?: boolean;
   items?: string[];
+  listItems?: Array<{
+    id: string;
+    content: string;
+    checked?: boolean;
+  }>;
   children?: BlockType[];
   icon?: string;
+  parentId?: string;
 }
 
 export interface PageType {
