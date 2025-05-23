@@ -378,7 +378,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                   <LayoutGrid className="h-4 w-4" />
                                   Convert to
                                 </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent className="w-[220px]">
+                                <DropdownMenuSubContent>
                                   <div className="flex items-center gap-2 px-2 py-1.5 border-b">
                                     <Search className="h-4 w-4 text-muted-foreground/70" />
                                     <input
@@ -449,25 +449,14 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button
-                                className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
-                              >
-                                <Plus className="h-[16px] w-[16px] text-muted-foreground" />
-                              </button>
-                            </PopoverTrigger>
-                            <BlockTypePopover 
-                              onSelect={(type) => handleAddBlock(index, type)}
-                            />
-                          </Popover>
                         </div>
                         <input
                           type="text"
                           value={block.content || ''}
                           onChange={(e) => handleUpdateBlock(index, { ...block, content: e.target.value })}
                           onKeyDown={(e) => handleKeyDown(e, index, block)}
-                          className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base"
+                          placeholder="Type here..."
+                          className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base placeholder:text-muted-foreground"
                           autoFocus={activeInputIndex === index}
                         />
                       </div>
@@ -476,6 +465,25 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                 </Draggable>
               ))}
               {provided.placeholder}
+              
+              {/* Add Block Button */}
+              {blocks.length > 0 && (
+                <div className="flex justify-start !mt-4 px-2 add-blocks-button">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="group flex items-center gap-2 hover:opacity-70 transition-opacity"
+                      >
+                        <Plus className="h-5 w-5 text-blue-500" />
+                        <span className="text-blue-500 text-sm font-medium">add blocks</span>
+                      </button>
+                    </PopoverTrigger>
+                    <BlockTypePopover 
+                      onSelect={(type) => handleAddBlock(blocks.length - 1, type)}
+                    />
+                  </Popover>
+                </div>
+              )}
               
               {blocks.length === 0 && (
                 <div className="flex items-start gap-2 py-1 px-2 rounded-sm hover:bg-accent/5">
@@ -579,7 +587,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                   </div>
                   <input
                     type="text"
-                    className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base"
+                    placeholder="Type here..."
+                    className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base placeholder:text-muted-foreground"
                     onChange={(e) => handleAddBlock(-1, 'paragraph')}
                     autoFocus
                   />
