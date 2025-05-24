@@ -85,8 +85,10 @@ const SidebarItem = ({
         <div className="flex-1 flex items-center gap-2">
           {project ? (
             // Project item with folder/arrow transition
-            <div className="w-4 h-4 relative">
-              {hasChildren ? (
+            <div className="w-4 h-4 relative flex items-center justify-center">
+              {project.icon ? (
+                <span className="text-base flex items-center justify-center">{project.icon}</span>
+              ) : hasChildren ? (
                 <>
                   <Folder className={cn(
                     "h-4 w-4 text-blue-500 absolute transition-opacity",

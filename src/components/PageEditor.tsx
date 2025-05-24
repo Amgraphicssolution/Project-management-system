@@ -75,7 +75,7 @@ const blockCategories: BlockCategoryType[] = [
   {
     name: "Basic Blocks",
     blocks: [
-      { type: 'paragraph', icon: FileText, label: 'Text' },
+  { type: 'paragraph', icon: FileText, label: 'Text' },
       { type: 'heading-1', icon: Type, label: 'H1 Heading' },
       { type: 'heading-2', icon: Type, label: 'H2 Heading' },
       { type: 'heading-3', icon: Type, label: 'H3 Heading' },
@@ -87,7 +87,7 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'to-do', icon: CheckSquare, label: 'To-do List' },
       { type: 'toggle', icon: List, label: 'Toggle List' },
       { type: 'board', icon: Layout, label: 'Board' },
-      { type: 'quote', icon: Quote, label: 'Quote' },
+  { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
     ]
@@ -99,7 +99,7 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'video', icon: Video, label: 'Video' },
       { type: 'audio', icon: Music, label: 'Audio' },
       { type: 'file', icon: FileIcon, label: 'File' },
-      { type: 'code', icon: Code, label: 'Code' },
+  { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
@@ -246,12 +246,12 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         }
       } else {
         // Regular block behavior
-        const newBlock: BlockType = {
-          id: `block-${Date.now()}`,
+      const newBlock: BlockType = {
+        id: `block-${Date.now()}`,
           type: block.type,
-          content: ''
-        };
-        
+        content: ''
+      };
+      
         // If this is a nested block in a toggle list
         if (block.parentId) {
           const parentIndex = blocks.findIndex(b => b.id === block.parentId);
@@ -270,17 +270,17 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         }
         
         // Regular block addition
-        const newBlocks = [
-          ...blocks.slice(0, index + 1),
-          newBlock,
-          ...blocks.slice(index + 1)
-        ];
-        
-        setBlocks(newBlocks);
+      const newBlocks = [
+        ...blocks.slice(0, index + 1),
+        newBlock,
+        ...blocks.slice(index + 1)
+      ];
+      
+      setBlocks(newBlocks);
         setActiveInputIndex(index + 1);
         setActiveListItemId(null);
-        if (onUpdatePage) {
-          onUpdatePage({ ...page, blocks: newBlocks });
+      if (onUpdatePage) {
+        onUpdatePage({ ...page, blocks: newBlocks });
         }
       }
     } else if (e.key === 'Backspace') {
@@ -366,7 +366,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
           }
         }
       } else if (!block.content) {
-        e.preventDefault();
+      e.preventDefault();
         // Regular block deletion
         if (block.parentId) {
           // If this is a nested block in a toggle list
@@ -377,10 +377,10 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             if (parentBlock.children) {
               const blockIndex = parentBlock.children.findIndex(b => b.id === block.id);
               parentBlock.children.splice(blockIndex, 1);
-              setBlocks(newBlocks);
-              if (onUpdatePage) {
-                onUpdatePage({ ...page, blocks: newBlocks });
-              }
+      setBlocks(newBlocks);
+      if (onUpdatePage) {
+        onUpdatePage({ ...page, blocks: newBlocks });
+      }
             }
             return;
           }
@@ -876,16 +876,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       type,
       content: ''
     };
-
+    
     let newBlocks;
     if (index === -1) {
       newBlocks = [newBlock];
     } else {
       newBlocks = [
-        ...blocks.slice(0, index + 1),
-        newBlock,
-        ...blocks.slice(index + 1)
-      ];
+      ...blocks.slice(0, index + 1),
+      newBlock,
+      ...blocks.slice(index + 1)
+    ];
     }
     
     setBlocks(newBlocks);
@@ -984,22 +984,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         className="w-64 p-2"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
               placeholder="Type to filter..."
               value={localSearchQuery}
               onChange={(e) => setLocalSearchQuery(e.target.value)}
-              className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
+            className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   e.preventDefault();
                 }
               }}
-            />
-          </div>
+          />
+        </div>
           <div className="space-y-4 max-h-[400px] overflow-y-auto">
             {blockCategories.map((category) => {
               const filteredBlocks = category.blocks.filter(block =>
@@ -1014,18 +1014,18 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                     {category.name}
                   </div>
                   {filteredBlocks.map((block) => (
-                    <button
+            <button
                       key={block.type}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
-                      onClick={() => {
+              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
+              onClick={() => {
                         onSelect(block.type);
                         setLocalSearchQuery("");
-                      }}
-                    >
+              }}
+            >
                       <block.icon className="h-4 w-4" />
                       {block.label}
-                    </button>
-                  ))}
+            </button>
+          ))}
                 </div>
               );
             })}
@@ -1034,14 +1034,14 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                 block.label.toLowerCase().includes(localSearchQuery.toLowerCase())
               )
             ) && (
-              <div className="text-sm text-muted-foreground text-center py-2">
-                No blocks found
-              </div>
-            )}
-          </div>
+            <div className="text-sm text-muted-foreground text-center py-2">
+              No blocks found
+            </div>
+          )}
         </div>
-      </PopoverContent>
-    );
+      </div>
+    </PopoverContent>
+  );
   };
 
   return (
@@ -1096,9 +1096,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                   <div className="flex items-center h-[1.5em] mt-0.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
-                          <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
-                        </div>
+                      <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                        <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
+                      </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-[160px]">
                         <DropdownMenuSub>
@@ -1178,18 +1178,18 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
-                        >
-                          <Plus className="h-[16px] w-[16px] text-muted-foreground" />
-                        </button>
-                      </PopoverTrigger>
-                      <BlockTypePopover 
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
+                          >
+                            <Plus className="h-[16px] w-[16px] text-muted-foreground" />
+                          </button>
+                        </PopoverTrigger>
+                        <BlockTypePopover 
                         onSelect={(type) => handleAddBlock(-1, type)}
-                      />
-                    </Popover>
+                        />
+                      </Popover>
                   </div>
                   <input
                     type="text"

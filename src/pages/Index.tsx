@@ -13,7 +13,8 @@ import {
   Plus,
   ChevronDown,
   FileText,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import { ProjectType, PageType } from '@/types';
@@ -30,10 +31,12 @@ import PageEditor from '@/components/PageEditor';
 
 const ProjectView = ({ 
   project, 
-  onUpdateProject 
+  onUpdateProject,
+  setProjects 
 }: { 
   project: ProjectType; 
   onUpdateProject: (updated: ProjectType) => void;
+  setProjects: React.Dispatch<React.SetStateAction<ProjectType[]>>;
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(project.title);
@@ -80,17 +83,41 @@ const ProjectView = ({
   };
 
   const handleIconSelect = (icon: string) => {
-    onUpdateProject({
+    const updatedProject = {
       ...project,
       icon,
       updatedAt: new Date().toISOString()
-    });
+    };
+    onUpdateProject(updatedProject);
+    setIsIconPickerOpen(false);
+    
+    // Update projects list to reflect the icon change
+    setProjects(prevProjects =>
+      prevProjects.map(p => p.id === project.id ? updatedProject : p)
+    );
   };
 
   const handleCoverSelect = (cover: { type: 'image' | 'color'; value: string }) => {
     onUpdateProject({
       ...project,
       cover,
+      updatedAt: new Date().toISOString()
+    });
+  };
+
+  const handleRemoveIcon = () => {
+    onUpdateProject({
+      ...project,
+      icon: undefined,
+      updatedAt: new Date().toISOString()
+    });
+  };
+
+  const handleRemoveCover = () => {
+    onUpdateProject({
+      ...project,
+      cover: undefined,
+      coverHeight: undefined,
       updatedAt: new Date().toISOString()
     });
   };
@@ -130,105 +157,118 @@ const ProjectView = ({
       </div>
 
       {/* Project Content */}
-      <div>
-        {/* Project Cover */}
-        <div className="relative group px-4 pt-4">
-          {project.cover ? (
-            <div 
-              className="min-h-[200px] transition-all rounded-lg cursor-pointer group/cover"
-              style={{
-                height: project.coverHeight || '200px',
-                backgroundImage: project.cover?.type === 'image' ? `url(${project.cover.value})` : undefined,
-                backgroundColor: project.cover?.type === 'color' ? project.cover.value : '#E5F3FF',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
-              onClick={() => setIsCoverPickerOpen(true)}
-            >
-              {/* Hover overlay for cover */}
-              <div className="absolute inset-0 bg-black/0 group-hover/cover:bg-black/5 transition-colors flex items-center justify-center">
-                <span className="text-white opacity-0 group-hover/cover:opacity-100 transition-opacity">
+      <div className="relative group px-4 pt-4">
+        {project.cover ? (
+          <div 
+            className="min-h-[200px] transition-all rounded-lg cursor-pointer group/cover relative"
+            style={{
+              height: project.coverHeight || '200px',
+              backgroundImage: project.cover?.type === 'image' ? `url(${project.cover.value})` : undefined,
+              backgroundColor: project.cover?.type === 'color' ? project.cover.value : '#E5F3FF',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+            onClick={() => setIsCoverPickerOpen(true)}
+          >
+            {/* Hover overlay for cover */}
+            <div className="absolute inset-0 bg-black/0 group-hover/cover:bg-black/5 transition-colors">
+              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/cover:opacity-100 transition-opacity">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="bg-background/80 hover:bg-background"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsCoverPickerOpen(true);
+                  }}
+                >
                   Change cover
-                </span>
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="bg-background/80 hover:bg-background text-destructive hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveCover();
+                  }}
+                >
+                  Remove
+                </Button>
               </div>
+            </div>
+          </div>
+        ) : null}
 
-              {project.icon && (
-                <div className="absolute left-9 bottom-6">
+        {project.cover && (
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover:opacity-100 transition-opacity"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startY = e.clientY;
+              const banner = e.currentTarget.previousElementSibling as HTMLElement;
+              const startHeight = banner.offsetHeight;
+              
+              const handleMouseMove = (moveEvent: MouseEvent) => {
+                moveEvent.preventDefault();
+                const delta = moveEvent.clientY - startY;
+                const newHeight = Math.max(100, startHeight + delta);
+                banner.style.height = `${newHeight}px`;
+              };
+              
+              const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                
+                const banner = e.currentTarget.previousElementSibling as HTMLElement;
+                onUpdateProject({
+                  ...project,
+                  coverHeight: `${banner.offsetHeight}px`,
+                  updatedAt: new Date().toISOString()
+                });
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            }}
+          >
+            <div className="h-1 bg-secondary/50 hover:bg-secondary rounded-full mx-auto w-12"></div>
+          </div>
+        )}
+      </div>
+
+      <div className="py-6 px-4">
+        <div className="group relative max-w-3xl mx-auto">
+          {/* Title Section with Action Buttons */}
+          <div>
+            {/* Icon aligned with title */}
+            {project.icon && (
+              <div className="mb-4">
+                <div className="group/icon">
                   <div 
-                    className="w-16 h-16 bg-white rounded-xl flex items-center justify-center cursor-pointer text-3xl shadow-sm group/icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsIconPickerOpen(true);
-                    }}
+                    className="w-24 h-24 flex items-center justify-center cursor-pointer text-5xl relative"
+                    onClick={() => setIsIconPickerOpen(true)}
                   >
                     {project.icon}
-                    <div className="absolute inset-0 bg-black/0 group-hover/icon:bg-black/5 rounded-xl transition-colors flex items-center justify-center">
-                      <span className="text-black text-sm opacity-0 group-hover/icon:opacity-100 transition-opacity">
-                        Change
-                      </span>
+                    <div className="absolute -top-1 -right-1 opacity-0 group-hover/icon:opacity-100 transition-opacity">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-4 w-4 rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveIcon();
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ) : project.icon ? (
-            <div 
-              className="py-6 group/icon"
-            >
-              <div 
-                className="w-16 h-16 bg-white rounded-xl flex items-center justify-center cursor-pointer text-3xl shadow-sm relative"
-                onClick={() => setIsIconPickerOpen(true)}
-              >
-                {project.icon}
-                <div className="absolute inset-0 bg-black/0 group-hover/icon:bg-black/5 rounded-xl transition-colors flex items-center justify-center">
-                  <span className="text-black text-sm opacity-0 group-hover/icon:opacity-100 transition-opacity">
-                    Change
-                  </span>
-                </div>
               </div>
-            </div>
-          ) : null}
-          
-          {project.cover && (
-            <div 
-              className="absolute bottom-0 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover:opacity-100 transition-opacity"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const startY = e.clientY;
-                const banner = e.currentTarget.previousElementSibling as HTMLElement;
-                const startHeight = banner.offsetHeight;
-                
-                const handleMouseMove = (moveEvent: MouseEvent) => {
-                  moveEvent.preventDefault();
-                  const delta = moveEvent.clientY - startY;
-                  const newHeight = Math.max(100, startHeight + delta);
-                  banner.style.height = `${newHeight}px`;
-                };
-                
-                const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                  
-                  const banner = e.currentTarget.previousElementSibling as HTMLElement;
-                  onUpdateProject({
-                    ...project,
-                    coverHeight: `${banner.offsetHeight}px`,
-                    updatedAt: new Date().toISOString()
-                  });
-                };
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-              }}
-            >
-              <div className="h-1 bg-secondary/50 hover:bg-secondary rounded-full mx-auto w-12"></div>
-            </div>
-          )}
-        </div>
+            )}
 
-        <div className="py-6 px-4">
-          <div className="group relative">
-            {/* Title Section with Action Buttons */}
+            {/* Title and Actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 {isEditingTitle ? (
@@ -281,55 +321,55 @@ const ProjectView = ({
                 )}
               </div>
             </div>
-            
-            {/* Description */}
-            <div>
-              {isEditingDescription ? (
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  onBlur={handleDescriptionSave}
-                  onKeyDown={handleDescriptionKeyDown}
-                  className="w-full text-muted-foreground bg-transparent border-none p-2 resize-none focus:outline-none focus:ring-0"
-                  placeholder="Add a description..."
-                  rows={3}
-                  autoFocus
-                />
-              ) : description ? (
-                <p 
-                  className="text-muted-foreground cursor-pointer hover:bg-secondary/30 p-2 rounded"
-                  onClick={() => setIsEditingDescription(true)}
-                >
-                  {project.description}
-                </p>
-              ) : null}
-            </div>
           </div>
+          
+          {/* Description */}
+          <div>
+            {isEditingDescription ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={handleDescriptionSave}
+                onKeyDown={handleDescriptionKeyDown}
+                className="w-full text-muted-foreground bg-transparent border-none p-2 resize-none focus:outline-none focus:ring-0"
+                placeholder="Add a description..."
+                rows={3}
+                autoFocus
+              />
+            ) : description ? (
+              <p 
+                className="text-muted-foreground cursor-pointer hover:bg-secondary/30 p-2 rounded"
+                onClick={() => setIsEditingDescription(true)}
+              >
+                {project.description}
+              </p>
+            ) : null}
+          </div>
+        </div>
 
-          {/* Project Pages List */}
-          <div className="mt-6">
-            <PageEditor 
-              page={{
-                id: project.id,
-                title: project.title,
-                blocks: project.pages[0]?.blocks || [],
-                createdAt: project.createdAt,
-                updatedAt: project.updatedAt,
-                parentId: project.id
-              }}
-              onUpdatePage={(updatedPage) => {
-                const updatedProject = {
-                  ...project,
-                  pages: project.pages.map(p => 
-                    p.id === project.pages[0]?.id 
-                      ? { ...p, blocks: updatedPage.blocks }
-                      : p
-                  )
-                };
-                onUpdateProject(updatedProject);
-              }}
-            />
-          </div>
+        {/* Project Pages List */}
+        <div className="mt-6">
+          <PageEditor 
+            page={{
+              id: project.id,
+              title: project.title,
+              blocks: project.pages[0]?.blocks || [],
+              createdAt: project.createdAt,
+              updatedAt: project.updatedAt,
+              parentId: project.id
+            }}
+            onUpdatePage={(updatedPage) => {
+              const updatedProject = {
+                ...project,
+                pages: project.pages.map(p => 
+                  p.id === project.pages[0]?.id 
+                    ? { ...p, blocks: updatedPage.blocks }
+                    : p
+                )
+              };
+              onUpdateProject(updatedProject);
+            }}
+          />
         </div>
       </div>
 
@@ -613,6 +653,7 @@ const Index = () => {
                 );
                 setSelectedProject(updated);
               }}
+              setProjects={setProjects}
             />
           )}
         </TabsContent>
@@ -766,6 +807,7 @@ const Index = () => {
               );
               setSelectedProject(updated);
             }}
+            setProjects={setProjects}
           />
         )}
         <CreateNewModal
