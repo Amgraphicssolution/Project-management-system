@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { LucideIcon } from 'lucide-react';
+import TableBlock from './TableBlock';
 
 interface ListItem {
   id: string;
@@ -423,6 +424,17 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   const renderBlock = (block: BlockType, index: number | string, isNested: boolean = false) => {
     const numericIndex = typeof index === 'string' ? parseInt(index) : index;
     
+    if (block.type === 'table') {
+      return (
+        <TableBlock
+          key={block.id}
+          block={block}
+          onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+          onDelete={() => handleDeleteBlock(numericIndex)}
+        />
+      );
+    }
+
     return (
       <div className="relative group">
         <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
