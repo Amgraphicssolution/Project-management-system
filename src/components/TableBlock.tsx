@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MoreHorizontal, Plus } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash, Copy, Type, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -10,12 +10,58 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Helper for default cell
 const defaultCell = () => ({ value: '', textColor: '#222', bgColor: 'transparent' });
 
 const DEFAULT_ROWS = 3;
 const DEFAULT_COLS = 3;
+
+// Six-dot handle component
+const SixDotHandle = ({ onClick, className, visible = false }) => (
+  <div 
+    className={cn(
+      "flex flex-wrap w-4 h-4 cursor-pointer transition-opacity", 
+      visible ? "opacity-80" : "opacity-0",
+      className
+    )} 
+    onClick={onClick}
+  >
+    {[...Array(6)].map((_, i) => (
+      <div key={i} className="w-1 h-1 m-[1px] rounded-full bg-gray-500" />
+    ))}
+  </div>
+);
+
+// Color picker component
+const ColorPicker = ({ value, onChange, label }) => (
+  <div className="flex flex-col gap-2 py-1">
+    <div className="flex items-center justify-between">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-2">
+        <div 
+          className="w-4 h-4 rounded border border-gray-300" 
+          style={{ backgroundColor: value }}
+        />
+        <Input 
+          type="color" 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          className="w-6 h-6 p-0 border-0"
+        />
+        <Input 
+          type="text" 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          className="w-16 h-6 text-xs px-1"
+        />
+      </div>
+    </div>
+  </div>
+);
 
 const TableBlock = ({
   block,
@@ -35,6 +81,32 @@ const TableBlock = ({
   const [isRightHovered, setIsRightHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
+  
+  // Hover state for rows and columns
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const [hoveredCol, setHoveredCol] = useState(null);
+
+  // Row/column style state
+  const [rowStyles, setRowStyles] = useState(
+    block.rowStyles || Array.from({ length: DEFAULT_ROWS }, () => ({ textColor: '#222', bgColor: 'transparent' }))
+  );
+  const [colStyles, setColStyles] = useState(
+    block.colStyles || Array.from({ length: DEFAULT_COLS }, () => ({ textColor: '#222', bgColor: 'transparent' }))
+  );
+
+  // Handle cell hover to show relevant row/column controls
+  const handleCellHover = (rowIdx, colIdx) => {
+    setHoveredRow(rowIdx);
+    setHoveredCol(colIdx);
+  };
+
+  const handleCellLeave = () => {
+    // Only clear if not interacting with a menu
+    if (!isMenuOpen) {
+      setHoveredRow(null);
+      setHoveredCol(null);
+    }
+  };
 
   // Basic handlers
   const handleCellChange = (rowIdx, colIdx, value) => {
@@ -46,14 +118,29 @@ const TableBlock = ({
 
   const handleAddRow = () => {
     const newRow = Array.from({ length: rows[0].length }, defaultCell);
-    setRows([...rows, newRow]);
-    onUpdate && onUpdate({ ...block, rows: [...rows, newRow] });
+    const newRows = [...rows, newRow];
+    const newRowStyles = [...rowStyles, { textColor: '#222', bgColor: 'transparent' }];
+    
+    setRows(newRows);
+    setRowStyles(newRowStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      rowStyles: newRowStyles
+    });
   };
 
   const handleAddColumn = () => {
     const newRows = rows.map(row => [...row, defaultCell()]);
+    const newColStyles = [...colStyles, { textColor: '#222', bgColor: 'transparent' }];
+    
     setRows(newRows);
-    onUpdate && onUpdate({ ...block, rows: newRows });
+    setColStyles(newColStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      colStyles: newColStyles
+    });
   };
 
   const handleToggleHeaderRow = (checked) => {
@@ -71,6 +158,118 @@ const TableBlock = ({
     e.stopPropagation();
   };
 
+  // Row operations
+  const handleRowTextColorChange = (rowIdx, color) => {
+    const newRowStyles = [...rowStyles];
+    newRowStyles[rowIdx] = { ...newRowStyles[rowIdx], textColor: color };
+    setRowStyles(newRowStyles);
+    onUpdate && onUpdate({ ...block, rowStyles: newRowStyles });
+  };
+
+  const handleRowBgColorChange = (rowIdx, color) => {
+    const newRowStyles = [...rowStyles];
+    newRowStyles[rowIdx] = { ...newRowStyles[rowIdx], bgColor: color };
+    setRowStyles(newRowStyles);
+    onUpdate && onUpdate({ ...block, rowStyles: newRowStyles });
+  };
+
+  const handleDuplicateRow = (rowIdx) => {
+    const newRows = [...rows];
+    const newRow = [...rows[rowIdx]];
+    newRows.splice(rowIdx + 1, 0, newRow);
+    
+    const newRowStyles = [...rowStyles];
+    const newStyle = { ...rowStyles[rowIdx] };
+    newRowStyles.splice(rowIdx + 1, 0, newStyle);
+    
+    setRows(newRows);
+    setRowStyles(newRowStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      rowStyles: newRowStyles
+    });
+  };
+
+  const handleDeleteRow = (rowIdx) => {
+    if (rows.length <= 1) return; // Prevent deleting the last row
+    
+    const newRows = [...rows];
+    newRows.splice(rowIdx, 1);
+    
+    const newRowStyles = [...rowStyles];
+    newRowStyles.splice(rowIdx, 1);
+    
+    setRows(newRows);
+    setRowStyles(newRowStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      rowStyles: newRowStyles
+    });
+  };
+
+  // Column operations
+  const handleColTextColorChange = (colIdx, color) => {
+    const newColStyles = [...colStyles];
+    newColStyles[colIdx] = { ...newColStyles[colIdx], textColor: color };
+    setColStyles(newColStyles);
+    onUpdate && onUpdate({ ...block, colStyles: newColStyles });
+  };
+
+  const handleColBgColorChange = (colIdx, color) => {
+    const newColStyles = [...colStyles];
+    newColStyles[colIdx] = { ...newColStyles[colIdx], bgColor: color };
+    setColStyles(newColStyles);
+    onUpdate && onUpdate({ ...block, colStyles: newColStyles });
+  };
+
+  const handleDuplicateCol = (colIdx) => {
+    const newRows = rows.map(row => {
+      const newRow = [...row];
+      newRow.splice(colIdx + 1, 0, { ...row[colIdx] });
+      return newRow;
+    });
+    
+    const newColStyles = [...colStyles];
+    const newStyle = { ...colStyles[colIdx] };
+    newColStyles.splice(colIdx + 1, 0, newStyle);
+    
+    setRows(newRows);
+    setColStyles(newColStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      colStyles: newColStyles
+    });
+  };
+
+  const handleDeleteCol = (colIdx) => {
+    if (rows[0].length <= 1) return; // Prevent deleting the last column
+    
+    const newRows = rows.map(row => {
+      const newRow = [...row];
+      newRow.splice(colIdx, 1);
+      return newRow;
+    });
+    
+    const newColStyles = [...colStyles];
+    newColStyles.splice(colIdx, 1);
+    
+    setRows(newRows);
+    setColStyles(newColStyles);
+    onUpdate && onUpdate({ 
+      ...block, 
+      rows: newRows,
+      colStyles: newColStyles
+    });
+  };
+
+  // Helper to determine if a cell is in a header position
+  const isHeaderCell = (rowIdx, colIdx) => {
+    return (headerRow && rowIdx === 0) || (headerCol && colIdx === 0);
+  };
+
   return (
     <div className={cn("relative my-4", className)}>
       {/* Table Options Button - Always visible outside the table */}
@@ -80,7 +279,16 @@ const TableBlock = ({
         onMouseEnter={() => setIsMenuButtonHovered(true)}
         onMouseLeave={() => !isMenuOpen && setIsMenuButtonHovered(false)}
       >
-        <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <DropdownMenu 
+          open={isMenuOpen} 
+          onOpenChange={(open) => {
+            setIsMenuOpen(open);
+            if (!open) {
+              setHoveredRow(null);
+              setHoveredCol(null);
+            }
+          }}
+        >
           <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
@@ -159,29 +367,178 @@ const TableBlock = ({
         {/* Table */}
         <table className="w-full border-collapse">
           <tbody>
-            {rows.map((row, rowIdx) => (
-              <tr 
-                key={rowIdx}
-                className={headerRow && rowIdx === 0 ? "bg-gray-100 font-medium" : ""}
-              >
-                {row.map((cell, colIdx) => (
-                  <td
-                    key={colIdx}
-                    className={cn(
-                      "border border-gray-200 p-0 min-w-[60px]",
-                      headerCol && colIdx === 0 ? "bg-gray-100 font-medium" : ""
-                    )}
-                  >
-                    <input
-                      type="text"
-                      value={cell.value}
-                      onChange={(e) => handleCellChange(rowIdx, colIdx, e.target.value)}
-                      className="w-full p-2 outline-none bg-transparent"
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {rows.map((row, rowIdx) => {
+              const isHeaderRowCell = headerRow && rowIdx === 0;
+              
+              return (
+                <tr 
+                  key={rowIdx}
+                  className={cn(
+                    "relative",
+                    isHeaderRowCell ? "bg-gray-100 font-medium" : ""
+                  )}
+                  style={{ 
+                    backgroundColor: isHeaderRowCell ? '#f3f4f6' : rowStyles[rowIdx]?.bgColor || 'transparent',
+                    color: rowStyles[rowIdx]?.textColor || '#222'
+                  }}
+                >
+                  {row.map((cell, colIdx) => {
+                    const isHeaderColCell = headerCol && colIdx === 0;
+                    const isHeader = isHeaderRowCell || isHeaderColCell;
+                    
+                    // Determine the cell background color with priority
+                    let bgColor = 'transparent';
+                    if (isHeaderRowCell) {
+                      bgColor = '#f3f4f6'; // Header row takes precedence
+                    } else if (isHeaderColCell) {
+                      bgColor = '#f3f4f6'; // Header column
+                    } else if (colStyles[colIdx]?.bgColor) {
+                      bgColor = colStyles[colIdx]?.bgColor; // Column style
+                    } else if (rowStyles[rowIdx]?.bgColor) {
+                      bgColor = rowStyles[rowIdx]?.bgColor; // Row style
+                    }
+
+                    // Determine text color with priority
+                    let textColor = '#222';
+                    if (isHeaderRowCell || isHeaderColCell) {
+                      textColor = '#000'; // Headers get darker text
+                    } else if (colStyles[colIdx]?.textColor) {
+                      textColor = colStyles[colIdx]?.textColor;
+                    } else if (rowStyles[rowIdx]?.textColor) {
+                      textColor = rowStyles[rowIdx]?.textColor;
+                    }
+                    
+                    return (
+                      <td
+                        key={colIdx}
+                        className={cn(
+                          "border border-gray-200 p-0 min-w-[60px] relative",
+                          isHeader && "font-medium"
+                        )}
+                        style={{ 
+                          backgroundColor: bgColor,
+                          color: textColor
+                        }}
+                        onMouseEnter={() => handleCellHover(rowIdx, colIdx)}
+                        onMouseLeave={handleCellLeave}
+                      >
+                        {/* Row Handle - First Cell */}
+                        {colIdx === 0 && (
+                          <Popover onOpenChange={(open) => {
+                            if (open) {
+                              setHoveredRow(rowIdx);
+                              setHoveredCol(null);
+                            } else if (!isMenuOpen) {
+                              setHoveredRow(null);
+                            }
+                          }}>
+                            <PopoverTrigger asChild>
+                              <div className="absolute left-1 top-1/2 -translate-y-1/2 z-10">
+                                <SixDotHandle visible={hoveredRow === rowIdx} />
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-60 p-2" align="start">
+                              <div className="flex flex-col gap-2">
+                                <ColorPicker 
+                                  label="Text Color" 
+                                  value={rowStyles[rowIdx]?.textColor || '#222'} 
+                                  onChange={(color) => handleRowTextColorChange(rowIdx, color)}
+                                />
+                                <ColorPicker 
+                                  label="Cell Color" 
+                                  value={rowStyles[rowIdx]?.bgColor || 'transparent'} 
+                                  onChange={(color) => handleRowBgColorChange(rowIdx, color)}
+                                />
+                                <div className="flex mt-2 justify-between">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-xs"
+                                    onClick={() => handleDuplicateRow(rowIdx)}
+                                  >
+                                    <Copy className="h-3 w-3 mr-1" /> Duplicate
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-xs text-destructive"
+                                    onClick={() => handleDeleteRow(rowIdx)}
+                                  >
+                                    <Trash className="h-3 w-3 mr-1" /> Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+
+                        {/* Column Handle - First Row */}
+                        {rowIdx === 0 && (
+                          <Popover onOpenChange={(open) => {
+                            if (open) {
+                              setHoveredCol(colIdx);
+                              setHoveredRow(null);
+                            } else if (!isMenuOpen) {
+                              setHoveredCol(null);
+                            }
+                          }}>
+                            <PopoverTrigger asChild>
+                              <div className="absolute top-1 left-1/2 -translate-x-1/2 z-10">
+                                <SixDotHandle visible={hoveredCol === colIdx} />
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-60 p-2" align="start">
+                              <div className="flex flex-col gap-2">
+                                <ColorPicker 
+                                  label="Text Color" 
+                                  value={colStyles[colIdx]?.textColor || '#222'} 
+                                  onChange={(color) => handleColTextColorChange(colIdx, color)}
+                                />
+                                <ColorPicker 
+                                  label="Cell Color" 
+                                  value={colStyles[colIdx]?.bgColor || 'transparent'} 
+                                  onChange={(color) => handleColBgColorChange(colIdx, color)}
+                                />
+                                <div className="flex mt-2 justify-between">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-xs"
+                                    onClick={() => handleDuplicateCol(colIdx)}
+                                  >
+                                    <Copy className="h-3 w-3 mr-1" /> Duplicate
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-xs text-destructive"
+                                    onClick={() => handleDeleteCol(colIdx)}
+                                  >
+                                    <Trash className="h-3 w-3 mr-1" /> Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+
+                        <input
+                          type="text"
+                          value={cell.value}
+                          onChange={(e) => handleCellChange(rowIdx, colIdx, e.target.value)}
+                          className="w-full p-2 outline-none bg-transparent"
+                          style={{ 
+                            paddingLeft: colIdx === 0 ? '20px' : '8px',
+                            paddingTop: rowIdx === 0 ? '20px' : '8px',
+                            fontWeight: isHeader ? 500 : 400
+                          }}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
