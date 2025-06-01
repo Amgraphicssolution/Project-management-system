@@ -21,7 +21,7 @@ const DEFAULT_ROWS = 3;
 const DEFAULT_COLS = 3;
 
 // Six-dot handle component
-const SixDotHandle = ({ onClick, className, visible = false }) => (
+const SixDotHandle = ({ onClick, className, visible = false }: { onClick?: React.MouseEventHandler, className?: string, visible?: boolean }) => (
   <div 
     className={cn(
       "flex flex-wrap w-4 h-4 cursor-pointer transition-opacity", 
@@ -31,7 +31,7 @@ const SixDotHandle = ({ onClick, className, visible = false }) => (
     onClick={onClick}
   >
     {[...Array(6)].map((_, i) => (
-      <div key={i} className="w-1 h-1 m-[1px] rounded-full bg-gray-500" />
+      <div key={i} className="w-1 h-1 m-[1px] rounded-full bg-gray-400" />
     ))}
   </div>
 );
@@ -365,7 +365,7 @@ const TableBlock = ({
       
       <div className="table-container relative">
         {/* Table */}
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse table-fixed">
           <tbody>
             {rows.map((row, rowIdx) => {
               const isHeaderRowCell = headerRow && rowIdx === 0;
@@ -412,7 +412,7 @@ const TableBlock = ({
                       <td
                         key={colIdx}
                         className={cn(
-                          "border border-gray-200 p-0 min-w-[60px] relative",
+                          "border border-gray-200 p-0 min-w-[60px] w-[80px] relative",
                           isHeader && "font-medium"
                         )}
                         style={{ 
@@ -433,7 +433,7 @@ const TableBlock = ({
                             }
                           }}>
                             <PopoverTrigger asChild>
-                              <div className="absolute left-1 top-1/2 -translate-y-1/2 z-10">
+                              <div className="absolute -left-2 top-1/2 -translate-y-1/2 z-10">
                                 <SixDotHandle visible={hoveredRow === rowIdx} />
                               </div>
                             </PopoverTrigger>
@@ -483,7 +483,7 @@ const TableBlock = ({
                             }
                           }}>
                             <PopoverTrigger asChild>
-                              <div className="absolute top-1 left-1/2 -translate-x-1/2 z-10">
+                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
                                 <SixDotHandle visible={hoveredCol === colIdx} />
                               </div>
                             </PopoverTrigger>
@@ -526,10 +526,9 @@ const TableBlock = ({
                           type="text"
                           value={cell.value}
                           onChange={(e) => handleCellChange(rowIdx, colIdx, e.target.value)}
-                          className="w-full p-2 outline-none bg-transparent"
+                          className="w-full outline-none bg-transparent"
                           style={{ 
-                            paddingLeft: colIdx === 0 ? '20px' : '8px',
-                            paddingTop: rowIdx === 0 ? '20px' : '8px',
+                            padding: '6px',
                             fontWeight: isHeader ? 500 : 400
                           }}
                         />
