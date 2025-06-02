@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { MoreHorizontal, Plus, Trash, Copy, Type, Square, GripVertical } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash, Copy, Type, Square, GripVertical, GripHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -25,10 +25,11 @@ const DEFAULT_COLS = 3;
 const MIN_COLUMN_WIDTH = 60; // Minimum width in pixels
 
 // Six-dot handle component
-const SixDotHandle = ({ onClick, className, visible = false }: { 
+const SixDotHandle = ({ onClick, className, visible = false, horizontal = false }: { 
   onClick?: React.MouseEventHandler, 
   className?: string, 
-  visible?: boolean
+  visible?: boolean,
+  horizontal?: boolean
 }) => (
   <div 
     className={cn(
@@ -38,7 +39,11 @@ const SixDotHandle = ({ onClick, className, visible = false }: {
     )} 
     onClick={onClick}
   >
-    <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+    {horizontal ? (
+      <GripHorizontal className="h-4 w-4 text-muted-foreground/50" />
+    ) : (
+      <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+    )}
   </div>
 );
 
@@ -782,6 +787,7 @@ const TableBlock = ({
                                 >
                                   <SixDotHandle
                                     visible={hoveredCol === colIdx || snapshot.isDragging || selectedCol === colIdx}
+                                    horizontal={true}
                                   />
                                 </div>
                               </PopoverTrigger>
@@ -993,32 +999,32 @@ const TableBlock = ({
             </Droppable>
           </table>
 
-          {/* Add Row Button - Inside the table's bottom edge */}
+          {/* Add Row Button - Below the table, centered */}
           <div 
             className={cn(
-              "absolute left-0 right-0 bottom-0 h-6 opacity-0 transition-opacity cursor-pointer",
+              "absolute left-1/2 -translate-x-1/2 -bottom-10 opacity-0 transition-opacity",
               isBottomHovered ? "opacity-100" : ""
             )}
             onMouseEnter={() => setIsBottomHovered(true)}
             onMouseLeave={() => setIsBottomHovered(false)}
             onClick={handleAddRow}
           >
-            <div className="bg-gray-100 h-full w-full flex items-center justify-center hover:bg-gray-200">
+            <div className="bg-gray-100 hover:bg-gray-200 w-7 h-7 rounded-md flex items-center justify-center cursor-pointer shadow-sm">
               <Plus className="h-4 w-4 text-gray-500" />
             </div>
           </div>
 
-          {/* Add Column Button - Full Height */}
+          {/* Add Column Button - Right of the table, centered */}
           <div 
             className={cn(
-              "absolute top-0 bottom-0 right-0 w-8 transform translate-x-full opacity-0 transition-opacity cursor-pointer",
+              "absolute top-1/2 -translate-y-1/2 -right-10 opacity-0 transition-opacity",
               isRightHovered ? "opacity-100" : ""
             )}
             onMouseEnter={() => setIsRightHovered(true)}
             onMouseLeave={() => setIsRightHovered(false)}
             onClick={handleAddColumn}
           >
-            <div className="bg-gray-100 h-full w-full flex items-center justify-center hover:bg-gray-200 rounded-r-md">
+            <div className="bg-gray-100 hover:bg-gray-200 w-7 h-7 rounded-md flex items-center justify-center cursor-pointer shadow-sm">
               <Plus className="h-4 w-4 text-gray-500" />
             </div>
           </div>
