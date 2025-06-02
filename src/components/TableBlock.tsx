@@ -42,41 +42,119 @@ const SixDotHandle = ({ onClick, className, visible = false }: {
   </div>
 );
 
-// Color picker component
-const ColorPicker = ({ value, onChange, label }) => {
-  const [isOpen, setIsOpen] = useState(false);
+// Color picker submenu component
+const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
+  if (!isOpen) return null;
   
   return (
-    <div className="flex items-center justify-between py-1">
-      <Label className="text-xs">{label}</Label>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="h-6 px-2 flex items-center gap-2 text-xs"
-          >
-            <div 
-              className="w-3 h-3 rounded-sm border border-gray-300" 
-              style={{ backgroundColor: value }}
+    <div 
+      className="fixed inset-0 z-50" 
+      onClick={onClose}
+    >
+      <div 
+        className="absolute bg-white rounded-md border shadow-md p-3 w-[220px]"
+        style={{ 
+          top: '0',
+          left: '100%',
+          transform: 'translateX(10px)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col gap-3">
+          <HexColorPicker color={value} onChange={onChange} />
+          <div className="flex items-center gap-2 mt-2">
+            <Label className="text-xs">Hex</Label>
+            <Input 
+              type="text" 
+              value={value} 
+              onChange={(e) => onChange(e.target.value)} 
+              className="h-7 text-xs"
+              autoFocus
             />
-            {value}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-3" side="right" align="start">
-          <div className="flex flex-col gap-3">
-            <HexColorPicker color={value} onChange={onChange} />
-            <div className="flex items-center gap-2 mt-2">
-              <Label className="text-xs">Hex</Label>
-              <Input 
-                type="text" 
-                value={value} 
-                onChange={(e) => onChange(e.target.value)} 
-                className="h-7 text-xs"
-              />
-            </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Row and column option popup content
+const RowColumnPopupContent = ({ 
+  type, // 'row' or 'column'
+  index,
+  styles,
+  onTextColorChange,
+  onBgColorChange,
+  onDuplicate,
+  onDelete
+}) => {
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
+  
+  return (
+    <div className="relative py-1">
+      <div className="flex flex-col gap-1">
+        {/* Text Color Option */}
+        <div 
+          className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+          onClick={() => setActiveSubmenu('textColor')}
+        >
+          <div className="flex items-center gap-2">
+            <Type className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Text Color</span>
+          </div>
+        </div>
+        
+        {/* Cell Color Option */}
+        <div 
+          className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+          onClick={() => setActiveSubmenu('bgColor')}
+        >
+          <div className="flex items-center gap-2">
+            <Square className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Cell Color</span>
+          </div>
+        </div>
+        
+        {/* Separator */}
+        <div className="h-px bg-gray-200 my-1" />
+        
+        {/* Duplicate Option */}
+        <div 
+          className="flex items-center px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+          onClick={onDuplicate}
+        >
+          <div className="flex items-center gap-2">
+            <Copy className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">Duplicate</span>
+          </div>
+        </div>
+        
+        {/* Delete Option */}
+        <div 
+          className="flex items-center px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-red-500"
+          onClick={onDelete}
+        >
+          <div className="flex items-center gap-2">
+            <Trash className="h-4 w-4" />
+            <span className="text-sm">Delete</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Color Picker Submenus */}
+      <ColorPickerSubmenu 
+        value={styles?.textColor || '#222'} 
+        onChange={(color) => onTextColorChange(index, color)}
+        isOpen={activeSubmenu === 'textColor'}
+        onClose={() => setActiveSubmenu(null)}
+      />
+      
+      <ColorPickerSubmenu 
+        value={styles?.bgColor || 'transparent'} 
+        onChange={(color) => onBgColorChange(index, color)}
+        isOpen={activeSubmenu === 'bgColor'}
+        onClose={() => setActiveSubmenu(null)}
+      />
     </div>
   );
 };
@@ -708,36 +786,15 @@ const TableBlock = ({
                                 </div>
                               </PopoverTrigger>
                               <PopoverContent className="w-60 p-2" align="start">
-                                <div className="flex flex-col gap-2">
-                                  <ColorPicker 
-                                    label="Text Color" 
-                                    value={colStyles[colIdx]?.textColor || '#222'} 
-                                    onChange={(color) => handleColTextColorChange(colIdx, color)}
-                                  />
-                                  <ColorPicker 
-                                    label="Cell Color" 
-                                    value={colStyles[colIdx]?.bgColor || 'transparent'} 
-                                    onChange={(color) => handleColBgColorChange(colIdx, color)}
-                                  />
-                                  <div className="flex mt-2 justify-between">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="text-xs"
-                                      onClick={() => handleDuplicateCol(colIdx)}
-                                    >
-                                      <Copy className="h-3 w-3 mr-1" /> Duplicate
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="text-xs text-destructive"
-                                      onClick={() => handleDeleteCol(colIdx)}
-                                    >
-                                      <Trash className="h-3 w-3 mr-1" /> Delete
-                                    </Button>
-                                  </div>
-                                </div>
+                                <RowColumnPopupContent 
+                                  type="column"
+                                  index={colIdx}
+                                  styles={colStyles[colIdx]}
+                                  onTextColorChange={handleColTextColorChange}
+                                  onBgColorChange={handleColBgColorChange}
+                                  onDuplicate={() => handleDuplicateCol(colIdx)}
+                                  onDelete={() => handleDeleteCol(colIdx)}
+                                />
                               </PopoverContent>
                             </Popover>
                           </div>
@@ -873,36 +930,15 @@ const TableBlock = ({
                                         </div>
                                       </PopoverTrigger>
                                       <PopoverContent className="w-60 p-2" align="start">
-                                        <div className="flex flex-col gap-2">
-                                          <ColorPicker 
-                                            label="Text Color" 
-                                            value={rowStyles[rowIdx]?.textColor || '#222'} 
-                                            onChange={(color) => handleRowTextColorChange(rowIdx, color)}
-                                          />
-                                          <ColorPicker 
-                                            label="Cell Color" 
-                                            value={rowStyles[rowIdx]?.bgColor || 'transparent'} 
-                                            onChange={(color) => handleRowBgColorChange(rowIdx, color)}
-                                          />
-                                          <div className="flex mt-2 justify-between">
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm" 
-                                              className="text-xs"
-                                              onClick={() => handleDuplicateRow(rowIdx)}
-                                            >
-                                              <Copy className="h-3 w-3 mr-1" /> Duplicate
-                                            </Button>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm" 
-                                              className="text-xs text-destructive"
-                                              onClick={() => handleDeleteRow(rowIdx)}
-                                            >
-                                              <Trash className="h-3 w-3 mr-1" /> Delete
-                                            </Button>
-                                          </div>
-                                        </div>
+                                        <RowColumnPopupContent 
+                                          type="row"
+                                          index={rowIdx}
+                                          styles={rowStyles[rowIdx]}
+                                          onTextColorChange={handleRowTextColorChange}
+                                          onBgColorChange={handleRowBgColorChange}
+                                          onDuplicate={() => handleDuplicateRow(rowIdx)}
+                                          onDelete={() => handleDeleteRow(rowIdx)}
+                                        />
                                       </PopoverContent>
                                     </Popover>
                                   )}
