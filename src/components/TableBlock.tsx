@@ -22,6 +22,7 @@ const defaultCell = () => ({ value: '', textColor: '#222', bgColor: 'transparent
 
 const DEFAULT_ROWS = 3;
 const DEFAULT_COLS = 3;
+const MIN_COLUMN_WIDTH = 60; // Minimum width in pixels
 
 // Six-dot handle component
 const SixDotHandle = ({ onClick, className, visible = false }: { 
@@ -108,8 +109,14 @@ const TableBlock = ({
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedCol, setSelectedCol] = useState(null);
 
+  // Resizing state
+  const [columnWidths, setColumnWidths] = useState(block.columnWidths || Array(DEFAULT_COLS).fill(null));
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizingColumnIndex, setResizingColumnIndex] = useState(null);
+
   // Refs
   const tableRef = useRef(null);
+  const tableContainerRef = useRef(null);
 
   // Row/column style state
   const [rowStyles, setRowStyles] = useState(
@@ -177,6 +184,7 @@ const TableBlock = ({
       // Create new arrays
       const newRows = rows.map(row => Array.from(row));
       const newColStyles = Array.from(colStyles);
+      const newColumnWidths = Array.from(columnWidths);
       
       // For each row, move the cell from source to destination
       newRows.forEach(row => {
@@ -188,13 +196,19 @@ const TableBlock = ({
       const [removedStyle] = newColStyles.splice(source.index, 1);
       newColStyles.splice(destination.index, 0, removedStyle);
       
+      // Move the column width
+      const [removedWidth] = newColumnWidths.splice(source.index, 1);
+      newColumnWidths.splice(destination.index, 0, removedWidth);
+      
       // Update state
       setRows(newRows);
       setColStyles(newColStyles);
+      setColumnWidths(newColumnWidths);
       onUpdate && onUpdate({ 
         ...block, 
         rows: newRows,
-        colStyles: newColStyles
+        colStyles: newColStyles,
+        columnWidths: newColumnWidths
       });
     }
   };
@@ -259,13 +273,16 @@ const TableBlock = ({
   const handleAddColumn = () => {
     const newRows = rows.map(row => [...row, defaultCell()]);
     const newColStyles = [...colStyles, { textColor: '#222', bgColor: 'transparent' }];
+    const newColumnWidths = [...columnWidths, null]; // Add with auto width
     
     setRows(newRows);
     setColStyles(newColStyles);
+    setColumnWidths(newColumnWidths);
     onUpdate && onUpdate({ 
       ...block, 
       rows: newRows,
-      colStyles: newColStyles
+      colStyles: newColStyles,
+      columnWidths: newColumnWidths
     });
   };
 
@@ -361,12 +378,17 @@ const TableBlock = ({
     const newStyle = { ...colStyles[colIdx] };
     newColStyles.splice(colIdx + 1, 0, newStyle);
     
+    const newColumnWidths = [...columnWidths];
+    newColumnWidths.splice(colIdx + 1, 0, columnWidths[colIdx]);
+    
     setRows(newRows);
     setColStyles(newColStyles);
+    setColumnWidths(newColumnWidths);
     onUpdate && onUpdate({ 
       ...block, 
       rows: newRows,
-      colStyles: newColStyles
+      colStyles: newColStyles,
+      columnWidths: newColumnWidths
     });
   };
 
@@ -382,12 +404,17 @@ const TableBlock = ({
     const newColStyles = [...colStyles];
     newColStyles.splice(colIdx, 1);
     
+    const newColumnWidths = [...columnWidths];
+    newColumnWidths.splice(colIdx, 1);
+    
     setRows(newRows);
     setColStyles(newColStyles);
+    setColumnWidths(newColumnWidths);
     onUpdate && onUpdate({ 
       ...block, 
       rows: newRows,
-      colStyles: newColStyles
+      colStyles: newColStyles,
+      columnWidths: newColumnWidths
     });
   };
 
@@ -399,6 +426,123 @@ const TableBlock = ({
   // Generate row and column IDs for drag and drop
   const rowIds = Array.from({ length: rows.length }, (_, i) => `row-${i}`);
   const colIds = Array.from({ length: rows[0]?.length || 0 }, (_, i) => `col-${i}`);
+
+  // Calculate the column width 
+  const getColWidth = (colIdx) => {
+    if (columnWidths[colIdx]) {
+      return `${columnWidths[colIdx]}px`;
+    }
+    return undefined; // Let the table layout handle it automatically
+  };
+
+  // Resizing handlers
+  const handleResizeStart = (e, colIdx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Store initial mouse position
+    const initialX = e.clientX;
+    
+    // Get direct reference to the table and cells
+    const tableElement = tableRef.current;
+    if (!tableElement) return;
+    
+    // Get all cells in this column
+    const cells = tableElement.querySelectorAll(`td:nth-child(${colIdx + 1})`);
+    if (cells.length === 0) return;
+    
+    // Get initial width from first cell
+    const firstCell = cells[0];
+    const initialWidth = firstCell.offsetWidth;
+    console.log('Initial width:', initialWidth); // Debug
+    
+    // Setup UI for resize
+    setIsResizing(true);
+    setResizingColumnIndex(colIdx);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    
+    // Create mousemove handler
+    function onMouseMove(moveEvent) {
+      // Calculate width change
+      const deltaX = moveEvent.clientX - initialX;
+      const newWidth = Math.max(MIN_COLUMN_WIDTH, initialWidth + deltaX);
+      
+      console.log('Resizing to width:', newWidth); // Debug
+      
+      // Apply width to all cells in this column
+      cells.forEach(cell => {
+        cell.style.width = `${newWidth}px`;
+        cell.style.minWidth = `${newWidth}px`;
+      });
+      
+      // Also update the colgroup
+      const colElement = tableElement.querySelector(`colgroup col:nth-child(${colIdx + 1})`);
+      if (colElement) {
+        colElement.style.width = `${newWidth}px`;
+      }
+      
+      // Update state
+      const newColumnWidths = [...columnWidths];
+      newColumnWidths[colIdx] = newWidth;
+      setColumnWidths(newColumnWidths);
+    }
+    
+    // Create mouseup handler
+    function onMouseUp(upEvent) {
+      // Clean up
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      
+      // Update final state
+      setIsResizing(false);
+      setResizingColumnIndex(null);
+      
+      // Measure final width
+      const finalWidth = firstCell.offsetWidth;
+      console.log('Final width:', finalWidth); // Debug
+      
+      // Create new column widths array with the updated width
+      const finalColumnWidths = [...columnWidths];
+      finalColumnWidths[colIdx] = finalWidth;
+      
+      // Update the state and notify parent
+      setColumnWidths(finalColumnWidths);
+      onUpdate && onUpdate({
+        ...block,
+        columnWidths: finalColumnWidths
+      });
+    }
+    
+    // Add listeners
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+  
+  // Placeholder for unused functions
+  const handleResizeMove = () => {};
+  const handleResizeEnd = () => {};
+  
+  // Effect to clean up when component unmounts during resize
+  useEffect(() => {
+    return () => {
+      // Make sure we clean up if component unmounts during resize
+      if (isResizing) {
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    };
+  }, [isResizing]);
+  
+  // Update table style to allow resizable columns
+  useEffect(() => {
+    if (tableRef.current) {
+      // Force the table to use the colgroup for column widths
+      tableRef.current.style.tableLayout = 'fixed';
+    }
+  }, []);
 
   return (
     <div className={cn("relative my-4", className)}>
@@ -504,7 +648,12 @@ const TableBlock = ({
           // based on the current drag position
         }}
       >
-        <div className="table-container relative" ref={tableRef}>
+        <div className="table-container relative" ref={tableContainerRef}>
+          {/* Resize overlay - only visible during resizing */}
+          {isResizing && (
+            <div className="absolute inset-0 bg-transparent z-30" />
+          )}
+          
           {/* Column Headers with Drag Handles */}
           <div className="relative h-4 mb-1">
             <Droppable droppableId="columns" direction="horizontal" type="column">
@@ -603,7 +752,25 @@ const TableBlock = ({
           </div>
 
           {/* Table with Draggable Rows */}
-          <table className="w-full border-collapse table-fixed">
+          <table className="w-full border-collapse table-fixed" ref={tableRef}>
+            {/* Column group for width definitions */}
+            <colgroup>
+              {colIds.map((colId, colIdx) => {
+                const width = columnWidths[colIdx];
+                return (
+                  <col 
+                    key={colId}
+                    className="resize-col"
+                    data-col-index={colIdx}
+                    style={{
+                      width: width ? `${width}px` : undefined,
+                      minWidth: `${MIN_COLUMN_WIDTH}px`
+                    }}
+                  />
+                );
+              })}
+            </colgroup>
+            
             <Droppable droppableId="rows" type="row">
               {(provided, snapshot) => (
                 <tbody
@@ -668,7 +835,7 @@ const TableBlock = ({
                                 <td
                                   key={colIdx}
                                   className={cn(
-                                    "border border-gray-200 p-0 min-w-[60px] w-[80px] relative",
+                                    "border border-gray-200 p-0 min-w-[60px] relative box-border",
                                     isHeader && "font-medium",
                                     selectedCell?.rowIdx === rowIdx && selectedCell?.colIdx === colIdx && "ring-2 ring-blue-500 ring-inset",
                                     selectedRow === rowIdx && "border-blue-500 border-2",
@@ -676,7 +843,9 @@ const TableBlock = ({
                                   )}
                                   style={{
                                     backgroundColor: bgColor,
-                                    color: textColor
+                                    color: textColor,
+                                    width: columnWidths[colIdx] ? `${columnWidths[colIdx]}px` : undefined,
+                                    minWidth: columnWidths[colIdx] ? `${columnWidths[colIdx]}px` : `${MIN_COLUMN_WIDTH}px`,
                                   }}
                                   onMouseEnter={() => handleCellHover(rowIdx, colIdx)}
                                   onMouseLeave={handleCellLeave}
@@ -748,6 +917,32 @@ const TableBlock = ({
                                       fontWeight: isHeader ? 500 : 400
                                     }}
                                   />
+
+                                  {/* Column resize handle - Only show on column border hover */}
+                                  {(colIdx < row.length - 1) && (
+                                    <div
+                                      className={cn(
+                                        "absolute top-0 right-[-3px] w-[6px] h-full cursor-col-resize z-20"
+                                      )}
+                                      style={{
+                                        // Ensure the handle is centered on the border
+                                        transform: "translateX(50%)"
+                                      }}
+                                      onMouseDown={(e) => handleResizeStart(e, colIdx)}
+                                    >
+                                      {/* Visible line indicator that shows on hover */}
+                                      <div 
+                                        className={cn(
+                                          "absolute inset-0 pointer-events-none",
+                                          "before:absolute before:top-0 before:bottom-0 before:left-[2px] before:w-[2px]",
+                                          "before:transition-opacity before:duration-150",
+                                          isResizing && resizingColumnIndex === colIdx
+                                            ? "before:bg-blue-600 before:opacity-100"
+                                            : "before:bg-blue-400 before:opacity-0 hover:before:opacity-100"
+                                        )}
+                                      />
+                                    </div>
+                                  )}
                                 </td>
                               );
                             })}
