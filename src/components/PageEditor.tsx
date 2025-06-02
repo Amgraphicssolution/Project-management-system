@@ -426,12 +426,109 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     
     if (block.type === 'table') {
       return (
-        <TableBlock
-          key={block.id}
-          block={block}
-          onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
-          onDelete={() => handleDeleteBlock(numericIndex)}
-        />
+        <div className="relative group">
+          <div className="flex items-start gap-4 group-hover:bg-accent/5 rounded-sm">
+            <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 pt-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
+                  >
+                    <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[160px]">
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4" />
+                      Convert to
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                        <Search className="h-4 w-4 text-muted-foreground/70" />
+                        <input
+                          type="text"
+                          placeholder="Filter..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Escape') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                        {blockCategories.map((category) => {
+                          const filteredBlocks = category.blocks.filter(block =>
+                            block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                          );
+                          
+                          if (filteredBlocks.length === 0) return null;
+                          
+                          return (
+                            <div key={category.name}>
+                              <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                                {category.name}
+                              </DropdownMenuItem>
+                              {filteredBlocks.map((blockType) => (
+                                <DropdownMenuItem 
+                                  key={blockType.type}
+                                  className="flex items-center gap-2 px-2"
+                                  onClick={() => handleConvertBlock(numericIndex, blockType.type)}
+                                >
+                                  <blockType.icon className="h-4 w-4 shrink-0" />
+                                  <span className="truncate">{blockType.label}</span>
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator className="mx-2" />
+                            </div>
+                          );
+                        })}
+                        {!blockCategories.some(category => 
+                          category.blocks.some(block => 
+                            block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                          )
+                        ) && (
+                          <div className="text-sm text-muted-foreground text-center py-2">
+                            No blocks found
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  {!isNested && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleMoveBlockUp(numericIndex)} className="flex items-center gap-2">
+                        <ArrowUp className="h-4 w-4" />
+                        Move up
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleMoveBlockDown(numericIndex)} className="flex items-center gap-2">
+                        <ArrowDown className="h-4 w-4" />
+                        Move down
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteBlock(numericIndex)} className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex-1 min-h-[32px]">
+              <TableBlock
+                key={block.id}
+                block={block}
+                onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+                onDelete={() => handleDeleteBlock(numericIndex)}
+              />
+            </div>
+          </div>
+        </div>
       );
     }
 
@@ -442,9 +539,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
-                  className="w-[32px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
+                  className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
                 >
-                  <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                  <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[160px]">
