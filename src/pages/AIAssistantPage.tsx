@@ -78,8 +78,11 @@ export default function AIAssistantPage() {
         selectedProjectId={selectedProject?.id}
         onCreatePage={handleCreatePage}
         onCreateChat={handleCreateChat}
+        onRenameProject={() => {}}
+        onDuplicateProject={() => {}}
+        onDeleteProject={() => {}}
       />
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 ml-64 overflow-hidden flex flex-col">
         <Header title="AI Assistant" />
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-6">

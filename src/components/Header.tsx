@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export default function Header({ title }: HeaderProps) {
   return (
-    <div className="bg-white border-b flex items-center py-2.5">
+    <div className="sticky top-0 z-40 bg-white border-b flex items-center py-2.5 shadow-sm">
       <div className="flex items-center justify-between w-full px-6">
         <h1 className="text-lg font-medium leading-none">{title}</h1>
         <div className="flex items-center">

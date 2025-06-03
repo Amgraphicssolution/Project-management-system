@@ -19,7 +19,6 @@ import {
 import Sidebar from '@/components/Sidebar';
 import { ProjectType, PageType } from '@/types';
 import PageBuilder from '@/components/PageBuilder';
-import ProjectSidebar from '@/components/ProjectSidebar';
 import Header from '@/components/Header';
 import CreateNewModal from '@/components/CreateNewModal';
 import { Input } from '@/components/ui/input';
@@ -776,7 +775,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-screen flex">
+    <div className="min-h-screen flex">
       <Sidebar 
         projects={projects}
         onCreateProject={handleDirectCreateProject}
@@ -791,7 +790,7 @@ const Index = () => {
         onDuplicateProject={handleDuplicateProject}
         onDeleteProject={handleDeleteProject}
       />
-      <main className="flex-1">
+      <main className="flex-1 ml-64">
         {activeTab === "projects" && (
           <>
             <Header title="Home" />
