@@ -365,10 +365,11 @@ export default function Sidebar({
       
       {/* Logo */}
       <div className="flex items-center gap-2 mb-6">
-        <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-          <span className="text-white font-bold">AM</span>
-        </div>
-        <span className="font-semibold">AM GRAPHICS</span>
+        <img 
+          src="/logo horizontal.webp" 
+          alt="AM GRAPHICS" 
+          className="h-7 max-w-[180px] object-contain" 
+        />
       </div>
 
       {/* Navigation */}
