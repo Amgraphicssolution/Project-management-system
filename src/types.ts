@@ -33,6 +33,7 @@ export interface BlockType {
   children?: BlockType[];
   icon?: string;
   parentId?: string;
+  width?: number;
 }
 
 export interface PageType {

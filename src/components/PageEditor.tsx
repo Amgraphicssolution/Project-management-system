@@ -51,6 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LucideIcon } from 'lucide-react';
 import TableBlock from './TableBlock';
+import ImageBlock from './ImageBlock';
 
 interface ListItem {
   id: string;
@@ -531,6 +532,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
+    
+    if (block.type === 'image') {
+      return (
+        <div className="relative group">
+          <ImageBlock
+            key={block.id}
+            block={block}
+            onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+            onDelete={() => handleDeleteBlock(numericIndex)}
+            onMoveUp={() => handleMoveBlockUp(numericIndex)}
+            onMoveDown={() => handleMoveBlockDown(numericIndex)}
+            onConvert={(newType) => handleConvertBlock(numericIndex, newType)}
+          />
+        </div>
+      );
+    }
 
     return (
       <div className="relative group">
@@ -607,57 +624,6 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                     </div>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                {isNested && block.parentId && (
-                  <>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        const parentIndex = blocks.findIndex(b => b.id === block.parentId);
-                        if (parentIndex !== -1 && blocks[parentIndex].children) {
-                          const blockIndex = blocks[parentIndex].children.findIndex(b => b.id === block.id);
-                          handleMoveNestedBlockUp(parentIndex, blockIndex);
-                        }
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <ArrowUp className="h-4 w-4" />
-                      Move up
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        const parentIndex = blocks.findIndex(b => b.id === block.parentId);
-                        if (parentIndex !== -1 && blocks[parentIndex].children) {
-                          const blockIndex = blocks[parentIndex].children.findIndex(b => b.id === block.id);
-                          handleMoveNestedBlockDown(parentIndex, blockIndex);
-                        }
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                      Move down
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        const parentIndex = blocks.findIndex(b => b.id === block.parentId);
-                        if (parentIndex !== -1) {
-                          const newBlocks = [...blocks];
-                          const parentBlock = newBlocks[parentIndex];
-                          if (parentBlock.children) {
-                            const blockIndex = parentBlock.children.findIndex(b => b.id === block.id);
-                            parentBlock.children.splice(blockIndex, 1);
-                            setBlocks(newBlocks);
-                            if (onUpdatePage) {
-                              onUpdatePage({ ...page, blocks: newBlocks });
-                            }
-                          }
-                        }
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
                 {!isNested && (
                   <>
                     <DropdownMenuItem onClick={() => handleMoveBlockUp(numericIndex)} className="flex items-center gap-2">
@@ -667,6 +633,10 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                     <DropdownMenuItem onClick={() => handleMoveBlockDown(numericIndex)} className="flex items-center gap-2">
                       <ArrowDown className="h-4 w-4" />
                       Move down
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDuplicateBlock(numericIndex)} className="flex items-center gap-2">
+                      <Copy className="h-4 w-4" />
+                      Duplicate
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleDeleteBlock(numericIndex)} className="flex items-center gap-2">
                       <Trash2 className="h-4 w-4" />
