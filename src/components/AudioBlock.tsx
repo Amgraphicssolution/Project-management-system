@@ -535,32 +535,108 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                     )}
                   </div>
                 ) : isEmbedded && (audioUrl.includes('spotify.com') || audioUrl.includes('soundcloud.com')) ? (
-                  <div className="w-full bg-gray-100 rounded-md" style={{ minHeight: '100px' }}>
-                    <iframe
-                      src={audioUrl}
-                      title={caption || "Audio"}
-                      className="w-full border-0 rounded-md"
-                      height="80"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                    ></iframe>
+                  <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-md shadow-sm" style={{ minHeight: '100px' }}>
+                    <div className="p-3">
+                      <div className="flex items-center mb-2">
+                        <Music className="h-5 w-5 text-blue-600 mr-2" />
+                        <span className="text-sm font-medium text-gray-700">Embedded Audio</span>
+                      </div>
+                      <iframe
+                        src={audioUrl}
+                        title={caption || "Audio"}
+                        className="w-full border-0 rounded-md shadow-sm"
+                        height="80"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                      ></iframe>
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full bg-gray-100 rounded-md relative" style={{ minHeight: '80px' }}>
-                    <div className="flex items-center p-3 rounded-md bg-gray-100">
-                      {/* Waveform visualization placeholder - could be replaced with actual waveform */}
-                      <div className="flex-grow h-12 mx-4 bg-gray-200 rounded overflow-hidden flex items-end">
-                        {/* Create a simple fake waveform with random heights */}
-                        {Array.from({ length: 50 }).map((_, i) => (
-                          <div 
-                            key={i} 
-                            className="w-1 bg-blue-500 mx-0.5" 
-                            style={{ 
-                              height: `${Math.max(15, Math.floor(Math.random() * 100))}%`,
-                              opacity: currentTime / duration > i / 50 ? 1 : 0.3
-                            }}
+                    <div className="flex items-center p-3 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm">
+                      {/* Play/pause button - larger and more prominent */}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-12 w-12 text-blue-600 hover:bg-blue-100/80 rounded-full mr-3 shadow-sm flex-shrink-0"
+                        onClick={togglePlayPause}
+                      >
+                        {isPlaying ? (
+                          <Pause className="h-6 w-6" />
+                        ) : (
+                          <Play className="h-6 w-6" />
+                        )}
+                      </Button>
+                      
+                      <div className="flex-grow flex flex-col">
+                        {/* Waveform visualization with gradient */}
+                        <div className="h-14 bg-white rounded-lg overflow-hidden flex items-end p-1 shadow-inner">
+                          {/* Create a better-looking waveform with gradient coloring */}
+                          {Array.from({ length: 60 }).map((_, i) => {
+                            // Calculate a more natural looking waveform with some patterns
+                            const baseHeight = Math.sin(i * 0.2) * 0.3 + 0.5;
+                            const randomFactor = Math.random() * 0.4;
+                            const heightPercentage = Math.max(15, Math.min(95, (baseHeight + randomFactor) * 100));
+                            
+                            // Determine if this bar should be highlighted (played portion)
+                            const isPlayed = currentTime / duration > i / 60;
+                            
+                            return (
+                              <div 
+                                key={i} 
+                                className={`w-1 mx-0.5 rounded-t-sm transition-all duration-150 ${
+                                  isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
+                                }`}
+                                style={{ 
+                                  height: `${heightPercentage}%`,
+                                  opacity: isPlayed ? 1 : 0.7
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Progress and time info */}
+                        <div className="flex items-center mt-1.5 px-1">
+                          <span className="text-xs font-medium text-gray-700">{formatTime(currentTime)}</span>
+                          <div className="flex-grow mx-2">
+                            <Slider
+                              value={[!isNaN(duration) && duration > 0 ? (currentTime / duration) * 100 : 0]}
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              onValueChange={handleTimelineChange}
+                              className="h-1.5"
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-gray-700">{formatTime(duration)}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Volume control */}
+                      <div className="ml-3 flex items-center gap-1 flex-shrink-0">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-gray-700 hover:bg-gray-200/80 rounded-full"
+                          onClick={toggleMute}
+                        >
+                          {isMuted || volume === 0 ? (
+                            <VolumeX className="h-4 w-4" />
+                          ) : (
+                            <Volume2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <div className="w-16 mr-1">
+                          <Slider
+                            value={[isMuted ? 0 : volume]}
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            onValueChange={handleVolumeChange}
+                            className="h-1.5"
                           />
-                        ))}
+                        </div>
                       </div>
                     </div>
                     
@@ -576,72 +652,6 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                       <source src={audioUrl} type="audio/ogg" />
                       <p>Your browser doesn't support HTML5 audio.</p>
                     </audio>
-                    
-                    {/* Custom controls */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-200 to-transparent px-4 py-3">
-                      {/* Progress bar */}
-                      <div className="mb-2">
-                        <Slider
-                          value={[!isNaN(duration) && duration > 0 ? (currentTime / duration) * 100 : 0]}
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          onValueChange={handleTimelineChange}
-                          className="h-1.5"
-                        />
-                      </div>
-                      
-                      {/* Controls */}
-                      <div className="flex items-center gap-2">
-                        {/* Play/Pause button */}
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-gray-700 hover:bg-gray-200/80"
-                          onClick={togglePlayPause}
-                        >
-                          {isPlaying ? (
-                            <Pause className="h-4 w-4" />
-                          ) : (
-                            <Play className="h-4 w-4" />
-                          )}
-                        </Button>
-                        
-                        {/* Time display */}
-                        <div className="text-xs text-gray-700">
-                          {formatTime(currentTime)} / {formatTime(duration)}
-                        </div>
-                        
-                        {/* Spacer */}
-                        <div className="flex-1"></div>
-                        
-                        {/* Volume control */}
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-gray-700 hover:bg-gray-200/80"
-                            onClick={toggleMute}
-                          >
-                            {isMuted || volume === 0 ? (
-                              <VolumeX className="h-4 w-4" />
-                            ) : (
-                              <Volume2 className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <div className="w-20">
-                            <Slider
-                              value={[isMuted ? 0 : volume]}
-                              min={0}
-                              max={1}
-                              step={0.01}
-                              onValueChange={handleVolumeChange}
-                              className="h-1.5"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 )}
                 
@@ -836,41 +846,138 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                 )}
               </div>
             ) : isEmbedded && (audioUrl.includes('spotify.com') || audioUrl.includes('soundcloud.com')) ? (
-              <div className="w-full max-w-2xl bg-white rounded-md">
-                <iframe
-                  src={audioUrl}
-                  title={caption || "Audio"}
-                  className="w-full border-0 rounded-md"
-                  height="160"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                ></iframe>
+              <div className="w-full max-w-2xl bg-white rounded-md p-6 shadow-lg">
+                <div className="flex flex-col gap-4">
+                  <div className="relative w-full bg-white rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">{caption || "Embedded Audio"}</h3>
+                    <iframe
+                      src={audioUrl}
+                      title={caption || "Audio"}
+                      className="w-full border-0 rounded-md"
+                      height="160"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="w-full max-w-2xl bg-white rounded-md p-6">
+              <div className="w-full max-w-2xl bg-white rounded-md p-6 shadow-lg">
                 <div className="flex flex-col gap-4">
-                  <div className="relative w-full bg-gray-100 rounded-md p-4">
-                    {/* Waveform visualization placeholder - larger for fullscreen */}
-                    <div className="flex-grow h-24 bg-gray-200 rounded overflow-hidden flex items-end">
-                      {/* Create a simple fake waveform with random heights */}
-                      {Array.from({ length: 100 }).map((_, i) => (
-                        <div 
-                          key={i} 
-                          className="w-1 bg-blue-500 mx-0.5" 
-                          style={{ 
-                            height: `${Math.max(15, Math.floor(Math.random() * 100))}%`,
-                            opacity: currentTime / duration > i / 100 ? 1 : 0.3
-                          }}
-                        />
-                      ))}
+                  <div className="relative w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5">
+                    {/* Large play button in center */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className={`rounded-full bg-white/90 p-4 shadow-md transition-opacity duration-300 ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
+                        <Play className="h-10 w-10 text-blue-600" />
+                      </div>
                     </div>
                     
-                    <audio 
-                      src={audioUrl} 
-                      className="w-full mt-4"
-                      controls
-                      autoPlay={isPlaying}
-                    />
+                    {/* Title and metadata */}
+                    <div className="mb-6 flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900">{caption || "Audio"}</h3>
+                        <p className="text-sm text-gray-500">Duration: {formatTime(duration)}</p>
+                      </div>
+                      {!isEmbedded && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
+                          onClick={handleDownload}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Enhanced waveform visualization */}
+                    <div className="h-28 bg-white rounded-lg overflow-hidden flex items-end p-2 shadow-inner mb-4">
+                      {/* Create a better-looking waveform with gradient coloring */}
+                      {Array.from({ length: 100 }).map((_, i) => {
+                        // Calculate a more natural looking waveform with some patterns
+                        const baseHeight = Math.sin(i * 0.1) * 0.3 + 0.5;
+                        const randomFactor = Math.random() * 0.4;
+                        const heightPercentage = Math.max(15, Math.min(95, (baseHeight + randomFactor) * 100));
+                        
+                        // Determine if this bar should be highlighted (played portion)
+                        const isPlayed = currentTime / duration > i / 100;
+                        
+                        return (
+                          <div 
+                            key={i} 
+                            className={`w-1.5 mx-0.5 rounded-t-sm transition-all duration-150 ${
+                              isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
+                            }`}
+                            style={{ 
+                              height: `${heightPercentage}%`,
+                              opacity: isPlayed ? 1 : 0.7
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Advanced controls */}
+                    <div className="flex flex-col gap-2">
+                      {/* Time and progress bar */}
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{formatTime(currentTime)}</span>
+                        <span className="text-sm font-medium text-gray-700">{formatTime(duration)}</span>
+                      </div>
+                      
+                      <Slider
+                        value={[!isNaN(duration) && duration > 0 ? (currentTime / duration) * 100 : 0]}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        onValueChange={handleTimelineChange}
+                        className="h-2"
+                      />
+                      
+                      {/* Playback controls */}
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-12 w-12 text-blue-600 hover:bg-blue-100/80 rounded-full shadow-sm"
+                            onClick={togglePlayPause}
+                          >
+                            {isPlaying ? (
+                              <Pause className="h-6 w-6" />
+                            ) : (
+                              <Play className="h-6 w-6" />
+                            )}
+                          </Button>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-10 w-10 text-gray-700 hover:bg-gray-100 rounded-full"
+                            onClick={toggleMute}
+                          >
+                            {isMuted || volume === 0 ? (
+                              <VolumeX className="h-5 w-5" />
+                            ) : (
+                              <Volume2 className="h-5 w-5" />
+                            )}
+                          </Button>
+                          <div className="w-32">
+                            <Slider
+                              value={[isMuted ? 0 : volume]}
+                              min={0}
+                              max={1}
+                              step={0.01}
+                              onValueChange={handleVolumeChange}
+                              className="h-1.5"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -888,50 +995,81 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Audio</DialogTitle>
+            <DialogTitle className="text-center text-xl font-semibold">Add Audio</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Upload</TabsTrigger>
-              <TabsTrigger value="embed">Embed Link</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="upload" className="flex items-center gap-1.5">
+                <Upload className="h-4 w-4" />
+                Upload
+              </TabsTrigger>
+              <TabsTrigger value="embed" className="flex items-center gap-1.5">
+                <LinkIcon className="h-4 w-4" />
+                Embed Link
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="upload" className="py-4">
               <div className="flex flex-col gap-4">
-                <label className="border-2 border-dashed border-gray-300 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                <label className="border-2 border-dashed border-blue-200 rounded-md p-8 text-center cursor-pointer hover:bg-blue-50/50 transition-colors bg-blue-50/20">
                   <input
                     type="file"
                     accept="audio/*,.mp3,.wav,.ogg,.aac,.flac,.m4a,.wma"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400 mt-1">MP3, WAV, OGG, AAC, FLAC and other formats supported</p>
+                  <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Upload className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-500 mt-2">MP3, WAV, OGG, AAC, FLAC and other formats supported</p>
+                  <p className="text-xs text-blue-600 mt-4 font-medium">Select an audio file</p>
                 </label>
               </div>
             </TabsContent>
             <TabsContent value="embed" className="py-4">
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Paste audio URL or SoundCloud/Spotify link"
-                    value={linkInput}
-                    onChange={handleLinkInputChange}
-                  />
-                  <Button 
-                    onClick={handleLinkSubmit}
-                    disabled={!linkInput}
-                  >
-                    Embed
-                  </Button>
+                <div className="bg-blue-50/20 border border-blue-100 rounded-md p-4">
+                  <h3 className="text-sm font-medium mb-3 text-gray-700">Paste a link from supported services</h3>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Paste audio URL or SoundCloud/Spotify link"
+                      value={linkInput}
+                      onChange={handleLinkInputChange}
+                      className="border-blue-200 focus-visible:ring-blue-400"
+                    />
+                    <Button 
+                      onClick={handleLinkSubmit}
+                      disabled={!linkInput}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Embed
+                    </Button>
+                  </div>
+                  <div className="flex items-center mt-4 gap-2">
+                    <div className="flex-1 flex items-center justify-center gap-3">
+                      <div className="bg-blue-100/50 rounded-full p-1.5">
+                        <Music className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="text-xs text-gray-500">SoundCloud</span>
+                    </div>
+                    <div className="flex-1 flex items-center justify-center gap-3">
+                      <div className="bg-green-100/50 rounded-full p-1.5">
+                        <Music className="h-4 w-4 text-green-600" />
+                      </div>
+                      <span className="text-xs text-gray-500">Spotify</span>
+                    </div>
+                    <div className="flex-1 flex items-center justify-center gap-3">
+                      <div className="bg-gray-100 rounded-full p-1.5">
+                        <LinkIcon className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <span className="text-xs text-gray-500">Direct URL</span>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 mb-2">
-                  Embed audio from SoundCloud, Spotify, or any direct audio URL
-                </p>
                 
                 {/* Audio Preview */}
                 {previewUrl && (
-                  <div className="mt-2 border rounded-md overflow-hidden">
+                  <div className="mt-2 border rounded-md overflow-hidden shadow-sm">
                     <div className="relative aspect-video bg-gray-100 flex items-center justify-center">
                       <img 
                         src={previewUrl} 
@@ -952,7 +1090,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
             </TabsContent>
           </Tabs>
           <DialogClose asChild>
-            <Button variant="outline" className="w-full">Cancel</Button>
+            <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">Cancel</Button>
           </DialogClose>
         </DialogContent>
       </Dialog>
