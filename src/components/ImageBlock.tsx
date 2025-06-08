@@ -239,12 +239,12 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
-                  className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
+                  className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
                 >
                   <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent sideOffset={0} align="start" className="w-[160px]">
+              <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4" />
@@ -370,12 +370,12 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
+                className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
               >
                 <GripVertical className="h-5 w-5 text-muted-foreground/50" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent sideOffset={0} align="start" className="w-[160px]">
+            <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="flex items-center gap-2">
                   <LayoutGrid className="h-4 w-4" />

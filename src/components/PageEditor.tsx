@@ -432,13 +432,11 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 pt-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button 
-                    className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
-                  >
+                  <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
                     <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[160px]">
+                <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="flex items-center gap-2">
                       <LayoutGrid className="h-4 w-4" />
@@ -555,13 +553,11 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
           <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button 
-                  className="w-[40px] h-full flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
-                >
+                <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
                   <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[160px]">
+              <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="flex items-center gap-2">
                     <LayoutGrid className="h-4 w-4" />
@@ -811,7 +807,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <button className="flex items-center gap-2 text-sm text-blue-500 hover:opacity-70 transition-opacity py-1">
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-5 w-5" />
                       <span>Add block</span>
                     </button>
                   </PopoverTrigger>
@@ -1175,11 +1171,11 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                   <div className="flex items-center h-[1.5em] mt-0.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                      <div className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
-                        <GripVertical className="h-[16px] w-[16px] text-muted-foreground/50" />
+                      <div className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                        <GripVertical className="h-5 w-5 text-muted-foreground/50" />
                       </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-[160px]">
+                      <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
                         <DropdownMenuSub>
                           <DropdownMenuSubTrigger className="flex items-center gap-2">
                             <LayoutGrid className="h-4 w-4" />
@@ -1260,9 +1256,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
-                            className="h-[24px] w-[24px] flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
+                            className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
                           >
-                            <Plus className="h-[16px] w-[16px] text-muted-foreground" />
+                            <Plus className="h-5 w-5 text-muted-foreground" />
                           </button>
                         </PopoverTrigger>
                         <BlockTypePopover 
