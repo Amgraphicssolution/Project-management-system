@@ -23,14 +23,18 @@ import {
   Quote,
   Table,
   Minus,
-  Video,
+  Video as VideoIcon,
   Music,
   FileIcon,
   Code,
   FormInput,
   ListTree,
   Figma,
-  FileDigit
+  FileDigit,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BlockType } from '@/types';
@@ -54,6 +58,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 
 // Define block categories for conversion
 const blockCategories = [
@@ -81,7 +86,7 @@ const blockCategories = [
     name: "Media",
     blocks: [
       { type: 'image', icon: ImageIcon, label: 'Image' },
-      { type: 'video', icon: Video, label: 'Video' },
+      { type: 'video', icon: VideoIcon, label: 'Video' },
       { type: 'audio', icon: Music, label: 'Audio' },
       { type: 'file', icon: FileIcon, label: 'File' },
       { type: 'code', icon: Code, label: 'Code' },
@@ -109,7 +114,7 @@ const blockCategories = [
   }
 ];
 
-interface ImageBlockProps {
+interface VideoBlockProps {
   block: BlockType;
   onUpdate: (updatedBlock: BlockType) => void;
   onDelete: () => void;
@@ -118,7 +123,7 @@ interface ImageBlockProps {
   onConvert?: (newType: BlockType['type']) => void;
 }
 
-const ImageBlock: React.FC<ImageBlockProps> = ({ 
+const VideoBlock: React.FC<VideoBlockProps> = ({ 
   block, 
   onUpdate, 
   onDelete,
@@ -126,8 +131,8 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
   onMoveDown,
   onConvert
 }) => {
-  // State for the image
-  const [imageUrl, setImageUrl] = useState<string>(block.url || '');
+  // State for the video
+  const [videoUrl, setVideoUrl] = useState<string>(block.url || '');
   const [caption, setCaption] = useState<string>(block.content || '');
   const [showCaption, setShowCaption] = useState<boolean>(!!block.content);
   const [isHovered, setIsHovered] = useState<boolean>(false);
@@ -140,48 +145,194 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
   const [width, setWidth] = useState<number>(block.width || 100); // Width in percentage
   const [isEmbedded, setIsEmbedded] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [imageError, setImageError] = useState<boolean>(false);
+  const [videoError, setVideoError] = useState<boolean>(false);
   const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(1);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [duration, setDuration] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [isControlsVisible, setIsControlsVisible] = useState<boolean>(false);
+  const [isYoutubeVideo, setIsYoutubeVideo] = useState<boolean>(false);
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string>("");
   
-  // Constants for image sizing
-  const MAX_WIDTH_PERCENTAGE = 100; // Reduced from 150% to 90% to prevent controls from being hidden
-  const MIN_WIDTH_PERCENTAGE = 40;  // Minimum width as percentage of parent container
-  const DEFAULT_WIDTH_PERCENTAGE = 100; // Default width when resizing from center
+  // Constants for video sizing
+  const MAX_WIDTH_PERCENTAGE = 100;
+  const MIN_WIDTH_PERCENTAGE = 40;
+  const DEFAULT_WIDTH_PERCENTAGE = 100;
   
   // Refs
-  const imageRef = useRef<HTMLImageElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(0);
   const parentWidthRef = useRef<number>(0);
-  
-  // Update parent component when image or caption changes
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Update parent component when video or caption changes
   useEffect(() => {
     onUpdate({
       ...block,
-      url: imageUrl,
+      url: videoUrl,
       content: caption,
       width
     });
     
-    // Determine if the image is embedded (external link) or uploaded
-    if (imageUrl) {
-      setIsEmbedded(imageUrl.startsWith('http') && !imageUrl.startsWith(window.location.origin));
+    // Determine if the video is embedded (external link) or uploaded
+    if (videoUrl) {
+      setIsEmbedded(videoUrl.startsWith('http') && !videoUrl.startsWith(window.location.origin));
+      
+      // Check if YouTube video
+      const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+      const match = videoUrl.match(youtubeRegex);
+      
+      if (match && match[1]) {
+        setIsYoutubeVideo(true);
+        setYoutubeVideoId(match[1]);
+      } else {
+        setIsYoutubeVideo(false);
+        setYoutubeVideoId("");
+      }
     }
-  }, [imageUrl, caption, width]);
+  }, [videoUrl, caption, width]);
+  
+  // Handle video events
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+    
+    const handleTimeUpdate = () => {
+      setCurrentTime(videoElement.currentTime);
+    };
+    
+    const handleDurationChange = () => {
+      setDuration(videoElement.duration);
+    };
+    
+    const handleEnded = () => {
+      setIsPlaying(false);
+    };
+    
+    videoElement.addEventListener('timeupdate', handleTimeUpdate);
+    videoElement.addEventListener('durationchange', handleDurationChange);
+    videoElement.addEventListener('ended', handleEnded);
+    
+    return () => {
+      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+      videoElement.removeEventListener('durationchange', handleDurationChange);
+      videoElement.removeEventListener('ended', handleEnded);
+    };
+  }, [videoRef.current]);
+  
+  // Control playback
+  useEffect(() => {
+    if (!videoRef.current) return;
+    
+    if (isPlaying) {
+      videoRef.current.play().catch(error => {
+        console.error("Error playing video:", error);
+        setIsPlaying(false);
+      });
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isPlaying]);
+  
+  // Handle volume changes
+  useEffect(() => {
+    if (!videoRef.current) return;
+    
+    videoRef.current.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted]);
+  
+  // Handle controls visibility timeout
+  useEffect(() => {
+    if (isControlsVisible && !isHovered) {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+      
+      controlsTimeoutRef.current = setTimeout(() => {
+        setIsControlsVisible(false);
+      }, 3000);
+    }
+    
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, [isControlsVisible, isHovered]);
+  
+  // Format time for display (mm:ss)
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
   
   // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Log file information for debugging
+      console.info("Uploading video file:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: new Date(file.lastModified).toISOString()
+      });
+      
+      // Remove strict video/* MIME type validation since some browsers may not correctly identify all formats
+      // Instead, check the file extension
+      const fileName = file.name.toLowerCase();
+      const validExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.3gp', '.ts'];
+      const isValidVideoFile = validExtensions.some(ext => fileName.endsWith(ext));
+      
+      if (!isValidVideoFile) {
+        alert('Please upload a valid video file (MP4, WEBM, OGG, MKV, etc.)');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
-        setImageUrl(event.target?.result as string);
-        setShowPlaceholder(false);
+        const result = event.target?.result as string;
+        setVideoUrl(result);
         setIsUploadDialogOpen(false);
+        
+        // Test if the video is playable - show placeholder if not
+        const testVideo = document.createElement('video');
+        testVideo.muted = true;
+        testVideo.preload = 'metadata';
+        
+        testVideo.onloadedmetadata = () => {
+          console.info("Video loaded successfully");
+          setShowPlaceholder(false);
+        };
+        
+        testVideo.onerror = () => {
+          console.warn("Browser cannot play this video format directly");
+          setShowPlaceholder(true);
+        };
+        
+        // Test the video
+        testVideo.src = result;
       };
+      
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        alert('Error reading the video file. Please try another file.');
+      };
+      
       reader.readAsDataURL(file);
     }
+  };
+  
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
   
   // Handle link input change
@@ -189,64 +340,97 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
     const url = e.target.value;
     setLinkInput(url);
     
-    // Set preview URL if it's a valid image URL
-    if (url && isValidImageUrl(url)) {
+    // Check if it's a YouTube URL
+    const youtubeId = getYouTubeVideoId(url);
+    
+    if (youtubeId) {
+      setPreviewUrl(`https://img.youtube.com/vi/${youtubeId}/0.jpg`);
+      setVideoError(false);
+    } else if (isValidVideoUrl(url)) {
       setPreviewUrl(url);
-      setImageError(false);
+      setVideoError(false);
     } else {
       setPreviewUrl("");
     }
   };
   
-  // Check if URL is likely an image
-  const isValidImageUrl = (url: string): boolean => {
-    // Simple check for common image extensions or image-related terms
-    const extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.avif'];
+  // Check if URL is likely a video
+  const isValidVideoUrl = (url: string): boolean => {
+    // Simple check for common video extensions or video-related terms
+    const extensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.m4v', '.3gp', '.ts'];
     return (
       extensions.some(ext => url.toLowerCase().includes(ext)) || 
-      url.toLowerCase().includes('image') ||
-      url.startsWith('data:image/') ||
-      /\.(com|net|org|io)\/.*\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)/i.test(url)
+      url.toLowerCase().includes('video') ||
+      url.startsWith('data:video/') ||
+      /\.(com|net|org|io)\/.*\.(mp4|webm|ogg|mov|avi|mkv|m4v)/i.test(url) ||
+      url.includes('youtube.com') ||
+      url.includes('youtu.be') ||
+      url.includes('vimeo.com')
     );
   };
-  
+
   // Handle link submit
   const handleLinkSubmit = () => {
     if (linkInput) {
-      // Create a new Image to test loading
-      const img = new Image();
-      img.onload = () => {
-        // Image loaded successfully
-        setImageUrl(linkInput);
+      const youtubeId = getYouTubeVideoId(linkInput);
+      
+      if (youtubeId) {
+        // It's a YouTube video
+        const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+        setVideoUrl(embedUrl);
+        setIsYoutubeVideo(true);
+        setYoutubeVideoId(youtubeId);
         setShowPlaceholder(false);
         setIsEmbedded(true);
         setIsUploadDialogOpen(false);
-      };
-      img.onerror = () => {
-        // Image failed to load, but still set the URL and show placeholder
-        setImageUrl(linkInput);
-        setShowPlaceholder(true);
-        setIsEmbedded(true);
-        setIsUploadDialogOpen(false);
-      };
-      img.src = linkInput;
+      } else {
+        // Try as a direct video URL
+        const video = document.createElement('video');
+        video.onloadeddata = () => {
+          setVideoUrl(linkInput);
+          setShowPlaceholder(false);
+          setIsEmbedded(true);
+          setIsUploadDialogOpen(false);
+        };
+        video.onerror = () => {
+          setVideoUrl(linkInput);
+          setShowPlaceholder(true);
+          setIsEmbedded(true);
+          setIsUploadDialogOpen(false);
+        };
+        video.src = linkInput;
+      }
     }
   };
   
-  // Handle image load error
-  const handleImageError = () => {
-    setImageError(true);
+  // Handle video load error
+  const handleVideoError = () => {
+    console.error("Error loading video:", videoUrl);
+    setVideoError(true);
     setShowPlaceholder(true);
+
+    // Log more details about supported video formats
+    if (videoRef.current) {
+      console.info("Browser video support info:", {
+        canPlayMp4: videoRef.current.canPlayType('video/mp4'),
+        canPlayWebm: videoRef.current.canPlayType('video/webm'),
+        canPlayOgg: videoRef.current.canPlayType('video/ogg'),
+        // Check for MKV - most browsers won't support this natively
+        canPlayMkv: videoRef.current.canPlayType('video/x-matroska')
+      });
+    }
   };
   
-  // Handle download
+  // Handle download (only for direct video links, not YouTube)
   const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `image-${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (!isYoutubeVideo && videoUrl) {
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.download = `video-${Date.now()}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
   
   // Handle caption toggle
@@ -260,6 +444,30 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
           captionInput.focus();
         }
       }, 0);
+    }
+  };
+  
+  // Handle playback controls
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+  
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+  
+  const handleVolumeChange = (newValue: number[]) => {
+    setVolume(newValue[0]);
+    if (newValue[0] > 0 && isMuted) {
+      setIsMuted(false);
+    }
+  };
+  
+  const handleTimelineChange = (newValue: number[]) => {
+    if (videoRef.current && !isNaN(duration) && duration > 0) {
+      const newTime = (newValue[0] / 100) * duration;
+      videoRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
     }
   };
   
@@ -294,28 +502,17 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
     };
     
     const handleMouseUp = () => {
-      setIsResizing(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      setIsResizing(false);
     };
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
-
-  // Function to check if an image URL is from a common image hosting service
-  const isImageHostingService = (url: string): boolean => {
-    const services = [
-      'pexels.com', 'unsplash.com', 'pixabay.com', 'imgur.com', 
-      'cloudinary.com', 'imgbb.com', 'flickr.com', 'photobucket.com',
-      'googleusercontent.com', 'ggpht.com', 'ytimg.com', 'twimg.com',
-      'fbcdn.net', 'pinimg.com', 'giphy.com'
-    ];
-    return services.some(service => url.includes(service));
-  };
   
-  // If no image is set, show upload dialog
-  if (!imageUrl) {
+  // If no video is set, show upload dialog
+  if (!videoUrl) {
     return (
       <div className="relative group">
         <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
@@ -418,7 +615,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Add Image
+                Add Video
               </Button>
             </div>
           </div>
@@ -427,7 +624,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Image</DialogTitle>
+              <DialogTitle>Add Video</DialogTitle>
             </DialogHeader>
             <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
@@ -439,13 +636,13 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                   <label className="border-2 border-dashed border-gray-300 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="video/*,.mkv,.mp4,.webm,.ogg,.mov,.avi,.wmv,.flv,.m4v,.3gp,.ts"
                       onChange={handleFileUpload}
                       className="hidden"
                     />
                     <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF supported</p>
+                    <p className="text-xs text-gray-400 mt-1">MP4, WEBM, MKV, OGG and other formats supported</p>
                   </label>
                 </div>
               </TabsContent>
@@ -453,7 +650,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                     <Input
-                      placeholder="Paste image URL here"
+                      placeholder="Paste video URL here"
                       value={linkInput}
                       onChange={handleLinkInputChange}
                     />
@@ -465,10 +662,10 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                     </Button>
                   </div>
                   <p className="text-xs text-gray-400 mb-2">
-                    Embed images from services like Pexels, Unsplash, or any direct image URL
+                    Embed videos from YouTube, Vimeo, or any direct video URL
                   </p>
                   
-                  {/* Image Preview */}
+                  {/* Video Preview */}
                   {previewUrl && (
                     <div className="mt-2 border rounded-md overflow-hidden">
                       <div className="relative aspect-video bg-gray-100 flex items-center justify-center">
@@ -476,13 +673,12 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                           src={previewUrl} 
                           alt="Preview" 
                           className="max-w-full max-h-full object-contain"
-                          onError={handleImageError}
-                          crossOrigin={isImageHostingService(previewUrl) ? "anonymous" : undefined}
+                          onError={handleVideoError}
                         />
-                        {imageError && (
+                        {videoError && (
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-500">
-                            <ImageIcon className="h-10 w-10 mb-2 opacity-30" />
-                            <p className="text-sm">Unable to load image preview</p>
+                            <VideoIcon className="h-10 w-10 mb-2 opacity-30" />
+                            <p className="text-sm">Unable to load video preview</p>
                           </div>
                         )}
                       </div>
@@ -499,7 +695,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="relative group">
       <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
@@ -597,12 +793,20 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
         <div className="flex-1">
           <div 
             className="relative flex flex-col items-center"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() => {
+              setIsHovered(true);
+              setIsControlsVisible(true);
+            }}
+            onMouseLeave={() => {
+              setIsHovered(false);
+            }}
+            onMouseMove={() => {
+              setIsControlsVisible(true);
+            }}
           >
             <div 
               ref={containerRef}
-              className="relative overflow-hidden"
+              className="relative overflow-hidden rounded-md"
               style={{ width: `${width}%`, maxWidth: "900px" }}
             >
               {/* Resize handles */}
@@ -621,51 +825,162 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                 onMouseDown={(e) => handleResizeStart(e, 'right')}
               />
               
-              {/* Image with potential placeholder fallback */}
+              {/* Video with potential placeholder fallback */}
               {showPlaceholder ? (
-                <div className="w-full aspect-video bg-gray-100 rounded-md flex flex-col items-center justify-center">
-                  <ImageIcon className="h-16 w-16 text-gray-300 mb-2" />
-                  <p className="text-sm text-gray-500">Image could not be loaded</p>
+                <div className="w-full aspect-video bg-gray-800 rounded-md flex flex-col items-center justify-center p-8">
+                  <VideoIcon className="h-24 w-24 text-gray-400 mb-4" />
+                  <p className="text-lg text-white">Video could not be played in browser</p>
+                  <p className="text-sm text-gray-300 mt-1 mb-4">This video format is not supported for in-browser playback</p>
                   {isEmbedded && (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mt-2 text-blue-500"
-                      onClick={() => window.open(imageUrl, '_blank')}
+                      variant="outline" 
+                      className="mt-4 text-white border-white hover:bg-white/10"
+                      onClick={() => window.open(videoUrl, '_blank')}
                     >
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      View original
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View original video
                     </Button>
                   )}
                 </div>
+              ) : isYoutubeVideo ? (
+                <div className="w-full aspect-video">
+                  <iframe
+                    src={videoUrl}
+                    title={caption || "Video"}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
               ) : (
-                <img 
-                  ref={imageRef}
-                  src={imageUrl} 
-                  alt={caption || "Image"} 
-                  className="w-full h-auto rounded-md"
-                  onError={() => {
-                    setShowPlaceholder(true);
-                  }}
-                  crossOrigin={isImageHostingService(imageUrl) ? "anonymous" : undefined}
-                />
+                <div className="w-full aspect-video bg-black rounded-md relative">
+                  <video 
+                    ref={videoRef}
+                    src={videoUrl} 
+                    className="w-full h-full rounded-md"
+                    onError={handleVideoError}
+                    onClick={togglePlayPause}
+                    controls={false}
+                    playsInline
+                  >
+                    <source src={videoUrl} type="video/mp4" />
+                    <source src={videoUrl} type="video/webm" />
+                    <source src={videoUrl} type="video/ogg" />
+                    <p>Your browser doesn't support HTML5 video.</p>
+                  </video>
+                  
+                  {/* Custom controls */}
+                  <div 
+                    className={cn(
+                      "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3 transition-opacity duration-200",
+                      isControlsVisible ? "opacity-100" : "opacity-0"
+                    )}
+                  >
+                    {/* Progress bar */}
+                    <div className="mb-2">
+                      <Slider
+                        value={[!isNaN(duration) && duration > 0 ? (currentTime / duration) * 100 : 0]}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        onValueChange={handleTimelineChange}
+                        className="h-1.5"
+                      />
+                    </div>
+                    
+                    {/* Controls */}
+                    <div className="flex items-center gap-2">
+                      {/* Play/Pause button */}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-white hover:bg-white/20"
+                        onClick={togglePlayPause}
+                      >
+                        {isPlaying ? (
+                          <Pause className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                      
+                      {/* Time display */}
+                      <div className="text-xs text-white">
+                        {formatTime(currentTime)} / {formatTime(duration)}
+                      </div>
+                      
+                      {/* Spacer */}
+                      <div className="flex-1"></div>
+                      
+                      {/* Volume control */}
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-white hover:bg-white/20"
+                          onClick={toggleMute}
+                        >
+                          {isMuted || volume === 0 ? (
+                            <VolumeX className="h-4 w-4" />
+                          ) : (
+                            <Volume2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <div className="w-20">
+                          <Slider
+                            value={[isMuted ? 0 : volume]}
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            onValueChange={handleVolumeChange}
+                            className="h-1.5"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Fullscreen button */}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-white hover:bg-white/20"
+                        onClick={() => setIsFullscreen(true)}
+                      >
+                        <Maximize className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Center play button (when paused) */}
+                  {!isPlaying && (
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                      onClick={togglePlayPause}
+                    >
+                      <div className="bg-black/50 rounded-full p-4">
+                        <Play className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
               
-              {/* Hover actions */}
+              {/* Hover actions (only for top-right corner) */}
               <div 
                 className={cn(
                   "absolute top-2 right-2 flex gap-1 transition-opacity duration-200",
                   isHovered ? "opacity-100" : "opacity-0"
                 )}
               >
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
-                  className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
-                  onClick={handleDownload}
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
+                {!isYoutubeVideo && (
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
+                    onClick={handleDownload}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                )}
                 
                 <Button 
                   variant="secondary" 
@@ -690,7 +1005,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                     variant="secondary" 
                     size="icon" 
                     className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
-                    onClick={() => window.open(imageUrl, '_blank')}
+                    onClick={() => window.open(videoUrl, '_blank')}
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -725,27 +1040,40 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
           <div className="w-full h-full flex items-center justify-center p-8">
             {showPlaceholder ? (
               <div className="bg-gray-800 p-8 rounded-md flex flex-col items-center justify-center">
-                <ImageIcon className="h-24 w-24 text-gray-400 mb-4" />
-                <p className="text-lg text-white">Image could not be loaded</p>
+                <VideoIcon className="h-24 w-24 text-gray-400 mb-4" />
+                <p className="text-lg text-white">Video could not be played in browser</p>
+                <p className="text-sm text-gray-300 mt-1 mb-4">This video format is not supported for in-browser playback</p>
                 {isEmbedded && (
                   <Button 
                     variant="outline" 
                     className="mt-4 text-white border-white hover:bg-white/10"
-                    onClick={() => window.open(imageUrl, '_blank')}
+                    onClick={() => window.open(videoUrl, '_blank')}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    View original image
+                    View original video
                   </Button>
                 )}
               </div>
+            ) : isYoutubeVideo ? (
+              <div className="w-full h-full max-w-5xl max-h-[80vh]">
+                <iframe
+                  src={videoUrl}
+                  title={caption || "Video"}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
             ) : (
-              <img 
-                src={imageUrl} 
-                alt={caption || "Image"} 
-                className="max-w-full max-h-full object-contain"
-                onError={() => setShowPlaceholder(true)}
-                crossOrigin={isImageHostingService(imageUrl) ? "anonymous" : undefined}
-              />
+              <div className="relative w-full h-full max-w-5xl max-h-[80vh] bg-black">
+                <video 
+                  src={videoUrl} 
+                  className="w-full h-full object-contain"
+                  onError={() => setShowPlaceholder(true)}
+                  controls
+                  autoPlay
+                />
+              </div>
             )}
           </div>
           {caption && !showPlaceholder && (
@@ -760,7 +1088,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Image</DialogTitle>
+            <DialogTitle>Add Video</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
@@ -772,13 +1100,13 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                 <label className="border-2 border-dashed border-gray-300 rounded-md p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="video/*,.mkv,.mp4,.webm,.ogg,.mov,.avi,.wmv,.flv,.m4v,.3gp,.ts"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
                   <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                   <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF supported</p>
+                  <p className="text-xs text-gray-400 mt-1">MP4, WEBM, MKV, OGG and other formats supported</p>
                 </label>
               </div>
             </TabsContent>
@@ -786,7 +1114,7 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <Input
-                    placeholder="Paste image URL here"
+                    placeholder="Paste video URL or YouTube link"
                     value={linkInput}
                     onChange={handleLinkInputChange}
                   />
@@ -798,10 +1126,10 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                   </Button>
                 </div>
                 <p className="text-xs text-gray-400 mb-2">
-                  Embed images from services like Pexels, Unsplash, or any direct image URL
+                  Embed videos from YouTube, Vimeo, or any direct video URL
                 </p>
                 
-                {/* Image Preview */}
+                {/* Video Preview */}
                 {previewUrl && (
                   <div className="mt-2 border rounded-md overflow-hidden">
                     <div className="relative aspect-video bg-gray-100 flex items-center justify-center">
@@ -809,13 +1137,12 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
                         src={previewUrl} 
                         alt="Preview" 
                         className="max-w-full max-h-full object-contain"
-                        onError={handleImageError}
-                        crossOrigin={isImageHostingService(previewUrl) ? "anonymous" : undefined}
+                        onError={handleVideoError}
                       />
-                      {imageError && (
+                      {videoError && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-500">
-                          <ImageIcon className="h-10 w-10 mb-2 opacity-30" />
-                          <p className="text-sm">Unable to load image preview</p>
+                          <VideoIcon className="h-10 w-10 mb-2 opacity-30" />
+                          <p className="text-sm">Unable to load video preview</p>
                         </div>
                       )}
                     </div>
@@ -833,4 +1160,4 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
   );
 };
 
-export default ImageBlock; 
+export default VideoBlock; 
