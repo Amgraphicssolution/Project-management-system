@@ -198,6 +198,8 @@ interface Comment {
   };
   content: string;
   timestamp: Date;
+  replies?: Comment[];
+  parentId?: string;
 }
 
 interface FileBlockProps {
@@ -237,6 +239,8 @@ const FileBlock: React.FC<FileBlockProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [newFileName, setNewFileName] = useState<string>('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState<string>('');
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -502,11 +506,132 @@ const FileBlock: React.FC<FileBlockProps> = ({
     return date.toLocaleDateString();
   };
   
+  // Add reply function
+  const addReply = (parentId: string) => {
+    if (!replyContent.trim()) return;
 
-  
+    const newReply: Comment = {
+      id: Date.now().toString(),
+      author: {
+        name: 'User', // You might want to get this from your auth context
+      },
+      content: replyContent,
+      timestamp: new Date(),
+      parentId: parentId
+    };
 
-  
-  
+    const updatedComments = comments.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply]
+        };
+      }
+      return comment;
+    });
+
+    setComments(updatedComments);
+    setReplyContent('');
+    setReplyingTo(null);
+  };
+
+  // Delete reply function
+  const deleteReply = (parentId: string, replyId: string) => {
+    const updatedComments = comments.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: comment.replies?.filter(reply => reply.id !== replyId)
+        };
+      }
+      return comment;
+    });
+
+    setComments(updatedComments);
+  };
+
+  // Render comment with replies
+  const renderComment = (comment: Comment, isReply: boolean = false) => (
+    <div key={comment.id} className={`flex gap-3 ${isReply ? 'ml-8 mt-3' : ''}`}>
+      <Avatar className="h-8 w-8 border">
+        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
+        <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <div className="bg-accent/5 rounded-md p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-medium">{comment.author.name}</span>
+            <span className="text-xs text-muted-foreground">{formatTimestamp(comment.timestamp)}</span>
+          </div>
+          <p className="text-sm text-foreground/90">{comment.content}</p>
+        </div>
+        <div className="flex gap-2 mt-1">
+          {!isReply && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground h-6 px-2"
+              onClick={() => setReplyingTo(comment.id)}
+            >
+              Reply
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground hover:text-destructive h-6 px-2"
+            onClick={() => isReply ? deleteReply(comment.parentId!, comment.id) : deleteComment(comment.id)}
+          >
+            Delete
+          </Button>
+        </div>
+        
+        {replyingTo === comment.id && (
+          <div className="flex gap-2 items-start mt-3 ml-8">
+            <Avatar className="h-8 w-8 border">
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <Textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Write a reply..."
+                className="w-full resize-none text-sm min-h-[60px] focus-visible:ring-primary"
+                rows={2}
+              />
+              <div className="flex justify-end gap-2 mt-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setReplyingTo(null);
+                    setReplyContent('');
+                  }}
+                  className="h-7"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => addReply(comment.id)}
+                  disabled={!replyContent.trim()}
+                  className="h-7 bg-primary hover:bg-primary/90"
+                >
+                  Reply
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="space-y-3 mt-3">
+            {comment.replies.map(reply => renderComment(reply, true))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="relative">
@@ -981,31 +1106,7 @@ const FileBlock: React.FC<FileBlockProps> = ({
                   <p className="text-xs text-muted-foreground/70">Start the conversation by adding a comment below</p>
                 </div>
               ) : (
-                comments.map(comment => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8 border">
-                      <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-                      <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-accent/5 rounded-md p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium">{comment.author.name}</span>
-                          <span className="text-xs text-muted-foreground">{formatTimestamp(comment.timestamp)}</span>
-                        </div>
-                        <p className="text-sm text-foreground/90">{comment.content}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-muted-foreground hover:text-destructive mt-1 h-6 px-2"
-                        onClick={() => deleteComment(comment.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))
+                comments.filter(comment => !comment.parentId).map(comment => renderComment(comment))
               )}
             </div>
             
