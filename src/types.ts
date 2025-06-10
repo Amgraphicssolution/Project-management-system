@@ -22,6 +22,18 @@ export interface BlockType {
         'embed' | 'figma' | 'pdf' | 'adobe';
   content: string;
   url?: string;
+  title?: string;
+  fileSize?: number;
+  fileType?: string;
+  comments?: Array<{
+    id: string;
+    author: {
+      name: string;
+      avatar?: string;
+    };
+    content: string;
+    timestamp: Date;
+  }>;
   language?: string;
   checked?: boolean;
   items?: string[];
