@@ -81,7 +81,7 @@ const blockCategories: BlockCategoryType[] = [
   {
     name: "Basic Blocks",
     blocks: [
-  { type: 'paragraph', icon: FileText, label: 'Text' },
+      { type: 'paragraph', icon: FileText, label: 'Text' },
       { type: 'heading-1', icon: Type, label: 'H1 Heading' },
       { type: 'heading-2', icon: Type, label: 'H2 Heading' },
       { type: 'heading-3', icon: Type, label: 'H3 Heading' },
@@ -93,9 +93,10 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'to-do', icon: CheckSquare, label: 'To-do List' },
       { type: 'toggle', icon: List, label: 'Toggle List' },
       { type: 'board', icon: Layout, label: 'Board' },
-  { type: 'quote', icon: Quote, label: 'Quote' },
+      { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
+      { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
@@ -105,7 +106,6 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'video', icon: Video, label: 'Video' },
       { type: 'audio', icon: Music, label: 'Audio' },
       { type: 'file', icon: FileIcon, label: 'File' },
-  { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {

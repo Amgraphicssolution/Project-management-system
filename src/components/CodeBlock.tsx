@@ -28,17 +28,20 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  MessageSquare,
   MessageSquareText,
   Terminal,
   LayoutGrid,
   ArrowUp,
   ArrowDown,
-  Trash2
+  Trash2,
+  Smile
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BlockType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -58,6 +61,26 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { EmojiPicker } from '@/components/EmojiPicker';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 // Define block categories for conversion
 const blockCategories = [
@@ -79,6 +102,7 @@ const blockCategories = [
       { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
+      { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
@@ -88,7 +112,6 @@ const blockCategories = [
       { type: 'video', icon: Video, label: 'Video' },
       { type: 'audio', icon: Music, label: 'Audio' },
       { type: 'file', icon: FileIcon, label: 'File' },
-      { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
@@ -206,6 +229,19 @@ const programmingLanguages = [
   { value: 'plaintext', label: 'Plain Text' },
 ];
 
+// Comment interface
+interface Comment {
+  id: string;
+  author: {
+    name: string;
+    avatar?: string;
+  };
+  content: string;
+  timestamp: Date;
+  replies?: Comment[];
+  parentId?: string;
+}
+
 interface CodeBlockProps {
   block: BlockType;
   onUpdate: (updatedBlock: BlockType) => void;
@@ -233,6 +269,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredLanguages, setFilteredLanguages] = useState(programmingLanguages);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [showCommentsDialog, setShowCommentsDialog] = useState<boolean>(false);
+  const [comments, setComments] = useState<Comment[]>(block.comments || []);
+  const [newComment, setNewComment] = useState<string>('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState<string>('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
   
   // Constants
   const LINE_HEIGHT = 24.5; // Approximate line height in pixels
@@ -241,6 +283,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   // Refs
   const codeRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
   
   // Calculate number of lines in the code
   const lineCount = code.split('\n').length;
@@ -252,9 +295,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       ...block,
       content: code,
       language: language,
-      title: caption
+      title: caption,
+      comments: comments
     });
-  }, [code, language, caption]);
+  }, [code, language, caption, comments]);
   
   // Handle language change
   const handleLanguageChange = (value: string) => {
@@ -299,6 +343,240 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       setFilteredLanguages(programmingLanguages);
     }
   };
+  
+  // Add new comment
+  const addComment = () => {
+    if (!newComment.trim()) return;
+    
+    const comment: Comment = {
+      id: Date.now().toString(),
+      author: {
+        name: 'Current User', // In a real app, this would come from auth
+        avatar: '/avatars/user.png', // In a real app, this would come from auth
+      },
+      content: newComment.trim(),
+      timestamp: new Date()
+    };
+    
+    setComments([...comments, comment]);
+    setNewComment('');
+    
+    // Focus back on input
+    if (commentInputRef.current) {
+      commentInputRef.current.focus();
+    }
+  };
+  
+  // Delete comment
+  const deleteComment = (commentId: string) => {
+    setComments(comments.filter(comment => comment.id !== commentId));
+  };
+  
+  // Format timestamp for comments
+  const formatTimestamp = (date: Date): string => {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    
+    // Less than a minute
+    if (diff < 60000) {
+      return 'Just now';
+    }
+    
+    // Less than an hour
+    if (diff < 3600000) {
+      const minutes = Math.floor(diff / 60000);
+      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    }
+    
+    // Less than a day
+    if (diff < 86400000) {
+      const hours = Math.floor(diff / 3600000);
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    }
+    
+    // Format as date
+    return date.toLocaleDateString();
+  };
+  
+  // Add reply function
+  const addReply = (parentId: string) => {
+    if (!replyContent.trim()) return;
+
+    const newReply: Comment = {
+      id: Date.now().toString(),
+      author: {
+        name: 'User', // You might want to get this from your auth context
+      },
+      content: replyContent,
+      timestamp: new Date(),
+      parentId: parentId
+    };
+
+    const updatedComments = comments.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply]
+        };
+      }
+      return comment;
+    });
+
+    setComments(updatedComments);
+    setReplyContent('');
+    setReplyingTo(null);
+  };
+
+  // Delete reply function
+  const deleteReply = (parentId: string, replyId: string) => {
+    const updatedComments = comments.map(comment => {
+      if (comment.id === parentId) {
+        return {
+          ...comment,
+          replies: comment.replies?.filter(reply => reply.id !== replyId)
+        };
+      }
+      return comment;
+    });
+
+    setComments(updatedComments);
+  };
+
+  // Function to handle emoji selection
+  const handleEmojiSelect = (emoji: any) => {
+    if (!emoji?.native) return;
+    
+    const textareaElement = document.activeElement;
+    if (textareaElement?.tagName === 'TEXTAREA') {
+      const textarea = textareaElement as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const newText = text.substring(0, start) + emoji.native + text.substring(end);
+      
+      if (textarea.id === 'mainComment') {
+        setNewComment(newText);
+      } else if (textarea.id === 'replyComment') {
+        setReplyContent(newText);
+      }
+      
+      // Set cursor position after the inserted emoji
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + emoji.native.length, start + emoji.native.length);
+      }, 0);
+    } else {
+      // Fallback if no textarea is focused
+      if (replyingTo) {
+        setReplyContent(prev => prev + emoji.native);
+      } else {
+        setNewComment(prev => prev + emoji.native);
+      }
+    }
+  };
+
+  // Render comment with replies
+  const renderComment = (comment: Comment, isReply: boolean = false) => (
+    <div key={comment.id} className={`flex gap-3 ${isReply ? 'ml-8 mt-3' : ''}`}>
+      <Avatar className="h-8 w-8 border">
+        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
+        <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1">
+        <div className="bg-accent/5 rounded-md p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-medium">{comment.author.name}</span>
+            <span className="text-xs text-muted-foreground">{formatTimestamp(comment.timestamp)}</span>
+          </div>
+          <p className="text-sm text-foreground/90">{comment.content}</p>
+        </div>
+        <div className="flex gap-2 mt-1">
+          {!isReply && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground h-6 px-2"
+              onClick={() => setReplyingTo(comment.id)}
+            >
+              Reply
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground hover:text-destructive h-6 px-2"
+            onClick={() => isReply ? deleteReply(comment.parentId!, comment.id) : deleteComment(comment.id)}
+          >
+            Delete
+          </Button>
+        </div>
+        
+        {/* Replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-2">
+            {comment.replies.map(reply => renderComment(reply, true))}
+          </div>
+        )}
+        
+        {/* Reply input */}
+        {replyingTo === comment.id && (
+          <div className="mt-2 ml-8">
+            <div className="flex gap-2">
+              <Avatar className="h-6 w-6 border">
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="relative">
+                  <Textarea
+                    id="replyComment"
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    placeholder="Write a reply..."
+                    className="w-full text-sm p-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[60px] resize-none pr-10"
+                    rows={2}
+                  />
+                  <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex gap-1">
+                    {["👍", "❤️", "😊", "👏"].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setReplyContent(prev => prev + emoji);
+                        }}
+                        className="hover:bg-accent/20 rounded p-1 transition-colors"
+                      >
+                        <span className="text-lg">{emoji}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs"
+                      onClick={() => setReplyingTo(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      className="h-7 text-xs"
+                      onClick={() => addReply(comment.id)}
+                    >
+                      Reply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
   
   return (
     <div 
@@ -391,6 +669,14 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                   Move down
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem 
+                className="flex items-center gap-2"
+                onClick={() => setShowCommentsDialog(true)}
+              >
+                <MessageSquare className="h-4 w-4" />
+                Show Comments
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onDelete} className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4" />
                 Delete
@@ -527,24 +813,59 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleCaptionToggle} 
-                  className="h-9 px-3 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
-                >
-                  <MessageSquareText className="h-4 w-4 mr-1" />
-                  {showCaption ? "Hide caption" : "Add caption"}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleCopy} 
-                  className="h-9 px-3 text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700"
-                >
-                  {isCopied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-                  {isCopied ? "Copied" : "Copy"}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowCommentsDialog(true)}
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      Comments
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={handleCaptionToggle}
+                      >
+                        <MessageSquareText className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {showCaption ? "Hide caption" : "Add caption"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={handleCopy}
+                      >
+                        {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {isCopied ? "Copied" : "Copy"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
             
@@ -619,6 +940,96 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           )}
         </div>
       </div>
+
+      {/* Comments Dialog */}
+      <Dialog open={showCommentsDialog} onOpenChange={setShowCommentsDialog}>
+        <DialogContent className="max-w-[600px] w-full h-[80vh] flex flex-col">
+          <DialogHeader className="flex flex-row justify-between items-center border-b pb-3">
+            <DialogTitle className="text-xl font-semibold">Code Comments</DialogTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full"
+              onClick={() => setShowCommentsDialog(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          
+          <div className="flex-1 flex flex-col mt-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-foreground">Comments ({comments.length})</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-muted-foreground h-7"
+                onClick={() => commentInputRef.current?.focus()}
+              >
+                Add comment
+              </Button>
+            </div>
+            
+            {/* Comments list */}
+            <div className="space-y-4 mb-4 flex-1 overflow-y-auto">
+              {comments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground mb-2">No comments yet</p>
+                  <p className="text-xs text-muted-foreground/70">Start the conversation by adding a comment below</p>
+                </div>
+              ) : (
+                comments.filter(comment => !comment.parentId).map(comment => renderComment(comment))
+              )}
+            </div>
+            
+            {/* New comment input */}
+            <div className="border-t pt-3">
+              <div className="flex gap-3">
+                <Avatar className="h-8 w-8 border">
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="relative">
+                    <Textarea
+                      ref={commentInputRef}
+                      id="mainComment"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Write a comment..."
+                      className="w-full text-sm p-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-none pr-10"
+                      rows={3}
+                    />
+                    <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex gap-1">
+                      {["👍", "❤️", "😊", "👏"].map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setNewComment(prev => prev + emoji);
+                          }}
+                          className="hover:bg-accent/20 rounded p-1 transition-colors"
+                        >
+                          <span className="text-lg">{emoji}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <Button 
+                      onClick={addComment} 
+                      disabled={!newComment.trim()}
+                      size="sm"
+                    >
+                      Comment
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -80,6 +80,7 @@ const blockCategories = [
       { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
+      { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
@@ -89,7 +90,6 @@ const blockCategories = [
       { type: 'video', icon: VideoIcon, label: 'Video' },
       { type: 'audio', icon: Music, label: 'Audio' },
       { type: 'file', icon: FileIcon, label: 'File' },
-      { type: 'code', icon: Code, label: 'Code' },
     ]
   },
   {
