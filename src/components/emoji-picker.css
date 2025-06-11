@@ -1,0 +1,112 @@
+/* Emoji Picker Styles */
+.emoji-picker-container {
+  height: 350px;
+  overflow: hidden;
+}
+
+.emoji-picker-container em-emoji-picker {
+  height: 100%;
+  width: 100%;
+  --em-emoji-size: 24px;
+}
+
+/* Fix width and padding issues */
+.emoji-picker-container em-emoji-picker section {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.emoji-picker-container [data-name="categories"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.emoji-picker-container [data-name="tabs"] {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-x: auto !important;
+  width: 100% !important;
+}
+
+/* Critical fix for search input */
+.emoji-picker-container input,
+.emoji-picker-container input.em-search,
+.emoji-picker-container input[type="search"],
+.emoji-picker-container em-emoji-picker input {
+  width: calc(100% - 8px) !important;
+  margin: 4px 4px !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+  border: 1px solid #e2e8f0 !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  background-color: white !important;
+  color: black !important;
+  z-index: 100 !important;
+  position: relative !important;
+}
+
+/* Override any pointer-events: none that might be affecting the search */
+.emoji-picker-container [data-name="search"],
+.emoji-picker-container em-emoji-picker [data-name="search"] {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background-color: white !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure the search container and its children are interactive */
+.emoji-picker-container [data-name="search"] *,
+.emoji-picker-container em-emoji-picker [data-name="search"] * {
+  pointer-events: auto !important;
+}
+
+.emoji-picker-container [data-name="scroll"] {
+  height: calc(100% - 6rem) !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Fix emoji grid layout */
+.emoji-picker-container [role="grid"] {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.emoji-picker-container [role="row"] {
+  display: contents !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.emoji-picker-container [role="gridcell"] {
+  height: auto !important;
+  width: auto !important;
+  padding: 2px !important;
+  margin: 0 !important;
+}
+
+/* Fix category title padding */
+.emoji-picker-container [data-name="category-title"] {
+  padding: 4px 4px !important;
+  margin: 0 !important;
+  font-size: 0.8rem !important;
+}
+
+/* Make emoji buttons smaller */
+.emoji-picker-container button.emoji-mart-emoji {
+  margin: 0 !important;
+  padding: 0 !important;
+} 

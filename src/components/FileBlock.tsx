@@ -37,7 +37,8 @@ import {
   FilePlus,
   FileMinus,
   FileSymlink,
-  RefreshCw
+  RefreshCw,
+  Smile
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BlockType } from '@/types';
@@ -69,6 +70,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
+import { EmojiPicker } from '@/components/EmojiPicker';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // Define file extensions for different file types
 const fileTypes = {
@@ -213,14 +218,14 @@ interface FileBlockProps {
 
 
 
-const FileBlock: React.FC<FileBlockProps> = ({ 
+const FileBlock = ({ 
   block, 
   onUpdate, 
   onDelete,
   onMoveUp,
   onMoveDown,
   onConvert
-}) => {
+}: FileBlockProps): JSX.Element => {
   // State for the file
   const [fileUrl, setFileUrl] = useState<string>(block.url || '');
   const [fileName, setFileName] = useState<string>(block.title || '');
@@ -241,6 +246,7 @@ const FileBlock: React.FC<FileBlockProps> = ({
   const [newFileName, setNewFileName] = useState<string>('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<string>('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -550,6 +556,39 @@ const FileBlock: React.FC<FileBlockProps> = ({
     setComments(updatedComments);
   };
 
+  // Function to handle emoji selection
+  const handleEmojiSelect = (emoji: any) => {
+    if (!emoji?.native) return;
+    
+    const textareaElement = document.activeElement;
+    if (textareaElement?.tagName === 'TEXTAREA') {
+      const textarea = textareaElement as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const newText = text.substring(0, start) + emoji.native + text.substring(end);
+      
+      if (textarea.id === 'mainComment') {
+        setNewComment(newText);
+      } else if (textarea.id === 'replyComment') {
+        setReplyContent(newText);
+      }
+      
+      // Set cursor position after the inserted emoji
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + emoji.native.length, start + emoji.native.length);
+      }, 0);
+    } else {
+      // Fallback if no textarea is focused
+      if (replyingTo) {
+        setReplyContent(prev => prev + emoji.native);
+      } else {
+        setNewComment(prev => prev + emoji.native);
+      }
+    }
+  };
+
   // Render comment with replies
   const renderComment = (comment: Comment, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-3 ${isReply ? 'ml-8 mt-3' : ''}`}>
@@ -592,33 +631,53 @@ const FileBlock: React.FC<FileBlockProps> = ({
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <Textarea
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Write a reply..."
-                className="w-full resize-none text-sm min-h-[60px] focus-visible:ring-primary"
-                rows={2}
-              />
-              <div className="flex justify-end gap-2 mt-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setReplyingTo(null);
-                    setReplyContent('');
-                  }}
-                  className="h-7"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => addReply(comment.id)}
-                  disabled={!replyContent.trim()}
-                  className="h-7 bg-primary hover:bg-primary/90"
-                >
-                  Reply
-                </Button>
+              <div className="relative">
+                <Textarea
+                  id="replyComment"
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="w-full resize-none text-sm min-h-[60px] focus-visible:ring-primary pr-10"
+                  rows={2}
+                />
+                <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+              </div>
+              <div className="flex justify-between items-center mt-2">
+                <div className="flex gap-1">
+                  {["👍", "❤️", "😊", "👏"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setReplyContent(prev => prev + emoji);
+                      }}
+                      className="hover:bg-accent/20 rounded p-1 transition-colors"
+                    >
+                      <span className="text-lg">{emoji}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setReplyingTo(null);
+                      setReplyContent('');
+                    }}
+                    className="h-7"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => addReply(comment.id)}
+                    disabled={!replyContent.trim()}
+                    className="h-7 bg-primary hover:bg-primary/90"
+                  >
+                    Reply
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1116,15 +1175,33 @@ const FileBlock: React.FC<FileBlockProps> = ({
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <Textarea
-                  ref={commentInputRef}
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add a comment..."
-                  className="w-full resize-none text-sm min-h-[80px] focus-visible:ring-primary"
-                  rows={3}
-                />
-                <div className="flex justify-end mt-2">
+                <div className="relative">
+                  <Textarea
+                    id="mainComment"
+                    ref={commentInputRef}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment..."
+                    className="w-full resize-none text-sm min-h-[80px] focus-visible:ring-primary pr-10"
+                    rows={3}
+                  />
+                  <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex gap-1">
+                    {["👍", "❤️", "😊", "👏"].map((emoji) => (
+                      <button
+                        key={emoji}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setNewComment(prev => prev + emoji);
+                        }}
+                        className="hover:bg-accent/20 rounded p-1 transition-colors"
+                      >
+                        <span className="text-lg">{emoji}</span>
+                      </button>
+                    ))}
+                  </div>
                   <Button
                     size="sm"
                     onClick={addComment}
