@@ -55,6 +55,7 @@ import ImageBlock from './ImageBlock';
 import VideoBlock from './VideoBlock';
 import AudioBlock from './AudioBlock';
 import FileBlock from './FileBlock';
+import CodeBlock from './CodeBlock';
 
 interface ListItem {
   id: string;
@@ -586,6 +587,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       return (
         <div className="relative group">
           <FileBlock
+            key={block.id}
+            block={block}
+            onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+            onDelete={() => handleDeleteBlock(numericIndex)}
+            onMoveUp={() => handleMoveBlockUp(numericIndex)}
+            onMoveDown={() => handleMoveBlockDown(numericIndex)}
+            onConvert={(newType) => handleConvertBlock(numericIndex, newType)}
+          />
+        </div>
+      );
+    }
+    
+    if (block.type === 'code') {
+      return (
+        <div className="relative group">
+          <CodeBlock
             key={block.id}
             block={block}
             onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
