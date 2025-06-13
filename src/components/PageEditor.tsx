@@ -56,6 +56,7 @@ import VideoBlock from './VideoBlock';
 import AudioBlock from './AudioBlock';
 import FileBlock from './FileBlock';
 import CodeBlock from './CodeBlock';
+import EmbedBlock from './EmbedBlock';
 
 interface ListItem {
   id: string;
@@ -92,7 +93,6 @@ const blockCategories: BlockCategoryType[] = [
       { type: 'number-list', icon: ListOrdered, label: 'Number List' },
       { type: 'to-do', icon: CheckSquare, label: 'To-do List' },
       { type: 'toggle', icon: List, label: 'Toggle List' },
-      { type: 'board', icon: Layout, label: 'Board' },
       { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
@@ -111,6 +111,7 @@ const blockCategories: BlockCategoryType[] = [
   {
     name: "Advanced Blocks",
     blocks: [
+      { type: 'board', icon: Layout, label: 'Board' },
       { type: 'form', icon: FormInput, label: 'Form' },
       { type: 'table-of-contents', icon: ListTree, label: 'Table of Content' },
       { type: 'two-columns', icon: Layout, label: '2 Column' },
@@ -426,8 +427,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const renderBlock = (block: BlockType, index: number | string, isNested: boolean = false) => {
-    const numericIndex = typeof index === 'string' ? parseInt(index) : index;
+  const renderBlock = (block: BlockType, index: number, isNested: boolean = false) => {
+    const numericIndex = isNested ? -1 : index;
     
     if (block.type === 'table') {
       return (
@@ -615,6 +616,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       );
     }
 
+    if (block.type === 'embed') {
+      return (
+        <div className="relative group">
+          <EmbedBlock
+            key={block.id}
+            block={block}
+            onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+            onDelete={() => handleDeleteBlock(numericIndex)}
+            onMoveUp={() => handleMoveBlockUp(numericIndex)}
+            onMoveDown={() => handleMoveBlockDown(numericIndex)}
+            onConvert={(newType) => handleConvertBlock(numericIndex, newType)}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="relative group">
         <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
@@ -719,8 +736,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             ) : block.type === 'quote' ? (
               <div className="flex gap-3 py-1">
                 <div className="w-1 bg-gray-200 rounded-full flex-shrink-0" />
-                <input
-                  type="text"
+                <textarea
                   value={block.content || ''}
                   onChange={(e) => {
                     if (isNested && block.parentId) {
@@ -751,13 +767,20 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                   placeholder={getPlaceholderForType(block.type)}
                   className={getClassNameForType(block.type)}
                   autoFocus={activeInputIndex === numericIndex}
+                  rows={1}
+                  style={{ resize: 'none', overflow: 'hidden' }}
+                  onInput={(e) => {
+                    // Auto-resize the textarea to fit content
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${target.scrollHeight}px`;
+                  }}
                 />
               </div>
             ) : isListType(block.type) ? (
               renderListItems(block, numericIndex, isNested)
             ) : (
-              <input
-                type="text"
+              <textarea
                 value={block.content || ''}
                 onChange={(e) => {
                   if (isNested && block.parentId) {
@@ -788,6 +811,14 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                 placeholder={getPlaceholderForType(block.type)}
                 className={getClassNameForType(block.type)}
                 autoFocus={activeInputIndex === numericIndex}
+                rows={1}
+                style={{ resize: 'none', overflow: 'hidden' }}
+                onInput={(e) => {
+                  // Auto-resize the textarea to fit content
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
               />
             )}
           </div>
@@ -1041,7 +1072,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
     // Focus the new block
     requestAnimationFrame(() => {
-      const contentEditableDiv = document.querySelector(`[data-block-id="${newBlock.id}"] input`);
+      const contentEditableDiv = document.querySelector(`[data-block-id="${newBlock.id}"] textarea, [data-block-id="${newBlock.id}"] input`);
       if (contentEditableDiv instanceof HTMLElement) {
         contentEditableDiv.focus();
       }
@@ -1334,12 +1365,19 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         />
                       </Popover>
                   </div>
-                  <input
-                    type="text"
+                  <textarea
                     placeholder="Type here..."
                     className="flex-1 bg-transparent border-none outline-none min-h-[24px] whitespace-pre-wrap break-words px-3 text-base placeholder:text-muted-foreground"
                     onChange={(e) => handleAddBlock(-1, 'paragraph')}
                     autoFocus
+                    rows={1}
+                    style={{ resize: 'none', overflow: 'hidden' }}
+                    onInput={(e) => {
+                      // Auto-resize the textarea to fit content
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = `${target.scrollHeight}px`;
+                    }}
                   />
                 </div>
               )}

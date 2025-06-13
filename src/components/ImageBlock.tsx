@@ -71,7 +71,6 @@ const blockCategories = [
       { type: 'number-list', icon: ListOrdered, label: 'Number List' },
       { type: 'to-do', icon: CheckSquare, label: 'To-do List' },
       { type: 'toggle', icon: List, label: 'Toggle List' },
-      { type: 'board', icon: Layout, label: 'Board' },
       { type: 'quote', icon: Quote, label: 'Quote' },
       { type: 'table', icon: Table, label: 'Table' },
       { type: 'divider', icon: Minus, label: 'Divider' },
@@ -90,6 +89,7 @@ const blockCategories = [
   {
     name: "Advanced Blocks",
     blocks: [
+      { type: 'board', icon: Layout, label: 'Board' },
       { type: 'form', icon: FormInput, label: 'Form' },
       { type: 'table-of-contents', icon: ListTree, label: 'Table of Content' },
       { type: 'two-columns', icon: Layout, label: '2 Column' },
