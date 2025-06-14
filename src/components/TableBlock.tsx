@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { MoreHorizontal, Plus, Trash, Copy, Type, Square, GripVertical, GripHorizontal } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash, Copy, Type, Square, GripVertical, GripHorizontal, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -49,6 +49,31 @@ const SixDotHandle = ({ onClick, className, visible = false, horizontal = false 
 
 // Color picker submenu component
 const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
+  const [tempColor, setTempColor] = useState(value);
+  
+  // Update tempColor when value changes or component opens
+  useEffect(() => {
+    if (isOpen) {
+      setTempColor(value);
+    }
+  }, [value, isOpen]);
+  
+  // Get default color based on the current value type
+  const getDefaultColor = () => {
+    if (value === 'transparent' || value.includes('rgba') || value.includes('rgb')) {
+      return 'transparent';
+    }
+    return '#222'; // Default text color
+  };
+  
+  // Handle reset to default color
+  const handleReset = () => {
+    const defaultColor = getDefaultColor();
+    setTempColor(defaultColor);
+    onChange(defaultColor);
+    onClose();
+  };
+  
   if (!isOpen) return null;
   
   return (
@@ -66,16 +91,48 @@ const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-3">
-          <HexColorPicker color={value} onChange={onChange} />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Color Picker</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={handleReset}
+              title="Reset to default"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </div>
+          <HexColorPicker color={tempColor} onChange={setTempColor} />
           <div className="flex items-center gap-2 mt-2">
             <Label className="text-xs">Hex</Label>
             <Input 
               type="text" 
-              value={value} 
-              onChange={(e) => onChange(e.target.value)} 
+              value={tempColor} 
+              onChange={(e) => setTempColor(e.target.value)} 
               className="h-7 text-xs"
               autoFocus
             />
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onClose}
+              className="h-8 text-xs"
+            >
+              Cancel
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={() => {
+                onChange(tempColor);
+                onClose();
+              }}
+              className="h-8 text-xs"
+            >
+              Save
+            </Button>
           </div>
         </div>
       </div>
@@ -95,6 +152,11 @@ const RowColumnPopupContent = ({
 }) => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   
+  // Close submenu handler
+  const handleCloseSubmenu = () => {
+    setActiveSubmenu(null);
+  };
+  
   return (
     <div className="relative py-1">
       <div className="flex flex-col gap-1">
@@ -107,6 +169,24 @@ const RowColumnPopupContent = ({
             <Type className="h-4 w-4 text-gray-500" />
             <span className="text-sm">Text Color</span>
           </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 mr-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTextColorChange(index, '#222'); // Reset to default text color
+              }}
+              title="Reset to default"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+            <div 
+              className="w-4 h-4 rounded border border-gray-300" 
+              style={{ backgroundColor: styles?.textColor || '#222' }}
+            />
+          </div>
         </div>
         
         {/* Cell Color Option */}
@@ -117,6 +197,24 @@ const RowColumnPopupContent = ({
           <div className="flex items-center gap-2">
             <Square className="h-4 w-4 text-gray-500" />
             <span className="text-sm">Cell Color</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 mr-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                onBgColorChange(index, 'transparent'); // Reset to transparent background
+              }}
+              title="Reset to default"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+            <div 
+              className="w-4 h-4 rounded border border-gray-300" 
+              style={{ backgroundColor: styles?.bgColor || 'transparent' }}
+            />
           </div>
         </div>
         
@@ -151,14 +249,14 @@ const RowColumnPopupContent = ({
         value={styles?.textColor || '#222'} 
         onChange={(color) => onTextColorChange(index, color)}
         isOpen={activeSubmenu === 'textColor'}
-        onClose={() => setActiveSubmenu(null)}
+        onClose={handleCloseSubmenu}
       />
       
       <ColorPickerSubmenu 
         value={styles?.bgColor || 'transparent'} 
         onChange={(color) => onBgColorChange(index, color)}
         isOpen={activeSubmenu === 'bgColor'}
-        onClose={() => setActiveSubmenu(null)}
+        onClose={handleCloseSubmenu}
       />
     </div>
   );
@@ -196,6 +294,9 @@ const TableBlock = ({
   const [columnWidths, setColumnWidths] = useState(block.columnWidths || Array(DEFAULT_COLS).fill(null));
   const [isResizing, setIsResizing] = useState(false);
   const [resizingColumnIndex, setResizingColumnIndex] = useState(null);
+  
+  // Dragging state
+  const [dragState, setDragState] = useState(null); // { type, source, destination }
 
   // Refs
   const tableRef = useRef(null);
@@ -721,14 +822,35 @@ const TableBlock = ({
       </div>
 
       <DragDropContext 
-        onDragEnd={handleDragEnd}
-        onDragStart={() => {
+        onDragEnd={(result) => {
+          // Clear drag state
+          setDragState(null);
+          handleDragEnd(result);
+        }}
+        onDragStart={(start) => {
           // Clear any existing selections when starting a new drag
           setSelectedCell(null);
+          
+          // Set initial drag state
+          setDragState({
+            type: start.type,
+            source: start.source.index,
+            destination: start.source.index
+          });
         }}
         onDragUpdate={(update) => {
-          // This is where we could show additional visual feedback
-          // based on the current drag position
+          // Show visual feedback based on the current drag position
+          const { destination, source, draggableId, type } = update;
+          
+          // If no valid destination, maintain last known destination
+          if (!destination) return;
+          
+          // Update drag state with new destination
+          setDragState({
+            type,
+            source: source.index,
+            destination: destination.index
+          });
         }}
       >
         <div className="table-container relative" ref={tableContainerRef}>
@@ -814,6 +936,60 @@ const TableBlock = ({
             </Droppable>
           </div>
 
+          {/* Column Drag Guide - Only visible during column dragging */}
+          {dragState && dragState.type === 'column' && (
+            <div 
+              className="absolute top-0 bottom-0 bg-blue-500/20 border-2 border-blue-500 transition-all duration-150 pointer-events-none"
+              style={{
+                width: '6px',
+                left: (() => {
+                  // Calculate position based on destination index
+                  if (!tableRef.current) return 0;
+                  
+                  const table = tableRef.current;
+                  const cells = table.rows[0]?.cells || [];
+                  
+                  if (dragState.destination >= cells.length) {
+                    // If dragging to the end, position after the last column
+                    const lastCell = cells[cells.length - 1];
+                    return lastCell.offsetLeft + lastCell.offsetWidth;
+                  }
+                  
+                  // Position at the left of the destination column
+                  return cells[dragState.destination].offsetLeft;
+                })(),
+                transform: 'translateX(-3px)',
+                zIndex: 100
+              }}
+            />
+          )}
+          
+          {/* Row Drag Guide - Only visible during row dragging */}
+          {dragState && dragState.type === 'row' && (
+            <div 
+              className="absolute left-0 right-0 bg-blue-500/20 border-2 border-blue-500 transition-all duration-150 pointer-events-none"
+              style={{
+                height: '6px',
+                top: (() => {
+                  // Calculate position based on destination index
+                  if (!tableRef.current) return 0;
+                  
+                  const rows = tableRef.current.rows;
+                  if (dragState.destination >= rows.length) {
+                    // If dragging to the end, position after the last row
+                    const lastRow = rows[rows.length - 1];
+                    return lastRow.offsetTop + lastRow.offsetHeight;
+                  }
+                  
+                  // Position at the top of the destination row
+                  return rows[dragState.destination].offsetTop;
+                })(),
+                transform: 'translateY(-3px)',
+                zIndex: 100
+              }}
+            />
+          )}
+          
           {/* Table with Draggable Rows */}
           <table className="w-full border-collapse table-fixed" ref={tableRef}>
             {/* Column group for width definitions */}
@@ -840,7 +1016,7 @@ const TableBlock = ({
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
-                    snapshot.isDraggingOver && "bg-blue-50"
+                    snapshot.isDraggingOver && "bg-blue-100"
                   )}
                 >
                   {rowIds.map((rowId, rowIdx) => {
@@ -855,10 +1031,12 @@ const TableBlock = ({
                             {...provided.draggableProps}
                             className={cn(
                               "relative",
-                              isHeaderRowCell ? "bg-gray-100 font-medium" : ""
+                              isHeaderRowCell && !rowStyles[rowIdx]?.bgColor ? "bg-gray-50 font-semibold" : ""
                             )}
                             style={{
-                              backgroundColor: isHeaderRowCell ? '#f3f4f6' : rowStyles[rowIdx]?.bgColor || 'transparent',
+                              backgroundColor: snapshot.isDragging 
+                                ? '#f0f9ff' 
+                                : (rowStyles[rowIdx]?.bgColor || (isHeaderRowCell ? '#f9fafb' : 'transparent')),
                               color: rowStyles[rowIdx]?.textColor || '#222',
                               border: snapshot.isDragging ? '2px solid #3b82f6' : null,
                               borderRadius: snapshot.isDragging ? '4px' : null,
@@ -874,24 +1052,28 @@ const TableBlock = ({
                               
                               // Determine the cell background color with priority
                               let bgColor = 'transparent';
-                              if (isHeaderRowCell) {
-                                bgColor = '#f3f4f6'; // Header row takes precedence
-                              } else if (isHeaderColCell) {
-                                bgColor = '#f3f4f6'; // Header column
-                              } else if (colStyles[colIdx]?.bgColor) {
+                              
+                              // First check for custom colors on the cell's row or column
+                              if (rowStyles[rowIdx]?.bgColor && rowStyles[rowIdx]?.bgColor !== 'transparent') {
+                                bgColor = rowStyles[rowIdx]?.bgColor; // Row style takes precedence
+                              } else if (colStyles[colIdx]?.bgColor && colStyles[colIdx]?.bgColor !== 'transparent') {
                                 bgColor = colStyles[colIdx]?.bgColor; // Column style
-                              } else if (rowStyles[rowIdx]?.bgColor) {
-                                bgColor = rowStyles[rowIdx]?.bgColor; // Row style
+                              } else if (isHeaderRowCell || isHeaderColCell) {
+                                // Only apply default header styling if no custom color is set
+                                bgColor = '#f9fafb';
                               }
 
                               // Determine text color with priority
                               let textColor = '#222';
-                              if (isHeaderRowCell || isHeaderColCell) {
-                                textColor = '#000'; // Headers get darker text
-                              } else if (colStyles[colIdx]?.textColor) {
-                                textColor = colStyles[colIdx]?.textColor;
-                              } else if (rowStyles[rowIdx]?.textColor) {
-                                textColor = rowStyles[rowIdx]?.textColor;
+                              
+                              // First check for custom colors on the cell's row or column
+                              if (rowStyles[rowIdx]?.textColor && rowStyles[rowIdx]?.textColor !== '#222') {
+                                textColor = rowStyles[rowIdx]?.textColor; // Row style takes precedence
+                              } else if (colStyles[colIdx]?.textColor && colStyles[colIdx]?.textColor !== '#222') {
+                                textColor = colStyles[colIdx]?.textColor; // Column style
+                              } else if (isHeaderRowCell || isHeaderColCell) {
+                                // Only apply default header styling if no custom color is set
+                                textColor = '#111';
                               }
                               
                               return (
@@ -899,6 +1081,7 @@ const TableBlock = ({
                                   key={colIdx}
                                   className={cn(
                                     "border border-gray-200 p-0 min-w-[60px] relative box-border",
+                                    isHeader && !rowStyles[rowIdx]?.bgColor && !colStyles[colIdx]?.bgColor && "bg-gray-50",
                                     isHeader && "font-medium",
                                     selectedCell?.rowIdx === rowIdx && selectedCell?.colIdx === colIdx && "ring-2 ring-blue-500 ring-inset",
                                     selectedRow === rowIdx && "border-blue-500 border-2",
@@ -927,8 +1110,9 @@ const TableBlock = ({
                                     }}>
                                       <PopoverTrigger asChild>
                                         <div 
-                                          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10"
+                                          className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 cursor-grab"
                                           {...provided.dragHandleProps}
+                                          onMouseEnter={() => setHoveredRow(rowIdx)}
                                         >
                                           <SixDotHandle 
                                             visible={hoveredRow === rowIdx || snapshot.isDragging || selectedRow === rowIdx} 
@@ -956,7 +1140,8 @@ const TableBlock = ({
                                     className="w-full outline-none bg-transparent"
                                     style={{ 
                                       padding: '6px',
-                                      fontWeight: isHeader ? 500 : 400
+                                      fontWeight: isHeader ? 600 : 400,
+                                      color: 'inherit' // Inherit from the parent td
                                     }}
                                   />
 
