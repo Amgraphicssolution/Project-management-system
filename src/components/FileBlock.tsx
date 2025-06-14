@@ -40,7 +40,7 @@ import {
   RefreshCw,
   Smile
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, shouldUseTopAlignedGrip } from '@/lib/utils';
 import { BlockType } from '@/types';
 import { 
   Dialog, 
@@ -1012,7 +1012,10 @@ const FileBlock = ({
       ) : (
         <div className="relative group">
           <div className="flex items-center group-hover:bg-accent/5 rounded-md">
-            <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+            <div className={cn(
+              "flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100",
+              shouldUseTopAlignedGrip(block.type) ? "items-start pt-4" : "items-center"
+            )}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button 
@@ -1308,11 +1311,6 @@ const FileBlock = ({
               </div>
             </TabsContent>
           </Tabs>
-          <div className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline" className="w-full">Cancel</Button>
-            </DialogClose>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

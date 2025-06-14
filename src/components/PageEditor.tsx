@@ -33,6 +33,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { shouldUseTopAlignedGrip } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +58,7 @@ import AudioBlock from './AudioBlock';
 import FileBlock from './FileBlock';
 import CodeBlock from './CodeBlock';
 import EmbedBlock from './EmbedBlock';
+import FormBlock from './FormBlock';
 
 interface ListItem {
   id: string;
@@ -433,8 +435,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     if (block.type === 'table') {
       return (
         <div className="relative group">
-          <div className="flex items-start gap-4 group-hover:bg-accent/5 rounded-sm">
-            <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 pt-4">
+          <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5">
+            <div className="flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 items-center">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
@@ -616,6 +618,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       );
     }
 
+    if (block.type === 'form') {
+      return (
+        <div className="relative group">
+          <FormBlock
+            key={block.id}
+            block={block}
+            onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+            onDelete={() => handleDeleteBlock(numericIndex)}
+            onMoveUp={() => handleMoveBlockUp(numericIndex)}
+            onMoveDown={() => handleMoveBlockDown(numericIndex)}
+            onConvert={(newType) => handleConvertBlock(numericIndex, newType)}
+          />
+        </div>
+      );
+    }
+    
     if (block.type === 'embed') {
       return (
         <div className="relative group">
@@ -634,8 +652,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
     return (
       <div className="relative group">
-        <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
-          <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+        <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5">
+          <div className="flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
@@ -730,11 +748,11 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
           </div>
           <div className="flex-1 min-h-[32px]">
             {block.type === 'divider' ? (
-              <div className="flex items-center px-3 py-2">
+              <div className="flex items-center px-3 py-4">
                 <div className="flex-1 h-[1px] bg-gray-200" />
               </div>
             ) : block.type === 'quote' ? (
-              <div className="flex gap-3 py-1">
+              <div className="flex gap-3 py-1.5">
                 <div className="w-1 bg-gray-200 rounded-full flex-shrink-0" />
                 <textarea
                   value={block.content || ''}
@@ -1032,15 +1050,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   const getClassNameForType = (type: BlockType['type']) => {
     const baseClasses = 'w-full bg-transparent border-none outline-none whitespace-pre-wrap break-words px-3 placeholder:text-muted-foreground';
     switch (type) {
-      case 'heading-1': return `${baseClasses} text-[2rem] font-bold tracking-tight leading-tight py-6 text-gray-800`;
-      case 'heading-2': return `${baseClasses} text-[1.75rem] font-bold tracking-tight leading-tight py-5 text-gray-800`;
-      case 'heading-3': return `${baseClasses} text-[1.5rem] font-bold leading-snug py-4 text-gray-800`;
-      case 'heading-4': return `${baseClasses} text-[1.25rem] font-semibold leading-snug py-3 text-gray-800`;
-      case 'heading-5': return `${baseClasses} text-[1.15rem] font-semibold leading-snug py-2 text-gray-800`;
-      case 'heading-6': return `${baseClasses} text-[1.05rem] font-semibold leading-snug py-2 text-gray-800`;
+      case 'heading-1': return `${baseClasses} text-[2rem] font-bold tracking-tight leading-tight text-gray-800`;
+      case 'heading-2': return `${baseClasses} text-[1.75rem] font-bold tracking-tight leading-tight text-gray-800`;
+      case 'heading-3': return `${baseClasses} text-[1.5rem] font-bold leading-snug text-gray-800`;
+      case 'heading-4': return `${baseClasses} text-[1.25rem] font-semibold leading-snug text-gray-800`;
+      case 'heading-5': return `${baseClasses} text-[1.15rem] font-semibold leading-snug text-gray-800`;
+      case 'heading-6': return `${baseClasses} text-[1.05rem] font-semibold leading-snug text-gray-800`;
       case 'divider': return `${baseClasses} pointer-events-none h-9 flex items-center`;
-      case 'quote': return `${baseClasses} text-lg font-medium leading-relaxed py-2 text-gray-700 italic`;
-      default: return `${baseClasses} text-base font-normal leading-relaxed py-1 text-gray-600`;
+      case 'quote': return `${baseClasses} text-lg font-medium leading-relaxed text-gray-700 italic`;
+      default: return `${baseClasses} text-base font-normal leading-relaxed text-gray-600`;
     }
   };
 
@@ -1219,14 +1237,14 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-8 py-10 min-h-screen">
+    <div className="max-w-3xl mx-auto px-8 py-12 min-h-screen">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="blocks">
           {(provided) => (
             <div 
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="space-y-1"
+              className="space-y-3"
             >
               {blocks.map((block, index) => (
                 <Draggable key={block.id} draggableId={block.id} index={index}>
@@ -1235,7 +1253,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       data-block-id={block.id}
-                      className="relative group"
+                      className="relative group py-1"
                     >
                       {renderBlock(block, index)}
                     </div>
@@ -1246,7 +1264,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
               
               {/* Add Block Button */}
               {blocks.length > 0 && (
-                <div className="flex justify-start !mt-4 px-2 opacity-0 hover:opacity-100 transition-opacity">
+                <div className="flex justify-start !mt-6 px-2 opacity-0 hover:opacity-100 transition-opacity">
                   <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                     <PopoverTrigger asChild>
                       <button

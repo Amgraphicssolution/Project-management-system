@@ -6,7 +6,7 @@ import {
   Trash2, LayoutGrid, Search, Music, FileIcon, Image as ImageIcon, 
   Video as VideoIcon, Maximize, X, Figma, FileDigit, FileText,
   Type, List, ListOrdered, CheckSquare, Quote, Table, Minus, Code,
-  Layout, FormInput, ListTree
+  Layout, FormInput, ListTree, Upload, Link as LinkIcon
 } from 'lucide-react';
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
@@ -14,7 +14,7 @@ import {
   DropdownMenuSubTrigger, DropdownMenuSubContent 
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -416,32 +416,48 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
         
         {/* Upload dialog */}
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-          <DialogContent className="sm:max-w-[550px]">
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Add an embed</h2>
-              <p className="text-sm text-muted-foreground">
-                Paste a link from Spotify, YouTube, Google Drive, CodePen, Google Maps, and more.
-              </p>
-              
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Paste embed URL here"
-                    value={linkInput}
-                    onChange={handleLinkInputChange}
-                  />
-                  <Button 
-                    onClick={handleLinkSubmit}
-                    disabled={!linkInput}
-                  >
-                    Embed
-                  </Button>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader className="border-b pb-3">
+              <DialogTitle className="text-xl font-semibold">Add Embed</DialogTitle>
+              <DialogClose asChild className="absolute right-4 top-4">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogClose>
+            </DialogHeader>
+            <Tabs defaultValue="embed" className="mt-6">
+              <TabsList className="grid w-full grid-cols-1 mb-6">
+                <TabsTrigger value="embed" className="flex items-center gap-1.5">
+                  <LinkIcon className="h-4 w-4" />
+                  Embed Link
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="embed" className="py-4">
+                <div className="flex flex-col gap-4">
+                  <div className="bg-accent/5 border border-accent/10 rounded-md p-6">
+                    <h3 className="text-base font-medium mb-4 text-foreground">Paste a link to embed</h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Input
+                        placeholder="Paste embed URL here"
+                        value={linkInput}
+                        onChange={handleLinkInputChange}
+                        className="border-border focus-visible:ring-primary"
+                      />
+                      <Button 
+                        onClick={handleLinkSubmit}
+                        disabled={!linkInput}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        Embed
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Supported platforms: Spotify, YouTube, Vimeo, Google Drive, Google Maps, CodePen, and more
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400">
-                  Supported platforms: Spotify, YouTube, Vimeo, Google Drive, Google Maps, CodePen, and more
-                </p>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
@@ -684,32 +700,48 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
       
       {/* Upload dialog for replacement */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Replace embed</h2>
-            <p className="text-sm text-muted-foreground">
-              Paste a link from Spotify, YouTube, Google Drive, CodePen, Google Maps, and more.
-            </p>
-            
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Paste embed URL here"
-                  value={linkInput}
-                  onChange={handleLinkInputChange}
-                />
-                <Button 
-                  onClick={handleLinkSubmit}
-                  disabled={!linkInput}
-                >
-                  Embed
-                </Button>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="border-b pb-3">
+            <DialogTitle className="text-xl font-semibold">Replace Embed</DialogTitle>
+            <DialogClose asChild className="absolute right-4 top-4">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
+          </DialogHeader>
+          <Tabs defaultValue="embed" className="mt-6">
+            <TabsList className="grid w-full grid-cols-1 mb-6">
+              <TabsTrigger value="embed" className="flex items-center gap-1.5">
+                <LinkIcon className="h-4 w-4" />
+                Embed Link
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="embed" className="py-4">
+              <div className="flex flex-col gap-4">
+                <div className="bg-accent/5 border border-accent/10 rounded-md p-6">
+                  <h3 className="text-base font-medium mb-4 text-foreground">Paste a link to embed</h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Input
+                      placeholder="Paste embed URL here"
+                      value={linkInput}
+                      onChange={handleLinkInputChange}
+                      className="border-border focus-visible:ring-primary"
+                    />
+                    <Button 
+                      onClick={handleLinkSubmit}
+                      disabled={!linkInput}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      Embed
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Supported platforms: Spotify, YouTube, Vimeo, Google Drive, Google Maps, CodePen, and more
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-gray-400">
-                Supported platforms: Spotify, YouTube, Vimeo, Google Drive, Google Maps, CodePen, and more
-              </p>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>

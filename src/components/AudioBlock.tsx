@@ -36,7 +36,7 @@ import {
   Volume2,
   VolumeX
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, shouldUseTopAlignedGrip } from '@/lib/utils';
 import { BlockType } from '@/types';
 import { 
   Dialog, 
@@ -424,7 +424,10 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
             }}
           >
             <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
-              <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+              <div className={cn(
+                "flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100",
+                shouldUseTopAlignedGrip(block.type) ? "items-start pt-4" : "items-center"
+              )}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button 
@@ -994,11 +997,16 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       {/* Upload dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-semibold">Add Audio</DialogTitle>
+          <DialogHeader className="border-b pb-3">
+            <DialogTitle className="text-xl font-semibold">Add Audio</DialogTitle>
+            <DialogClose asChild className="absolute right-4 top-4">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogClose>
           </DialogHeader>
-          <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-4">
+          <Tabs defaultValue="upload" value={activeTab} onValueChange={setActiveTab} className="mt-6">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="upload" className="flex items-center gap-1.5">
                 <Upload className="h-4 w-4" />
                 Upload
@@ -1010,88 +1018,83 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
             </TabsList>
             <TabsContent value="upload" className="py-4">
               <div className="flex flex-col gap-4">
-                <label className="border-2 border-dashed border-blue-200 rounded-md p-8 text-center cursor-pointer hover:bg-blue-50/50 transition-colors bg-blue-50/20">
+                <div className="bg-accent/5 border-2 border-dashed border-accent/20 rounded-md p-8 text-center cursor-pointer hover:bg-accent/10 transition-colors">
                   <input
                     type="file"
                     accept="audio/*,.mp3,.wav,.ogg,.aac,.flac,.m4a,.wma"
                     onChange={handleFileUpload}
                     className="hidden"
+                    id="audio-upload"
                   />
-                  <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <Upload className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-500 mt-2">MP3, WAV, OGG, AAC, FLAC and other formats supported</p>
-                  <p className="text-xs text-blue-600 mt-4 font-medium">Select an audio file</p>
-                </label>
+                  <label htmlFor="audio-upload" className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-foreground">Click to upload or drag and drop</p>
+                    <p className="text-xs text-muted-foreground mt-1">MP3, WAV, OGG, AAC, FLAC and other formats supported</p>
+                  </label>
+                </div>
               </div>
             </TabsContent>
             <TabsContent value="embed" className="py-4">
               <div className="flex flex-col gap-4">
-                <div className="bg-blue-50/20 border border-blue-100 rounded-md p-4">
-                  <h3 className="text-sm font-medium mb-3 text-gray-700">Paste a link from supported services</h3>
-                  <div className="flex items-center gap-2">
+                <div className="bg-accent/5 border border-accent/10 rounded-md p-6">
+                  <h3 className="text-base font-medium mb-4 text-foreground">Paste a link to audio</h3>
+                  <div className="flex items-center gap-2 mb-4">
                     <Input
                       placeholder="Paste audio URL or SoundCloud/Spotify link"
                       value={linkInput}
                       onChange={handleLinkInputChange}
-                      className="border-blue-200 focus-visible:ring-blue-400"
+                      className="border-border focus-visible:ring-primary"
                     />
                     <Button 
                       onClick={handleLinkSubmit}
                       disabled={!linkInput}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       Embed
                     </Button>
                   </div>
-                  <div className="flex items-center mt-4 gap-2">
-                    <div className="flex-1 flex items-center justify-center gap-3">
-                      <div className="bg-blue-100/50 rounded-full p-1.5">
-                        <Music className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <span className="text-xs text-gray-500">SoundCloud</span>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Embed audio from SoundCloud, Spotify, or any direct audio URL
+                  </p>
+                  
+                  <div className="flex items-center gap-4 justify-center py-2">
+                    <div className="flex items-center gap-2">
+                      <Music className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">SoundCloud</span>
                     </div>
-                    <div className="flex-1 flex items-center justify-center gap-3">
-                      <div className="bg-green-100/50 rounded-full p-1.5">
-                        <Music className="h-4 w-4 text-green-600" />
-                      </div>
-                      <span className="text-xs text-gray-500">Spotify</span>
+                    <div className="flex items-center gap-2">
+                      <Music className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Spotify</span>
                     </div>
-                    <div className="flex-1 flex items-center justify-center gap-3">
-                      <div className="bg-gray-100 rounded-full p-1.5">
-                        <LinkIcon className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <span className="text-xs text-gray-500">Direct URL</span>
+                    <div className="flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Direct URL</span>
                     </div>
                   </div>
+                  
+                  {/* Audio Preview */}
+                  {previewUrl && (
+                    <div className="mt-4 border rounded-md overflow-hidden">
+                      <div className="relative aspect-video bg-background flex items-center justify-center">
+                        <img 
+                          src={previewUrl} 
+                          alt="Preview" 
+                          className="max-w-full max-h-full object-contain"
+                          onError={() => setAudioError(true)}
+                        />
+                        {audioError && (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-accent/5 text-muted-foreground">
+                            <Music className="h-10 w-10 mb-2 opacity-30" />
+                            <p className="text-sm">Unable to load audio preview</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Audio Preview */}
-                {previewUrl && (
-                  <div className="mt-2 border rounded-md overflow-hidden shadow-sm">
-                    <div className="relative aspect-video bg-gray-100 flex items-center justify-center">
-                      <img 
-                        src={previewUrl} 
-                        alt="Preview" 
-                        className="max-w-full max-h-full object-contain"
-                        onError={() => setAudioError(true)}
-                      />
-                      {audioError && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-500">
-                          <Music className="h-10 w-10 mb-2 opacity-30" />
-                          <p className="text-sm">Unable to load audio preview</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </TabsContent>
           </Tabs>
-          <DialogClose asChild>
-            <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">Cancel</Button>
-          </DialogClose>
         </DialogContent>
       </Dialog>
     </div>

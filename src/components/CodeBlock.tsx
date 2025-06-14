@@ -37,7 +37,7 @@ import {
   Trash2,
   Smile
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, shouldUseTopAlignedGrip } from '@/lib/utils';
 import { BlockType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -586,14 +586,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Block controls */}
-      <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
-        <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
-                <GripVertical className="h-5 w-5 text-muted-foreground/50" />
-              </button>
-            </DropdownMenuTrigger>
+              <div className="flex items-center group-hover:bg-accent/5 rounded-sm">
+          <div className={cn(
+            "flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100",
+            shouldUseTopAlignedGrip(block.type) ? "items-start pt-4" : "items-center"
+          )}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                  <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                </button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="flex items-center gap-2">
