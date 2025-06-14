@@ -23,7 +23,6 @@ import {
   ListTree,
   ExternalLink,
   Figma,
-  FileDigit,
   ChevronRight,
   CheckSquare,
   ArrowUp,
@@ -59,6 +58,7 @@ import FileBlock from './FileBlock';
 import CodeBlock from './CodeBlock';
 import EmbedBlock from './EmbedBlock';
 import FormBlock from './FormBlock';
+import ColumnBlock from './ColumnBlock';
 
 interface ListItem {
   id: string;
@@ -115,7 +115,6 @@ const blockCategories: BlockCategoryType[] = [
     blocks: [
       { type: 'board', icon: Layout, label: 'Board' },
       { type: 'form', icon: FormInput, label: 'Form' },
-      { type: 'table-of-contents', icon: ListTree, label: 'Table of Content' },
       { type: 'two-columns', icon: Layout, label: '2 Column' },
       { type: 'three-columns', icon: Layout, label: '3 Column' },
       { type: 'four-columns', icon: Layout, label: '4 Column' },
@@ -127,8 +126,6 @@ const blockCategories: BlockCategoryType[] = [
     blocks: [
       { type: 'embed', icon: ExternalLink, label: 'Embed' },
       { type: 'figma', icon: Figma, label: 'Figma' },
-      { type: 'pdf', icon: FileDigit, label: 'PDF' },
-      { type: 'adobe', icon: FileIcon, label: 'Adobe' },
     ]
   }
 ];
@@ -634,6 +631,28 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       );
     }
     
+    // Handle column blocks
+    if (block.type === 'two-columns' || block.type === 'three-columns' || 
+        block.type === 'four-columns' || block.type === 'five-columns') {
+      return (
+        <div className="relative group">
+          <ColumnBlock
+            key={block.id}
+            block={block}
+            onUpdate={updatedBlock => handleUpdateBlock(numericIndex, updatedBlock)}
+            onDelete={() => handleDeleteBlock(numericIndex)}
+            onMoveUp={() => handleMoveBlockUp(numericIndex)}
+            onMoveDown={() => handleMoveBlockDown(numericIndex)}
+            onConvert={(newType) => handleConvertBlock(numericIndex, newType)}
+            renderBlock={renderBlock}
+            handleAddBlock={handleAddBlock}
+            handleUpdateBlock={handleUpdateBlock}
+            handleDeleteBlock={handleDeleteBlock}
+          />
+        </div>
+      );
+    }
+
     if (block.type === 'embed') {
       return (
         <div className="relative group">

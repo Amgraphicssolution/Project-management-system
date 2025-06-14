@@ -46,6 +46,11 @@ export interface BlockType {
   icon?: string;
   parentId?: string;
   width?: number;
+  columns?: Array<{
+    id: string;
+    blocks: BlockType[];
+  }>;
+  gap?: number;
 }
 
 export interface PageType {
