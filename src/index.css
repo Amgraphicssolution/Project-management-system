@@ -213,3 +213,42 @@
     cursor: grabbing;
   }
 }
+
+/* Formatted Text Block Styles */
+[contenteditable] {
+  outline: none;
+  min-height: 1.5rem;
+}
+
+[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #a0aec0;
+  pointer-events: none;
+  display: inline-block;
+}
+
+/* Make sure the text formatting is preserved */
+[contenteditable] b, [contenteditable] strong {
+  font-weight: bold;
+}
+
+[contenteditable] i, [contenteditable] em {
+  font-style: italic;
+}
+
+[contenteditable] u {
+  text-decoration: underline;
+}
+
+/* Style links in contentEditable */
+[contenteditable] a {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+[contenteditable] a:hover {
+  color: #2563eb;
+}
+
+/* Ensure text formatting is visible */

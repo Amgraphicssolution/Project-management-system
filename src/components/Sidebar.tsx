@@ -13,7 +13,6 @@ import {
   MessageCircle,
   Search,
   LogOut,
-  Bot,
   MoreHorizontal,
   FileText,
   MessageSquare,
@@ -380,12 +379,6 @@ export default function Sidebar({
             icon={Home}
             label="Home"
             to="/"
-            showActions={false}
-          />
-          <SidebarItem
-            icon={Bot}
-            label="AI Assistant"
-            to="/ai-assistant"
             showActions={false}
           />
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import { PageType, BlockType } from "../types";
 import { 
   Plus, 
@@ -59,6 +59,7 @@ import CodeBlock from './CodeBlock';
 import EmbedBlock from './EmbedBlock';
 import FormBlock from './FormBlock';
 import ColumnBlock from './ColumnBlock';
+import FormattedTextBlock from './ui/FormattedTextBlock';
 
 interface ListItem {
   id: string;
@@ -177,6 +178,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, index: number, block: BlockType, itemIndex?: number) => {
+    // Only handle Enter and Backspace keys, let other keys (like Space) work normally
     if (e.key === 'Enter') {
       e.preventDefault();
       
@@ -816,6 +818,40 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
               </div>
             ) : isListType(block.type) ? (
               renderListItems(block, numericIndex, isNested)
+            ) : block.type === 'paragraph' ? (
+              <FormattedTextBlock
+                content={block.content || ''}
+                blockId={block.id}
+                onChange={(newContent) => {
+                  if (isNested && block.parentId) {
+                    const parentIndex = blocks.findIndex(b => b.id === block.parentId);
+                    if (parentIndex !== -1) {
+                      const newBlocks = [...blocks];
+                      const parentBlock = newBlocks[parentIndex];
+                      if (parentBlock.children) {
+                        const blockIndex = parentBlock.children.findIndex(b => b.id === block.id);
+                        parentBlock.children[blockIndex] = {
+                          ...block,
+                          content: newContent
+                        };
+                        setBlocks(newBlocks);
+                        if (onUpdatePage) {
+                          onUpdatePage({ ...page, blocks: newBlocks });
+                        }
+                      }
+                    }
+                  } else {
+                    handleUpdateBlock(numericIndex, { 
+                      ...block, 
+                      content: newContent 
+                    });
+                  }
+                }}
+                onKeyDown={(e) => handleKeyDown(e, numericIndex, block)}
+                placeholder={getPlaceholderForType(block.type)}
+                className={getClassNameForType(block.type)}
+                autoFocus={activeInputIndex === numericIndex}
+              />
             ) : (
               <textarea
                 value={block.content || ''}
@@ -1109,7 +1145,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
     // Focus the new block
     requestAnimationFrame(() => {
-      const contentEditableDiv = document.querySelector(`[data-block-id="${newBlock.id}"] textarea, [data-block-id="${newBlock.id}"] input`);
+      const contentEditableDiv = document.querySelector(`[data-block-id="${newBlock.id}"] textarea, [data-block-id="${newBlock.id}"] input, [data-block-id^="formatted-text"]`);
       if (contentEditableDiv instanceof HTMLElement) {
         contentEditableDiv.focus();
       }
