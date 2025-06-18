@@ -17,7 +17,7 @@ import {
   X
 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
-import { ProjectType, PageType } from '@/types';
+import { ProjectType, PageType, OrganizationType } from '@/types/index';
 import PageBuilder from '@/components/PageBuilder';
 import Header from '@/components/Header';
 import CreateNewModal from '@/components/CreateNewModal';
@@ -27,15 +27,28 @@ import { toast } from '@/components/ui/use-toast';
 import IconPickerModal from '@/components/IconPickerModal';
 import CoverPickerModal from '@/components/CoverPickerModal';
 import PageEditor from '@/components/PageEditor';
+import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
 
 const ProjectView = ({ 
   project, 
   onUpdateProject,
-  setProjects 
+  setProjects,
+  currentOrganization,
+  organizations,
+  onOrganizationChange,
+  onCreateOrganization,
+  onUpdateOrganization,
+  onDeleteOrganization
 }: { 
   project: ProjectType; 
   onUpdateProject: (updated: ProjectType) => void;
   setProjects: React.Dispatch<React.SetStateAction<ProjectType[]>>;
+  currentOrganization?: OrganizationType;
+  organizations?: OrganizationType[];
+  onOrganizationChange?: (organization: OrganizationType) => void;
+  onCreateOrganization?: () => void;
+  onUpdateOrganization?: (id: string, name: string, image?: string) => void;
+  onDeleteOrganization?: (id: string) => void;
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(project.title);
@@ -408,19 +421,96 @@ const Index = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [organizations, setOrganizations] = useState<OrganizationType[]>([]);
+  const [currentOrganization, setCurrentOrganization] = useState<OrganizationType | null>(null);
 
-  // Clear any existing projects and initialize with empty array
+  // Initialize organizations and projects
   useEffect(() => {
-    localStorage.removeItem('projects'); // Clear existing projects
-    setProjects([]);
-    setIsLoading(false);
+    try {
+      // For testing purposes, initialize with dummy data
+      if (dummyOrganizations && dummyOrganizations.length > 0) {
+        setOrganizations(dummyOrganizations);
+        
+        // Set the default organization as current
+        const defaultOrg = dummyOrganizations.find(org => org.isDefault) || dummyOrganizations[0];
+        setCurrentOrganization(defaultOrg);
+        
+        // Filter projects for the default organization
+        if (dummyProjects && dummyProjects.length > 0) {
+          const orgProjects = dummyProjects.filter(
+            p => !p.organizationId || p.organizationId === defaultOrg.id
+          );
+          setProjects(orgProjects);
+        }
+      } else {
+        // Fallback to a default organization if dummy data is not available
+        const defaultOrg: OrganizationType = {
+          id: 'org-default',
+          name: 'Personal Workspace',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isDefault: true
+        };
+        setOrganizations([defaultOrg]);
+        setCurrentOrganization(defaultOrg);
+      }
+    } catch (error) {
+      console.error('Error initializing data:', error);
+      // Create a fallback organization
+      const fallbackOrg: OrganizationType = {
+        id: 'org-fallback',
+        name: 'Workspace',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isDefault: true
+      };
+      setOrganizations([fallbackOrg]);
+      setCurrentOrganization(fallbackOrg);
+      setProjects([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // Save organizations to localStorage whenever they change
+  useEffect(() => {
+    if (!isLoading && organizations.length > 0) {
+      try {
+        localStorage.setItem('organizations', JSON.stringify(organizations));
+      } catch (error) {
+        console.error('Error saving organizations:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save organization changes.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [organizations, isLoading]);
 
   // Save projects to localStorage whenever they change
   useEffect(() => {
     if (!isLoading) {
       try {
-        localStorage.setItem('projects', JSON.stringify(projects));
+        // Get all projects from localStorage
+        const savedProjects = localStorage.getItem('projects');
+        let allProjects: ProjectType[] = [];
+        
+        if (savedProjects) {
+          allProjects = JSON.parse(savedProjects);
+          // Remove current organization's projects
+          allProjects = allProjects.filter(
+            p => currentOrganization && p.organizationId !== currentOrganization.id
+          );
+        }
+        
+        // Add current projects (with organization ID)
+        const currentProjects = projects.map(p => ({
+          ...p,
+          organizationId: currentOrganization?.id
+        }));
+        
+        localStorage.setItem('projects', JSON.stringify([...allProjects, ...currentProjects]));
       } catch (error) {
         console.error('Error saving projects:', error);
         toast({
@@ -430,7 +520,176 @@ const Index = () => {
         });
       }
     }
-  }, [projects, isLoading]);
+  }, [projects, isLoading, currentOrganization]);
+
+  const handleCreateOrganization = (name: string, image?: string) => {
+    try {
+      const newOrg: OrganizationType = {
+        id: `org-${Date.now()}`,
+        name: name,
+        image: image,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      setOrganizations(prev => [...prev, newOrg]);
+      setCurrentOrganization(newOrg);
+      
+      // Load projects for the new organization (empty initially)
+      setProjects([]);
+      setSelectedProject(null);
+      setActiveTab("projects");
+      
+      toast({
+        title: "Success",
+        description: "Organization created successfully.",
+      });
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create organization.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOrganizationChange = (organization: OrganizationType) => {
+    if (currentOrganization?.id === organization.id) return;
+    
+    setCurrentOrganization(organization);
+    
+    // Load projects for the selected organization
+    const savedProjects = localStorage.getItem('projects');
+    if (savedProjects) {
+      try {
+        const allProjects = JSON.parse(savedProjects);
+        // Filter projects for the selected organization
+        const orgProjects = allProjects.filter(
+          (p: ProjectType) => p.organizationId === organization.id
+        );
+        setProjects(orgProjects);
+        setSelectedProject(null);
+        setActiveTab("projects");
+      } catch (error) {
+        console.error('Error loading projects for organization:', error);
+        setProjects([]);
+      }
+    } else {
+      setProjects([]);
+    }
+  };
+
+  const handleUpdateOrganization = (id: string, name: string, image?: string) => {
+    try {
+      const updatedOrgs = organizations.map(org => 
+        org.id === id 
+          ? { 
+              ...org, 
+              name, 
+              image, 
+              updatedAt: new Date().toISOString() 
+            } 
+          : org
+      );
+      
+      setOrganizations(updatedOrgs);
+      
+      // If the current organization was updated, update it in state
+      if (currentOrganization?.id === id) {
+        setCurrentOrganization(prev => prev ? { 
+          ...prev, 
+          name, 
+          image, 
+          updatedAt: new Date().toISOString() 
+        } : null);
+      }
+      
+      toast({
+        title: "Success",
+        description: "Organization updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating organization:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update organization.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteOrganization = (id: string) => {
+    try {
+      // Don't allow deleting the default organization
+      const orgToDelete = organizations.find(org => org.id === id);
+      if (orgToDelete?.isDefault) {
+        toast({
+          title: "Error",
+          description: "Cannot delete the default organization.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Remove the organization
+      const updatedOrgs = organizations.filter(org => org.id !== id);
+      setOrganizations(updatedOrgs);
+      
+      // If the current organization was deleted, switch to the default organization
+      if (currentOrganization?.id === id) {
+        const defaultOrg = updatedOrgs.find(org => org.isDefault) || updatedOrgs[0];
+        setCurrentOrganization(defaultOrg);
+        
+        // Load projects for the default organization
+        const savedProjects = localStorage.getItem('projects');
+        if (savedProjects) {
+          try {
+            const allProjects = JSON.parse(savedProjects);
+            // Filter projects for the default organization
+            const orgProjects = allProjects.filter(
+              (p: ProjectType) => p.organizationId === defaultOrg.id
+            );
+            setProjects(orgProjects);
+            setSelectedProject(null);
+            setActiveTab("projects");
+          } catch (error) {
+            console.error('Error loading projects for organization:', error);
+            setProjects([]);
+          }
+        } else {
+          setProjects([]);
+        }
+      }
+      
+      // Delete all projects associated with the deleted organization
+      const savedProjects = localStorage.getItem('projects');
+      if (savedProjects) {
+        try {
+          const allProjects = JSON.parse(savedProjects);
+          // Filter out projects for the deleted organization
+          const remainingProjects = allProjects.filter(
+            (p: ProjectType) => p.organizationId !== id
+          );
+          localStorage.setItem('projects', JSON.stringify(remainingProjects));
+        } catch (error) {
+          console.error('Error updating projects after organization deletion:', error);
+        }
+      }
+      
+      toast({
+        title: "Success",
+        description: "Organization deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete organization.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleCreateProject = () => {
     try {
@@ -450,6 +709,7 @@ const Index = () => {
         pages: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        organizationId: currentOrganization?.id
       };
 
       const newPage: PageType = {
@@ -653,6 +913,12 @@ const Index = () => {
                 setSelectedProject(updated);
               }}
               setProjects={setProjects}
+              currentOrganization={currentOrganization || undefined}
+              organizations={organizations}
+              onOrganizationChange={handleOrganizationChange}
+              onCreateOrganization={handleCreateOrganization}
+              onUpdateOrganization={handleUpdateOrganization}
+              onDeleteOrganization={handleDeleteOrganization}
             />
           )}
         </TabsContent>
@@ -771,7 +1037,7 @@ const Index = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   return (
@@ -789,6 +1055,13 @@ const Index = () => {
         onRenameProject={handleRenameProject}
         onDuplicateProject={handleDuplicateProject}
         onDeleteProject={handleDeleteProject}
+        currentOrganization={currentOrganization || undefined}
+        organizations={organizations}
+        onOrganizationChange={handleOrganizationChange}
+        onCreateOrganization={handleCreateOrganization}
+        onUpdateOrganization={handleUpdateOrganization}
+        onDeleteOrganization={handleDeleteOrganization}
+        isAdmin={true}
       />
       <main className="flex-1 ml-64">
         {activeTab === "projects" && (
@@ -807,6 +1080,12 @@ const Index = () => {
               setSelectedProject(updated);
             }}
             setProjects={setProjects}
+            currentOrganization={currentOrganization || undefined}
+            organizations={organizations}
+            onOrganizationChange={handleOrganizationChange}
+            onCreateOrganization={handleCreateOrganization}
+            onUpdateOrganization={handleUpdateOrganization}
+            onDeleteOrganization={handleDeleteOrganization}
           />
         )}
         <CreateNewModal

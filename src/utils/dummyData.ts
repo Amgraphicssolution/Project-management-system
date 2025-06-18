@@ -1,4 +1,27 @@
-import { ProjectType } from '../types';
+import { ProjectType, OrganizationType } from '../types/index';
+
+export const dummyOrganizations: OrganizationType[] = [
+  {
+    id: 'org-1',
+    name: 'Personal Workspace',
+    createdAt: '2023-05-10T09:00:00Z',
+    updatedAt: '2023-05-10T09:00:00Z',
+    isDefault: true
+  },
+  {
+    id: 'org-2',
+    name: 'Design Team',
+    image: 'https://github.com/shadcn.png',
+    createdAt: '2023-05-11T10:00:00Z',
+    updatedAt: '2023-05-11T10:00:00Z'
+  },
+  {
+    id: 'org-3',
+    name: 'Marketing',
+    createdAt: '2023-05-12T11:00:00Z',
+    updatedAt: '2023-05-12T11:00:00Z'
+  }
+];
 
 export const dummyProjects: ProjectType[] = [
   {
@@ -33,7 +56,8 @@ export const dummyProjects: ProjectType[] = [
       }
     ],
     createdAt: '2023-05-12T10:30:00Z',
-    updatedAt: '2023-05-12T10:30:00Z'
+    updatedAt: '2023-05-12T10:30:00Z',
+    organizationId: 'org-1'
   },
   {
     id: '2',
@@ -57,7 +81,8 @@ export const dummyProjects: ProjectType[] = [
       }
     ],
     createdAt: '2023-05-15T14:20:00Z',
-    updatedAt: '2023-05-15T14:20:00Z'
+    updatedAt: '2023-05-15T14:20:00Z',
+    organizationId: 'org-1'
   },
   {
     id: '3',
@@ -91,7 +116,8 @@ export const dummyProjects: ProjectType[] = [
       }
     ],
     createdAt: '2023-05-14T09:15:00Z',
-    updatedAt: '2023-05-14T09:15:00Z'
+    updatedAt: '2023-05-14T09:15:00Z',
+    organizationId: 'org-2'
   }
 ];
 

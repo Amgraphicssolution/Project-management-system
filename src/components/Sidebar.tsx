@@ -17,16 +17,18 @@ import {
   FileText,
   MessageSquare,
   X,
-  ChevronUp
+  ChevronUp,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Link, useLocation } from 'react-router-dom';
-import { ProjectType, PageType } from '@/types';
+import { ProjectType, PageType, OrganizationType } from '@/types/index';
 import CreatePageModal from '@/components/CreatePageModal';
 import PageContextMenu from '@/components/PageContextMenu';
 import ProjectContextMenu from '@/components/ProjectContextMenu';
 import { useDebounce } from '@/hooks/useDebounce';
+import OrganizationSwitcher from './OrganizationSwitcher';
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -181,6 +183,14 @@ interface SidebarProps {
   onRenameProject: (projectId: string, newName: string) => void;
   onDuplicateProject: (projectId: string) => void;
   onDeleteProject: (projectId: string) => void;
+  // Organization props
+  currentOrganization?: OrganizationType;
+  organizations?: OrganizationType[];
+  onOrganizationChange?: (organization: OrganizationType) => void;
+  onCreateOrganization?: () => void;
+  onUpdateOrganization?: (id: string, name: string, image?: string) => void;
+  onDeleteOrganization?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
 // Highlight matching text in a string
@@ -214,7 +224,15 @@ export default function Sidebar({
   onCreateChat,
   onRenameProject,
   onDuplicateProject,
-  onDeleteProject
+  onDeleteProject,
+  // Organization props
+  currentOrganization,
+  organizations = [],
+  onOrganizationChange = () => {},
+  onCreateOrganization = () => {},
+  onUpdateOrganization,
+  onDeleteOrganization,
+  isAdmin = true
 }: SidebarProps) {
   const [expandedProjects, setExpandedProjects] = useState<{ [key: string]: boolean }>({});
   const [searchActive, setSearchActive] = useState(false);
@@ -502,16 +520,24 @@ export default function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="mt-auto pt-4 space-y-2">
+      <div className="mt-auto pt-4">
         <Separator className="mb-2" />
-        <Button variant="ghost" className="w-full justify-start">
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-        <Button variant="ghost" className="w-full justify-start">
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout
-        </Button>
+        
+        {/* Organization Switcher */}
+        {currentOrganization && (
+          <div>
+            <OrganizationSwitcher
+              currentOrganization={currentOrganization}
+              organizations={organizations}
+              onOrganizationChange={onOrganizationChange}
+              onCreateOrganization={onCreateOrganization}
+              onUpdateOrganization={onUpdateOrganization}
+              onDeleteOrganization={onDeleteOrganization}
+              isAdmin={isAdmin}
+              className="mb-1"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

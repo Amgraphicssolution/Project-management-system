@@ -13,6 +13,16 @@ export interface ProjectType {
   updatedAt: string;
   parentId?: string;
   path?: string[];
+  organizationId?: string;
+}
+
+export interface OrganizationType {
+  id: string;
+  name: string;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  isDefault?: boolean;
 }
 
 export interface PageType {
