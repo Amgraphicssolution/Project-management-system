@@ -38,7 +38,8 @@ const ProjectView = ({
   onOrganizationChange,
   onCreateOrganization,
   onUpdateOrganization,
-  onDeleteOrganization
+  onDeleteOrganization,
+  onNavigateHome
 }: { 
   project: ProjectType; 
   onUpdateProject: (updated: ProjectType) => void;
@@ -49,6 +50,7 @@ const ProjectView = ({
   onCreateOrganization?: () => void;
   onUpdateOrganization?: (id: string, name: string, image?: string) => void;
   onDeleteOrganization?: (id: string) => void;
+  onNavigateHome: () => void;
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(project.title);
@@ -142,7 +144,12 @@ const ProjectView = ({
       {/* Breadcrumb and Actions */}
       <div className="px-6 py-2 border-b flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-7 px-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2"
+            onClick={onNavigateHome}
+          >
             <Home className="h-4 w-4" />
           </Button>
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
@@ -919,6 +926,10 @@ const Index = () => {
               onCreateOrganization={handleCreateOrganization}
               onUpdateOrganization={handleUpdateOrganization}
               onDeleteOrganization={handleDeleteOrganization}
+              onNavigateHome={() => {
+                setSelectedProject(null);
+                setActiveTab("projects");
+              }}
             />
           )}
         </TabsContent>
@@ -1036,6 +1047,12 @@ const Index = () => {
     });
   };
 
+  // Function to navigate to home/projects view
+  const navigateToHome = () => {
+    setSelectedProject(null);
+    setActiveTab("projects");
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
@@ -1062,6 +1079,7 @@ const Index = () => {
         onUpdateOrganization={handleUpdateOrganization}
         onDeleteOrganization={handleDeleteOrganization}
         isAdmin={true}
+        onNavigateHome={navigateToHome}
       />
       <main className="flex-1 ml-64">
         {activeTab === "projects" && (
@@ -1086,6 +1104,7 @@ const Index = () => {
             onCreateOrganization={handleCreateOrganization}
             onUpdateOrganization={handleUpdateOrganization}
             onDeleteOrganization={handleDeleteOrganization}
+            onNavigateHome={navigateToHome}
           />
         )}
         <CreateNewModal

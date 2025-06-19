@@ -59,6 +59,7 @@ import CodeBlock from './CodeBlock';
 import EmbedBlock from './EmbedBlock';
 import FormBlock from './FormBlock';
 import ColumnBlock from './ColumnBlock';
+import FigmaBlock from './FigmaBlock';
 import FormattedTextBlock from './ui/FormattedTextBlock';
 
 interface ListItem {
@@ -670,6 +671,87 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
+    
+    if (block.type === 'figma') {
+      return (
+        <div className="relative group">
+          <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5">
+            <div className="flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                    <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4" />
+                      Convert to
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {/* Convert block options */}
+                      <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                        {blockCategories.map((category) => {
+                          const filteredBlocks = category.blocks.filter(blockType =>
+                            blockType.label.toLowerCase().includes(searchQuery.toLowerCase())
+                          );
+                          
+                          if (filteredBlocks.length === 0) return null;
+                          
+                          return (
+                            <div key={category.name}>
+                              <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                                {category.name}
+                              </DropdownMenuItem>
+                              {filteredBlocks.map((blockType) => (
+                                <DropdownMenuItem 
+                                  key={blockType.type}
+                                  className="flex items-center gap-2 px-2"
+                                  onClick={() => handleConvertBlock(numericIndex, blockType.type)}
+                                >
+                                  <blockType.icon className="h-4 w-4 shrink-0" />
+                                  <span className="truncate">{blockType.label}</span>
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator className="mx-2" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  {!isNested && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleMoveBlockUp(numericIndex)} className="flex items-center gap-2">
+                        <ArrowUp className="h-4 w-4" />
+                        Move up
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleMoveBlockDown(numericIndex)} className="flex items-center gap-2">
+                        <ArrowDown className="h-4 w-4" />
+                        Move down
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteBlock(numericIndex)} className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex-1 min-h-[32px]">
+              <FigmaBlock
+                initialUrl={block.url || ''}
+                onUpdate={(url) => handleUpdateBlock(numericIndex, { ...block, url })}
+                onDelete={() => handleDeleteBlock(numericIndex)}
+                readOnly={false}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="relative group">
@@ -1098,6 +1180,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       case 'heading-5': return 'Heading 5';
       case 'heading-6': return 'Heading 6';
       case 'quote': return 'Write a quote...';
+      case 'figma': return 'Paste Figma URL...';
       default: return 'Type here...';
     }
   };

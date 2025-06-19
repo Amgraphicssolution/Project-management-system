@@ -85,13 +85,13 @@ export default function OrganizationSwitcher({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-56 p-2" 
+          className="w-64 p-3" 
           align="center" 
           side="top" 
           sideOffset={8}
           alignOffset={0}
         >
-          <div className="space-y-1">
+          <div className="space-y-2">
             {organizations.map((org) => (
               <div key={org.id} className="flex items-center">
                 <Button
@@ -127,7 +127,7 @@ export default function OrganizationSwitcher({
             ))}
             <Button
               variant="ghost"
-              className="w-full justify-start gap-2 px-2 py-1.5 h-auto text-primary"
+              className="w-full justify-start gap-2 px-2 py-2 h-auto text-primary mt-2"
               onClick={handleCreateClick}
             >
               <div className="h-5 w-5 flex items-center justify-center">

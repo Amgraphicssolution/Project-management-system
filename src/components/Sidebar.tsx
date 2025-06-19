@@ -191,6 +191,8 @@ interface SidebarProps {
   onUpdateOrganization?: (id: string, name: string, image?: string) => void;
   onDeleteOrganization?: (id: string) => void;
   isAdmin?: boolean;
+  // Navigation
+  onNavigateHome?: () => void;
 }
 
 // Highlight matching text in a string
@@ -232,7 +234,9 @@ export default function Sidebar({
   onCreateOrganization = () => {},
   onUpdateOrganization,
   onDeleteOrganization,
-  isAdmin = true
+  isAdmin = true,
+  // Navigation
+  onNavigateHome = () => {}
 }: SidebarProps) {
   const [expandedProjects, setExpandedProjects] = useState<{ [key: string]: boolean }>({});
   const [searchActive, setSearchActive] = useState(false);
@@ -396,8 +400,8 @@ export default function Sidebar({
           <SidebarItem
             icon={Home}
             label="Home"
-            to="/"
             showActions={false}
+            onSelect={onNavigateHome}
           />
         </div>
 
