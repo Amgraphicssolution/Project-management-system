@@ -28,6 +28,7 @@ import IconPickerModal from '@/components/IconPickerModal';
 import CoverPickerModal from '@/components/CoverPickerModal';
 import PageEditor from '@/components/PageEditor';
 import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
+import { useParams } from "react-router-dom";
 
 const ProjectView = ({ 
   project, 
@@ -422,6 +423,7 @@ const ProjectView = ({
 };
 
 const Index = () => {
+  const { projectId } = useParams();
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const [selectedPage, setSelectedPage] = useState<PageType | null>(null);
   const [activeTab, setActiveTab] = useState("projects");
@@ -528,6 +530,17 @@ const Index = () => {
       }
     }
   }, [projects, isLoading, currentOrganization]);
+
+  // Load project from URL parameter if available
+  useEffect(() => {
+    if (projectId && projects.length > 0) {
+      const project = projects.find(p => p.id === projectId);
+      if (project) {
+        setSelectedProject(project);
+        setActiveTab("project");
+      }
+    }
+  }, [projectId, projects]);
 
   const handleCreateOrganization = (name: string, image?: string) => {
     try {

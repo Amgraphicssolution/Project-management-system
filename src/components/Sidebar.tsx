@@ -208,7 +208,7 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
     <>
       {parts.map((part, i) => 
         regex.test(part) ? (
-          <span key={i} className="font-semibold bg-yellow-100 text-black">{part}</span>
+          <span key={i} className="font-semibold bg-yellow-100 dark:bg-amber-700/60 text-black dark:text-white">{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -374,14 +374,26 @@ export default function Sidebar({
       background-color: rgba(0, 0, 0, 0.4);
     }
     
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+    
     .custom-scrollbar {
       scrollbar-width: thin;
       scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
     }
+    
+    .dark .custom-scrollbar {
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
   `;
 
   return (
-    <div className="w-64 h-screen fixed top-0 left-0 bg-white border-r flex flex-col p-4 z-30">
+    <div className="w-64 h-screen fixed top-0 left-0 bg-background border-r flex flex-col p-4 z-30">
       <style>{scrollbarStyles}</style>
       
       {/* Logo */}
@@ -389,7 +401,12 @@ export default function Sidebar({
         <img 
           src="/logo horizontal.webp" 
           alt="AM GRAPHICS" 
-          className="h-7 max-w-[180px] object-contain" 
+          className="h-7 max-w-[180px] object-contain dark:hidden" 
+        />
+        <img 
+          src="/logo-horizontal-white.png" 
+          alt="AM GRAPHICS" 
+          className="h-7 max-w-[180px] object-contain hidden dark:block" 
         />
       </div>
 
@@ -408,7 +425,7 @@ export default function Sidebar({
         <Separator className="my-3" />
 
         {/* Projects Section - Header (Fixed) */}
-        <div className="sticky top-0 bg-white z-10 pb-2">
+        <div className="sticky top-0 bg-background z-10 pb-2">
           <div className="px-3 py-2 flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Projects</span>
             <div className="flex items-center gap-1">
@@ -418,7 +435,7 @@ export default function Sidebar({
                     ref={searchInputRef}
                     type="text"
                     placeholder="Search projects..."
-                    className="w-32 h-7 px-2 py-1 pr-6 text-xs bg-secondary/50 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-32 h-7 px-2 py-1 pr-6 text-xs bg-secondary/50 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-foreground"
                     value={searchInputValue}
                     onChange={(e) => setSearchInputValue(e.target.value)}
                     onBlur={() => {

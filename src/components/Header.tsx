@@ -7,6 +7,7 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
@@ -15,8 +16,10 @@ interface HeaderProps {
 export default function Header({ 
   title
 }: HeaderProps) {
+  const navigate = useNavigate();
+  
   return (
-    <div className="sticky top-0 z-40 bg-white border-b flex items-center py-2.5 shadow-sm">
+    <div className="sticky top-0 z-40 bg-background border-b flex items-center py-2.5 shadow-sm">
       <div className="flex items-center justify-between w-full px-6">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-medium leading-none">{title}</h1>
@@ -47,6 +50,7 @@ export default function Header({
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start px-2 py-1.5 h-auto text-sm"
+                  onClick={() => navigate("/settings")}
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
