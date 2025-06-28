@@ -4,67 +4,95 @@
  
 @layer base {
   :root {
+    /* Custom Blue Brand Colors */
+    --color-blue: #00A8EA;
+    --color-blue-50: #e5f8ff;
+    --color-blue-100: #b7ebff;
+    --color-blue-200: #84dcff;
+    --color-blue-300: #51ceff;
+    --color-blue-400: #1ec0ff;
+    --color-blue-500: #00A8EA;
+    --color-blue-600: #0083b7;
+    --color-blue-700: #005f84;
+    --color-blue-800: #003a51;
+    --color-blue-900: #00161e;
+    
+    /* Custom Greyscale Colors */
+    --color-white: #ffffff;
+    --color-greyscale: #425B64;
+    --color-greyscale-50: #e8eef0;
+    --color-greyscale-100: #c3d2d8;
+    --color-greyscale-200: #9eb7bf;
+    --color-greyscale-300: #7a9ba7;
+    --color-greyscale-400: #5a7d89;
+    --color-greyscale-500: #425B64;
+    --color-greyscale-600: #2a393f;
+    --color-greyscale-700: #11181a;
+    --color-greyscale-800: #0a0e0f;
+    --color-greyscale-900: #0a0e0f;
+    
+    /* Theme Colors - Light Mode */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 196 19% 33%; /* greyscale-500 */
  
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 196 14% 93%; /* greyscale-50 */
+    --muted-foreground: 196 19% 45%; /* greyscale-400 */
  
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 196 19% 33%; /* greyscale-500 */
  
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 196 19% 33%; /* greyscale-500 */
  
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 196 14% 85%; /* greyscale-100 */
+    --input: 196 14% 85%; /* greyscale-100 */
  
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 196 100% 46%; /* blue-500 */
+    --primary-foreground: 0 0% 100%;
  
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 196 14% 93%; /* greyscale-50 */
+    --secondary-foreground: 196 19% 33%; /* greyscale-500 */
  
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 196 100% 95%; /* blue-50 */
+    --accent-foreground: 196 100% 46%; /* blue-500 */
  
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
  
-    --ring: 215 20.2% 65.1%;
+    --ring: 196 100% 46%; /* blue-500 */
  
     --radius: 0.5rem;
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 196 25% 9%; /* greyscale-800 */
+    --foreground: 0 0% 100%;
  
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 196 19% 20%; /* greyscale-600 */
+    --muted-foreground: 196 19% 65%; /* greyscale-300 */
  
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 196 25% 9%; /* greyscale-800 */
+    --popover-foreground: 0 0% 100%;
  
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 196 25% 9%; /* greyscale-800 */
+    --card-foreground: 0 0% 100%;
  
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 196 19% 20%; /* greyscale-600 */
+    --input: 196 19% 20%; /* greyscale-600 */
  
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 196 100% 46%; /* blue-500 */
+    --primary-foreground: 0 0% 100%;
  
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 196 19% 20%; /* greyscale-600 */
+    --secondary-foreground: 0 0% 100%;
  
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 196 100% 30%; /* blue-600 */
+    --accent-foreground: 0 0% 100%;
  
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
  
-    --ring: 217.2 32.6% 17.5%;
+    --ring: 196 100% 46%; /* blue-500 */
   }
 }
  

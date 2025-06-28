@@ -32,7 +32,7 @@ export default function PageBuilder({ project, selectedPage, onUpdatePage }: Pag
   }
 
   if (isProjectPage && onUpdatePage) {
-    return <ProjectPage page={selectedPage} onUpdatePage={onUpdatePage} />;
+    return <ProjectPage page={selectedPage} project={project} onUpdatePage={onUpdatePage} />;
   }
   
   return (

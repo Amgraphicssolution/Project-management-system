@@ -1,14 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { PageType } from "@/types";
-import { ImagePlus, Plus, Home } from "lucide-react";
+import { PageType, ProjectType } from "@/types";
+import { ImagePlus, Plus, Home, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import ShareProjectDialog from "./ShareProjectDialog";
 
 interface ProjectPageProps {
   page: PageType;
+  project: ProjectType;
   onUpdatePage: (updatedPage: PageType) => void;
 }
 
-export default function ProjectPage({ page, onUpdatePage }: ProjectPageProps) {
+export default function ProjectPage({ page, project, onUpdatePage }: ProjectPageProps) {
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  
   const handleIconAdd = () => {
     // TODO: Implement icon picker
     const newIcon = "📁"; // This would come from an icon picker
@@ -34,6 +39,11 @@ export default function ProjectPage({ page, onUpdatePage }: ProjectPageProps) {
       ...page,
       description: newDescription
     });
+  };
+
+  const handleShareClick = () => {
+    console.log("Share button clicked, opening dialog");
+    setIsShareDialogOpen(true);
   };
 
   return (
@@ -95,11 +105,22 @@ export default function ProjectPage({ page, onUpdatePage }: ProjectPageProps) {
         </div>
       </div>
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-        <Home className="h-4 w-4" />
-        <span>/</span>
-        <span>Project Name</span>
+      {/* Breadcrumb and Share Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Home className="h-4 w-4" />
+          <span>/</span>
+          <span>{project.title}</span>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1"
+          onClick={handleShareClick}
+        >
+          <Share2 className="h-4 w-4" />
+          <span>Share</span>
+        </Button>
       </div>
 
       {/* Action Buttons */}
@@ -127,7 +148,11 @@ export default function ProjectPage({ page, onUpdatePage }: ProjectPageProps) {
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium">Shared with</h3>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleShareClick}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Share
           </Button>
@@ -143,6 +168,13 @@ export default function ProjectPage({ page, onUpdatePage }: ProjectPageProps) {
           </Avatar>
         </div>
       </div>
+
+      {/* Share Dialog */}
+      <ShareProjectDialog 
+        project={project}
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+      />
     </div>
   );
 } 

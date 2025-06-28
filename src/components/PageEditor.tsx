@@ -61,6 +61,7 @@ import FormBlock from './FormBlock';
 import ColumnBlock from './ColumnBlock';
 import FigmaBlock from './FigmaBlock';
 import FormattedTextBlock from './ui/FormattedTextBlock';
+import BoardBlock from './BoardBlock';
 
 interface ListItem {
   id: string;
@@ -753,6 +754,17 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       );
     }
 
+    if (block.type === 'board') {
+      return (
+        <BoardBlock
+          key={block.id}
+          block={block as any}
+          onUpdate={(updatedBlock) => handleUpdateBlock(index, updatedBlock as any)}
+          onDelete={() => handleDeleteBlock(index)}
+        />
+      );
+    }
+
     return (
       <div className="relative group">
         <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5">
@@ -1375,7 +1387,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-8 py-12 min-h-screen">
+    <div className="max-w-4xl mx-auto py-12 min-h-screen">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="blocks">
           {(provided) => (

@@ -117,7 +117,11 @@ export default function CreateOrganizationModal({
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim() || isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={!name.trim() || isSubmitting}
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
               Create
             </Button>
           </DialogFooter>

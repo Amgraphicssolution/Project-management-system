@@ -7,11 +7,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Pencil, Copy, Trash2, MoreHorizontal } from "lucide-react";
+import { Pencil, Copy, Trash2, MoreHorizontal, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ProjectType } from "@/types";
+import ShareProjectDialog from "@/components/ShareProjectDialog";
 
 interface ProjectContextMenuProps {
   project: ProjectType;
@@ -28,6 +29,7 @@ export default function ProjectContextMenu({
 }: ProjectContextMenuProps) {
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [newName, setNewName] = useState(project.title);
 
   const handleRename = () => {
@@ -52,6 +54,14 @@ export default function ProjectContextMenu({
             >
               <Pencil className="mr-2 h-4 w-4" />
               <span className="text-sm">Rename</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-8"
+              onClick={() => setIsShareDialogOpen(true)}
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              <span className="text-sm">Share</span>
             </Button>
             <Button
               variant="ghost"
@@ -95,6 +105,13 @@ export default function ProjectContextMenu({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Share Dialog */}
+      <ShareProjectDialog 
+        project={project}
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

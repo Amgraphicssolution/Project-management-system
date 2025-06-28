@@ -29,6 +29,7 @@ import CoverPickerModal from '@/components/CoverPickerModal';
 import PageEditor from '@/components/PageEditor';
 import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
 import { useParams } from "react-router-dom";
+import ShareProjectDialog from '@/components/ShareProjectDialog';
 
 const ProjectView = ({ 
   project, 
@@ -59,6 +60,7 @@ const ProjectView = ({
   const [isCoverPickerOpen, setIsCoverPickerOpen] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [description, setDescription] = useState(project.description || "");
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const handleTitleSave = () => {
     onUpdateProject({
@@ -157,7 +159,15 @@ const ProjectView = ({
           <span className="text-muted-foreground text-sm">{project.title}</span>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="h-7 px-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 px-2"
+            onClick={() => {
+              console.log("Share button clicked in Index.tsx");
+              setIsShareDialogOpen(true);
+            }}
+          >
             <Share2 className="h-4 w-4" />
           </Button>
           <div className="flex -space-x-2">
@@ -170,9 +180,6 @@ const ProjectView = ({
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
           </div>
-          <Button variant="ghost" size="sm" className="h-7 px-2">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
@@ -396,27 +403,19 @@ const ProjectView = ({
       <IconPickerModal
         isOpen={isIconPickerOpen}
         onClose={() => setIsIconPickerOpen(false)}
-        onSelect={(icon) => {
-          onUpdateProject({
-            ...project,
-            icon,
-            updatedAt: new Date().toISOString()
-          });
-          setIsIconPickerOpen(false);
-        }}
+        onSelect={handleIconSelect}
       />
 
       <CoverPickerModal
         isOpen={isCoverPickerOpen}
         onClose={() => setIsCoverPickerOpen(false)}
-        onSelect={(cover) => {
-          onUpdateProject({
-            ...project,
-            cover,
-            updatedAt: new Date().toISOString()
-          });
-          setIsCoverPickerOpen(false);
-        }}
+        onSelect={handleCoverSelect}
+      />
+
+      <ShareProjectDialog
+        project={project}
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
       />
     </>
   );

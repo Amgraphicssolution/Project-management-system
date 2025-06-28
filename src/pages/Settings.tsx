@@ -180,6 +180,30 @@ const Settings = () => {
   // Add state for dropdown menu
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
+  // Function to get color based on role
+  const getRoleColor = (role: string) => {
+    switch(role.toLowerCase()) {
+      case 'owner':
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
+      case 'admin':
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case 'manager':
+        return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      case 'designer':
+        return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400";
+      case 'developer':
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      case 'team lead':
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      case 'ui designer':
+        return "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
+      case 'lead developer':
+        return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
   // Initialize organizations and projects
   useEffect(() => {
     try {
@@ -835,35 +859,40 @@ const Settings = () => {
                 
                 <div>
                   <Button 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => setInviteMemberDialogOpen(true)}
                   >
                     <span className="mr-1">+</span> Invite Member
                   </Button>
                 </div>
                 
-                <div className="bg-muted/50 dark:bg-muted/20 rounded-md overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
                   {/* Table Header */}
-                  <div className="grid grid-cols-[1fr,120px,100px] px-4 py-3 bg-muted dark:bg-muted/40 text-sm font-medium">
+                  <div className="grid grid-cols-[1fr,120px,100px] px-6 py-4 bg-gray-50 dark:bg-gray-800/80 text-sm font-medium border-b">
                     <div>Name</div>
                     <div>Joined</div>
                     <div className="text-right">Actions</div>
                   </div>
                   
                   {/* Table Body */}
-                  <div className="divide-y divide-border">
-                    {users.map(user => (
-                      <div key={user.id} className="grid grid-cols-[1fr,120px,100px] px-4 py-3 items-center">
+                  <div>
+                    {users.map((user, index) => (
+                      <div 
+                        key={user.id} 
+                        className={`grid grid-cols-[1fr,120px,100px] px-6 py-4 items-center transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== users.length - 1 ? 'border-b' : ''}`}
+                      >
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="h-10 w-10 border">
                             <AvatarImage src={user.avatar} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                              {user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium text-sm">{user.name}</p>
                             <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
-                          <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary dark:bg-primary/20">
+                          <span className={`ml-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getRoleColor(user.role)}`}>
                             {user.role}
                           </span>
                         </div>
@@ -871,17 +900,17 @@ const Settings = () => {
                         <div className="flex justify-end">
                           <DropdownMenu open={dropdownOpen === `user-${user.id}`} onOpenChange={(open) => setDropdownOpen(open ? `user-${user.id}` : null)}>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem 
                                 onClick={(e) => {
                                   handleEditUser(user, e);
                                   setDropdownOpen(null);
                                 }}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 cursor-pointer"
                               >
                                 <Pencil className="h-4 w-4" />
                                 Change Role
@@ -892,7 +921,7 @@ const Settings = () => {
                                     handleDeleteUser(user, e);
                                     setDropdownOpen(null);
                                   }}
-                                  className="flex items-center gap-2 text-destructive focus:text-destructive"
+                                  className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                   Remove User
@@ -917,7 +946,7 @@ const Settings = () => {
                 
                 <div>
                   <Button 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => {
                       setCurrentTeam({
                         id: '',
@@ -935,14 +964,14 @@ const Settings = () => {
                 </div>
                 
                 {teams.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {teams.map(team => (
-                      <Card key={team.id} className="overflow-hidden">
-                        <div className="p-4 flex justify-between items-start border-b">
+                      <Card key={team.id} className="overflow-hidden shadow-sm hover:shadow transition-shadow">
+                        <div className="p-5 flex justify-between items-start border-b">
                           <div>
                             <h4 className="text-lg font-medium">{team.name}</h4>
-                            <p className="text-sm text-muted-foreground">{team.description}</p>
-                            <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mt-1">{team.description}</p>
+                            <div className="flex items-center mt-2.5 text-xs text-muted-foreground">
                               <span>{team.memberCount} {team.memberCount === 1 ? 'member' : 'members'}</span>
                               <span className="mx-2">•</span>
                               <span>Created on {team.createdDate}</span>
@@ -953,23 +982,24 @@ const Settings = () => {
                               variant="outline" 
                               size="sm"
                               onClick={(e) => handleAddMemberToTeam(team.id, e)}
+                              className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                             >
                               <UserPlus className="h-3.5 w-3.5 mr-1" />
                               Add Member
                             </Button>
                             <DropdownMenu open={dropdownOpen === `team-${team.id}`} onOpenChange={(open) => setDropdownOpen(open ? `team-${team.id}` : null)}>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuItem 
                                   onClick={(e) => {
                                     handleEditTeam(team, e);
                                     setDropdownOpen(null);
                                   }}
-                                  className="flex items-center gap-2"
+                                  className="flex items-center gap-2 cursor-pointer"
                                 >
                                   <Pencil className="h-4 w-4" />
                                   Edit Team
@@ -979,7 +1009,7 @@ const Settings = () => {
                                     handleDeleteTeam(team, e);
                                     setDropdownOpen(null);
                                   }}
-                                  className="flex items-center gap-2 text-destructive focus:text-destructive"
+                                  className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                   Delete Team
@@ -990,37 +1020,42 @@ const Settings = () => {
                         </div>
                         
                         {/* Team Members List */}
-                        <div className="divide-y divide-border">
-                          {team.members.map(member => (
-                            <div key={`${team.id}-${member.id}`} className="p-4 flex items-center justify-between">
+                        <div>
+                          {team.members.map((member, index) => (
+                            <div 
+                              key={`${team.id}-${member.id}`} 
+                              className={`p-4 flex items-center justify-between transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== team.members.length - 1 ? 'border-b' : ''}`}
+                            >
                               <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
+                                <Avatar className="h-10 w-10 border">
                                   <AvatarImage src={member.avatar} />
-                                  <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                                    {member.name.charAt(0)}
+                                  </AvatarFallback>
                                 </Avatar>
                                 <div>
                                   <p className="font-medium text-sm">{member.name}</p>
                                   <p className="text-xs text-muted-foreground">{member.email}</p>
                                 </div>
-                                <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary dark:bg-primary/20">
+                                <span className={`ml-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getRoleColor(member.role)}`}>
                                   {member.role}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 <span className="text-xs text-muted-foreground">Joined {member.joinedDate}</span>
                                 <DropdownMenu open={dropdownOpen === `member-${team.id}-${member.id}`} onOpenChange={(open) => setDropdownOpen(open ? `member-${team.id}-${member.id}` : null)}>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
+                                  <DropdownMenuContent align="end" className="w-48">
                                     <DropdownMenuItem 
                                       onClick={(e) => {
                                         // Handle edit member action
                                         setDropdownOpen(null);
                                       }}
-                                      className="flex items-center gap-2"
+                                      className="flex items-center gap-2 cursor-pointer"
                                     >
                                       <Pencil className="h-4 w-4" />
                                       Edit Member
@@ -1030,7 +1065,7 @@ const Settings = () => {
                                         // Handle remove member action
                                         setDropdownOpen(null);
                                       }}
-                                      className="flex items-center gap-2 text-destructive focus:text-destructive"
+                                      className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
                                     >
                                       <Trash2 className="h-4 w-4" />
                                       Remove Member
@@ -1045,9 +1080,14 @@ const Settings = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center p-8 border rounded-lg bg-muted/20">
-                    <h4 className="font-medium mb-2">No teams created yet</h4>
-                    <p className="text-sm text-muted-foreground mb-4">Create your first team to organize your workspace members</p>
+                  <div className="text-center p-10 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                    <div className="flex justify-center mb-4">
+                      <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                        <Users className="h-6 w-6 text-blue-500" />
+                      </div>
+                    </div>
+                    <h4 className="font-medium mb-2 text-lg">No teams created yet</h4>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">Create your first team to organize your workspace members and collaborate more effectively</p>
                     <Button 
                       onClick={() => {
                         setCurrentTeam({
@@ -1060,6 +1100,7 @@ const Settings = () => {
                         });
                         setCreateTeamDialogOpen(true);
                       }}
+                      className="bg-blue-500 text-white hover:bg-blue-600"
                     >
                       <span className="mr-1">+</span> Create Team
                     </Button>
@@ -1077,16 +1118,16 @@ const Settings = () => {
                 
                 <div>
                   <Button 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={(e) => handleCreateRole(e)}
                   >
                     <span className="mr-1">+</span> Create Role
                   </Button>
                 </div>
                 
-                <div className="bg-muted/50 dark:bg-muted/20 rounded-md overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
                   {/* Table Header */}
-                  <div className="grid grid-cols-[1fr,100px,100px,80px] px-4 py-3 bg-muted dark:bg-muted/40 text-sm font-medium">
+                  <div className="grid grid-cols-[1fr,100px,100px,80px] px-6 py-4 bg-gray-50 dark:bg-gray-800/80 text-sm font-medium border-b">
                     <div>Name</div>
                     <div>Members</div>
                     <div>Created</div>
@@ -1094,11 +1135,14 @@ const Settings = () => {
                   </div>
                   
                   {/* Table Body */}
-                  <div className="divide-y divide-border">
-                    {roles.map(role => (
-                      <div key={role.id} className="grid grid-cols-[1fr,100px,100px,80px] px-4 py-3 items-center">
+                  <div>
+                    {roles.map((role, index) => (
+                      <div 
+                        key={role.id} 
+                        className={`grid grid-cols-[1fr,100px,100px,80px] px-6 py-4 items-center transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== roles.length - 1 ? 'border-b' : ''}`}
+                      >
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 bg-muted dark:bg-muted/70 rounded-full flex items-center justify-center text-sm font-medium">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium ${getRoleColor(role.name)}`}>
                             {role.name.charAt(0)}
                           </div>
                           <div>
@@ -1111,17 +1155,17 @@ const Settings = () => {
                         <div className="flex justify-end">
                           <DropdownMenu open={dropdownOpen === role.id} onOpenChange={(open) => setDropdownOpen(open ? role.id : null)}>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem 
                                 onClick={(e) => {
                                   handleEditRole(role, e);
                                   setDropdownOpen(null);
                                 }}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 cursor-pointer"
                               >
                                 <Pencil className="h-4 w-4" />
                                 Edit
@@ -1131,7 +1175,7 @@ const Settings = () => {
                                   handleDeleteRole(role, e);
                                   setDropdownOpen(null);
                                 }}
-                                className="flex items-center gap-2 text-destructive focus:text-destructive"
+                                className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 Delete
@@ -1151,7 +1195,7 @@ const Settings = () => {
         {/* Footer with save button */}
         <div className="border-t py-3 px-4 flex justify-end mt-auto">
           <Button 
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-500 text-white hover:bg-blue-600"
             onClick={saveChanges}
           >
             Save Changes
@@ -1218,7 +1262,7 @@ const Settings = () => {
               setEditRoleDialogOpen(false);
               setCurrentRole(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveRoleEdit(e)}>Save changes</Button>
+            <Button onClick={(e) => handleSaveRoleEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1295,7 +1339,7 @@ const Settings = () => {
               setCreateTeamDialogOpen(false);
               setCurrentTeam(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleCreateTeam(e)}>Create Team</Button>
+            <Button onClick={(e) => handleCreateTeam(e)} className="bg-blue-500 text-white hover:bg-blue-600">Create Team</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1343,7 +1387,7 @@ const Settings = () => {
               setEditTeamDialogOpen(false);
               setCurrentTeam(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveTeamEdit(e)}>Save changes</Button>
+            <Button onClick={(e) => handleSaveTeamEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1413,7 +1457,8 @@ const Settings = () => {
                     </div>
                     <div className="text-right">
                       <Button 
-                        size="sm" 
+                        size="sm"
+                        className="bg-blue-500 text-white hover:bg-blue-600"
                         onClick={() => {
                           handleSaveNewMember({
                             id: "user-2",
@@ -1442,6 +1487,7 @@ const Settings = () => {
                     <div className="text-right">
                       <Button 
                         size="sm"
+                        className="bg-blue-500 text-white hover:bg-blue-600"
                         onClick={() => {
                           handleSaveNewMember({
                             id: "user-3",
@@ -1496,6 +1542,7 @@ const Settings = () => {
                 </div>
                 <div className="flex justify-end">
                   <Button 
+                    className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => {
                       // In a real app, you would validate and get values from form inputs
                       const newMember: TeamMember = {
@@ -1620,7 +1667,7 @@ const Settings = () => {
                 <Button 
                   type="submit" 
                   disabled={isInviting}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
                 >
                   {isInviting ? (
                     <>
@@ -1691,7 +1738,7 @@ const Settings = () => {
               setEditUserDialogOpen(false);
               setCurrentUser(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveUserEdit(e)}>Save changes</Button>
+            <Button onClick={(e) => handleSaveUserEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

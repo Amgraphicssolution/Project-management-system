@@ -47,14 +47,14 @@ export default function CreateNewModal({
           {showProjectOption && onCreateProject && (
             <Button
               variant="outline"
-              className="flex flex-col items-center justify-center h-32 gap-2"
+              className="flex flex-col items-center justify-center h-32 gap-2 border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
               onClick={() => handleAction(onCreateProject, 'project')}
               disabled={!!isLoading}
             >
               {isLoading === 'project' ? (
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
               ) : (
-                <FolderPlus className="h-8 w-8" />
+                <FolderPlus className="h-8 w-8 text-blue-500" />
               )}
               <span className="font-medium">New Project</span>
               <span className="text-xs text-muted-foreground">Create a new project folder</span>

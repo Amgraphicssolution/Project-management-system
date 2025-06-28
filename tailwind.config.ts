@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,29 +63,29 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
                 // Custom color palette
-                purple: {
-                    50: '#F6F4FE',
-                    100: '#E5DEFF',
-                    200: '#D0C2FE',
-                    300: '#B9A3FD',
-                    400: '#A58FFB',
-                    500: '#9b87f5', // primary accent
-                    600: '#7E69AB',
-                    700: '#6E59A5',
-                    800: '#4E3D73',
-                    900: '#302344',
+                blue: {
+                    50: '#e5f8ff',
+                    100: '#b7ebff',
+                    200: '#84dcff',
+                    300: '#51ceff',
+                    400: '#1ec0ff',
+                    500: '#00A8EA', // primary blue
+                    600: '#0083b7',
+                    700: '#005f84',
+                    800: '#003a51',
+                    900: '#00161e',
                 },
-                neutral: {
-                    50: '#F9F9FB',
-                    100: '#F1F0F7',
-                    200: '#E4E2ED',
-                    300: '#D0CDD9',
-                    400: '#AAA7B8',
-                    500: '#8E9196',
-                    600: '#666276',
-                    700: '#4D4958',
-                    800: '#333139',
-                    900: '#1A1F2C',
+                greyscale: {
+                    50: '#e8eef0',
+                    100: '#c3d2d8',
+                    200: '#9eb7bf',
+                    300: '#7a9ba7',
+                    400: '#5a7d89',
+                    500: '#425B64', // primary greyscale
+                    600: '#2a393f',
+                    700: '#11181a',
+                    800: '#0a0e0f',
+                    900: '#0a0e0f',
                 }
 			},
             fontFamily: {
