@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ChevronLeft, 
+import {
+  ChevronLeft,
   Folder,
   Home,
   Image as ImageIcon,
@@ -31,8 +31,8 @@ import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
 import { useParams } from "react-router-dom";
 import ShareProjectDialog from '@/components/ShareProjectDialog';
 
-const ProjectView = ({ 
-  project, 
+const ProjectView = ({
+  project,
   onUpdateProject,
   setProjects,
   currentOrganization,
@@ -42,8 +42,8 @@ const ProjectView = ({
   onUpdateOrganization,
   onDeleteOrganization,
   onNavigateHome
-}: { 
-  project: ProjectType; 
+}: {
+  project: ProjectType;
   onUpdateProject: (updated: ProjectType) => void;
   setProjects: React.Dispatch<React.SetStateAction<ProjectType[]>>;
   currentOrganization?: OrganizationType;
@@ -107,7 +107,7 @@ const ProjectView = ({
     };
     onUpdateProject(updatedProject);
     setIsIconPickerOpen(false);
-    
+
     // Update projects list to reflect the icon change
     setProjects(prevProjects =>
       prevProjects.map(p => p.id === project.id ? updatedProject : p)
@@ -147,9 +147,9 @@ const ProjectView = ({
       {/* Breadcrumb and Actions */}
       <div className="px-6 py-2 border-b flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-7 px-2"
             onClick={onNavigateHome}
           >
@@ -159,9 +159,9 @@ const ProjectView = ({
           <span className="text-muted-foreground text-sm">{project.title}</span>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-7 px-2"
             onClick={() => {
               console.log("Share button clicked in Index.tsx");
@@ -182,16 +182,15 @@ const ProjectView = ({
           </div>
         </div>
       </div>
-
       {/* Project Content */}
       <div className="relative group px-4 pt-4">
         {project.cover ? (
-          <div 
+          <div
             className="min-h-[200px] transition-all rounded-lg cursor-pointer group/cover relative"
             style={{
               height: project.coverHeight || '200px',
               backgroundImage: project.cover?.type === 'image' ? `url(${project.cover.value})` : undefined,
-              backgroundColor: project.cover?.type === 'color' ? project.cover.value : '#E5F3FF',
+              backgroundColor: project.cover?.type === 'color' ? project.cover.value : 'hsl(var(--muted))',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
@@ -200,9 +199,9 @@ const ProjectView = ({
             {/* Hover overlay for cover */}
             <div className="absolute inset-0 bg-black/0 group-hover/cover:bg-black/5 transition-colors">
               <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/cover:opacity-100 transition-opacity">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   className="bg-background/80 hover:bg-background"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -211,9 +210,9 @@ const ProjectView = ({
                 >
                   Change cover
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
+                <Button
+                  variant="secondary"
+                  size="sm"
                   className="bg-background/80 hover:bg-background text-destructive hover:text-destructive"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -227,42 +226,44 @@ const ProjectView = ({
           </div>
         ) : null}
 
-        {project.cover && (
-          <div 
-            className="absolute bottom-0 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover:opacity-100 transition-opacity"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              const startY = e.clientY;
-              const banner = e.currentTarget.previousElementSibling as HTMLElement;
-              const startHeight = banner.offsetHeight;
-              
-              const handleMouseMove = (moveEvent: MouseEvent) => {
-                moveEvent.preventDefault();
-                const delta = moveEvent.clientY - startY;
-                const newHeight = Math.max(100, startHeight + delta);
-                banner.style.height = `${newHeight}px`;
-              };
-              
-              const handleMouseUp = () => {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-                
+        {
+          project.cover && (
+            <div
+              className="absolute bottom-0 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover:opacity-100 transition-opacity"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startY = e.clientY;
                 const banner = e.currentTarget.previousElementSibling as HTMLElement;
-                onUpdateProject({
-                  ...project,
-                  coverHeight: `${banner.offsetHeight}px`,
-                  updatedAt: new Date().toISOString()
-                });
-              };
-              
-              document.addEventListener('mousemove', handleMouseMove);
-              document.addEventListener('mouseup', handleMouseUp);
-            }}
-          >
-            <div className="h-1 bg-secondary/50 hover:bg-secondary rounded-full mx-auto w-12"></div>
-          </div>
-        )}
-      </div>
+                const startHeight = banner.offsetHeight;
+
+                const handleMouseMove = (moveEvent: MouseEvent) => {
+                  moveEvent.preventDefault();
+                  const delta = moveEvent.clientY - startY;
+                  const newHeight = Math.max(100, startHeight + delta);
+                  banner.style.height = `${newHeight}px`;
+                };
+
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+
+                  const banner = e.currentTarget.previousElementSibling as HTMLElement;
+                  onUpdateProject({
+                    ...project,
+                    coverHeight: `${banner.offsetHeight}px`,
+                    updatedAt: new Date().toISOString()
+                  });
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }}
+            >
+              <div className="h-1 bg-secondary/50 hover:bg-secondary rounded-full mx-auto w-12"></div>
+            </div>
+          )
+        }
+      </div >
 
       <div className="py-6 px-4">
         <div className="group relative max-w-3xl mx-auto">
@@ -272,7 +273,7 @@ const ProjectView = ({
             {project.icon && (
               <div className="mb-4">
                 <div className="group/icon">
-                  <div 
+                  <div
                     className="w-24 h-24 flex items-center justify-center cursor-pointer text-5xl relative"
                     onClick={() => setIsIconPickerOpen(true)}
                   >
@@ -308,7 +309,7 @@ const ProjectView = ({
                     autoFocus
                   />
                 ) : (
-                  <h1 
+                  <h1
                     className="text-4xl font-semibold cursor-pointer hover:bg-secondary/50 px-2 rounded"
                     onClick={() => setIsEditingTitle(true)}
                   >
@@ -349,7 +350,7 @@ const ProjectView = ({
               </div>
             </div>
           </div>
-          
+
           {/* Description */}
           <div>
             {isEditingDescription ? (
@@ -364,7 +365,7 @@ const ProjectView = ({
                 autoFocus
               />
             ) : description ? (
-              <p 
+              <p
                 className="text-muted-foreground cursor-pointer hover:bg-secondary/30 p-2 rounded"
                 onClick={() => setIsEditingDescription(true)}
               >
@@ -376,20 +377,21 @@ const ProjectView = ({
 
         {/* Project Pages List */}
         <div className="mt-6">
-          <PageEditor 
+          <PageEditor
             page={{
               id: project.id,
               title: project.title,
               blocks: project.pages[0]?.blocks || [],
               createdAt: project.createdAt,
               updatedAt: project.updatedAt,
-              parentId: project.id
+              parentId: project.id,
+              projectId: project.id
             }}
             onUpdatePage={(updatedPage) => {
               const updatedProject = {
                 ...project,
-                pages: project.pages.map(p => 
-                  p.id === project.pages[0]?.id 
+                pages: project.pages.map(p =>
+                  p.id === project.pages[0]?.id
                     ? { ...p, blocks: updatedPage.blocks }
                     : p
                 )
@@ -438,11 +440,11 @@ const Index = () => {
       // For testing purposes, initialize with dummy data
       if (dummyOrganizations && dummyOrganizations.length > 0) {
         setOrganizations(dummyOrganizations);
-        
+
         // Set the default organization as current
         const defaultOrg = dummyOrganizations.find(org => org.isDefault) || dummyOrganizations[0];
         setCurrentOrganization(defaultOrg);
-        
+
         // Filter projects for the default organization
         if (dummyProjects && dummyProjects.length > 0) {
           const orgProjects = dummyProjects.filter(
@@ -503,7 +505,7 @@ const Index = () => {
         // Get all projects from localStorage
         const savedProjects = localStorage.getItem('projects');
         let allProjects: ProjectType[] = [];
-        
+
         if (savedProjects) {
           allProjects = JSON.parse(savedProjects);
           // Remove current organization's projects
@@ -511,13 +513,13 @@ const Index = () => {
             p => currentOrganization && p.organizationId !== currentOrganization.id
           );
         }
-        
+
         // Add current projects (with organization ID)
         const currentProjects = projects.map(p => ({
           ...p,
           organizationId: currentOrganization?.id
         }));
-        
+
         localStorage.setItem('projects', JSON.stringify([...allProjects, ...currentProjects]));
       } catch (error) {
         console.error('Error saving projects:', error);
@@ -550,15 +552,15 @@ const Index = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      
+
       setOrganizations(prev => [...prev, newOrg]);
       setCurrentOrganization(newOrg);
-      
+
       // Load projects for the new organization (empty initially)
       setProjects([]);
       setSelectedProject(null);
       setActiveTab("projects");
-      
+
       toast({
         title: "Success",
         description: "Organization created successfully.",
@@ -575,9 +577,9 @@ const Index = () => {
 
   const handleOrganizationChange = (organization: OrganizationType) => {
     if (currentOrganization?.id === organization.id) return;
-    
+
     setCurrentOrganization(organization);
-    
+
     // Load projects for the selected organization
     const savedProjects = localStorage.getItem('projects');
     if (savedProjects) {
@@ -601,29 +603,29 @@ const Index = () => {
 
   const handleUpdateOrganization = (id: string, name: string, image?: string) => {
     try {
-      const updatedOrgs = organizations.map(org => 
-        org.id === id 
-          ? { 
-              ...org, 
-              name, 
-              image, 
-              updatedAt: new Date().toISOString() 
-            } 
+      const updatedOrgs = organizations.map(org =>
+        org.id === id
+          ? {
+            ...org,
+            name,
+            image,
+            updatedAt: new Date().toISOString()
+          }
           : org
       );
-      
+
       setOrganizations(updatedOrgs);
-      
+
       // If the current organization was updated, update it in state
       if (currentOrganization?.id === id) {
-        setCurrentOrganization(prev => prev ? { 
-          ...prev, 
-          name, 
-          image, 
-          updatedAt: new Date().toISOString() 
+        setCurrentOrganization(prev => prev ? {
+          ...prev,
+          name,
+          image,
+          updatedAt: new Date().toISOString()
         } : null);
       }
-      
+
       toast({
         title: "Success",
         description: "Organization updated successfully.",
@@ -650,16 +652,16 @@ const Index = () => {
         });
         return;
       }
-      
+
       // Remove the organization
       const updatedOrgs = organizations.filter(org => org.id !== id);
       setOrganizations(updatedOrgs);
-      
+
       // If the current organization was deleted, switch to the default organization
       if (currentOrganization?.id === id) {
         const defaultOrg = updatedOrgs.find(org => org.isDefault) || updatedOrgs[0];
         setCurrentOrganization(defaultOrg);
-        
+
         // Load projects for the default organization
         const savedProjects = localStorage.getItem('projects');
         if (savedProjects) {
@@ -680,7 +682,7 @@ const Index = () => {
           setProjects([]);
         }
       }
-      
+
       // Delete all projects associated with the deleted organization
       const savedProjects = localStorage.getItem('projects');
       if (savedProjects) {
@@ -695,7 +697,7 @@ const Index = () => {
           console.error('Error updating projects after organization deletion:', error);
         }
       }
-      
+
       toast({
         title: "Success",
         description: "Organization deleted successfully.",
@@ -716,7 +718,7 @@ const Index = () => {
       const projectTitle = "New Project";
       let uniqueTitle = projectTitle;
       let counter = 1;
-      
+
       while (projects.some(p => p.title === uniqueTitle)) {
         uniqueTitle = `${projectTitle} ${counter}`;
         counter++;
@@ -738,7 +740,8 @@ const Index = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         path: ["projects"],
-        parentId: newProject.id
+        parentId: newProject.id,
+        projectId: newProject.id
       };
 
       newProject.pages = [newPage];
@@ -771,11 +774,11 @@ const Index = () => {
       });
       return;
     }
-    
+
     try {
       let pageTitle = "Untitled";
       let counter = 1;
-      
+
       while (selectedProject.pages.some(p => p.title === pageTitle)) {
         pageTitle = `Untitled ${counter}`;
         counter++;
@@ -788,16 +791,17 @@ const Index = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         path: ["projects"],
-        parentId: selectedProject.id
+        parentId: selectedProject.id,
+        projectId: selectedProject.id
       };
-      
+
       const updatedProject = {
         ...selectedProject,
         pages: [...selectedProject.pages, newPage],
         updatedAt: new Date().toISOString(),
       };
-      
-      setProjects(prevProjects => 
+
+      setProjects(prevProjects =>
         prevProjects.map(p => p.id === selectedProject.id ? updatedProject : p)
       );
       setSelectedProject(updatedProject);
@@ -819,7 +823,7 @@ const Index = () => {
 
   const handleCreateChat = () => {
     if (!selectedProject) return;
-    
+
     const newPage: PageType = {
       id: `chat-${Date.now()}`,
       title: "New Chat",
@@ -828,14 +832,15 @@ const Index = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       path: ["chat"],
-      parentId: selectedProject.id
+      parentId: selectedProject.id,
+      projectId: selectedProject.id
     };
-    
+
     const updatedProject = {
       ...selectedProject,
       pages: [...selectedProject.pages, newPage]
     };
-    
+
     setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
     setSelectedProject(updatedProject);
     setSelectedPage(newPage);
@@ -843,16 +848,16 @@ const Index = () => {
 
   const handleUpdatePage = (updatedPage: PageType) => {
     if (!selectedProject) return;
-    
-    const updatedPages = selectedProject.pages.map(page => 
+
+    const updatedPages = selectedProject.pages.map(page =>
       page.id === updatedPage.id ? updatedPage : page
     );
-    
+
     const updatedProject = {
       ...selectedProject,
       pages: updatedPages
     };
-    
+
     setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
     setSelectedProject(updatedProject);
     setSelectedPage(updatedPage);
@@ -882,7 +887,7 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {projects.map((project) => (
-              <div 
+              <div
                 key={project.id}
                 className="bg-secondary/30 rounded-lg p-4 hover:bg-secondary/50 transition-colors cursor-pointer"
                 onClick={() => {
@@ -920,11 +925,11 @@ const Index = () => {
           <Header title="Home" />
           <WelcomeView />
         </TabsContent>
-        
+
         <TabsContent value="project">
           {selectedProject && (
-            <ProjectView 
-              project={selectedProject} 
+            <ProjectView
+              project={selectedProject}
               onUpdateProject={(updated) => {
                 setProjects(prevProjects =>
                   prevProjects.map(p => p.id === updated.id ? updated : p)
@@ -962,7 +967,7 @@ const Index = () => {
       const projectTitle = "New Project";
       let uniqueTitle = projectTitle;
       let counter = 1;
-      
+
       while (projects.some(p => p.title === uniqueTitle)) {
         uniqueTitle = `${projectTitle} ${counter}`;
         counter++;
@@ -1045,7 +1050,7 @@ const Index = () => {
   // Handler for deleting a project
   const handleDeleteProject = (projectId: string) => {
     setProjects(prev => prev.filter(project => project.id !== projectId));
-    
+
     // If the deleted project was selected, clear the selection
     if (selectedProject?.id === projectId) {
       setSelectedProject(null);
@@ -1071,7 +1076,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar 
+      <Sidebar
         projects={projects}
         onCreateProject={handleDirectCreateProject}
         onProjectSelect={(project) => {
@@ -1101,8 +1106,8 @@ const Index = () => {
           </>
         )}
         {activeTab === "project" && selectedProject && (
-          <ProjectView 
-            project={selectedProject} 
+          <ProjectView
+            project={selectedProject}
             onUpdateProject={(updated) => {
               setProjects(prevProjects =>
                 prevProjects.map(p => p.id === updated.id ? updated : p)

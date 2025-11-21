@@ -15,11 +15,11 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface BlockType {
   id: string;
-  type: 'paragraph' | 'heading-1' | 'heading-2' | 'heading-3' | 'heading-4' | 'heading-5' | 'heading-6' | 
-        'bullet-list' | 'number-list' | 'to-do' | 'toggle' | 'board' | 'quote' | 'table' | 'divider' |
-        'image' | 'video' | 'audio' | 'file' | 'code' | 'form' | 'table-of-contents' | 
-        'two-columns' | 'three-columns' | 'four-columns' | 'five-columns' |
-        'embed' | 'figma' | 'pdf' | 'adobe';
+  type: 'paragraph' | 'heading-1' | 'heading-2' | 'heading-3' | 'heading-4' | 'heading-5' | 'heading-6' |
+  'bullet-list' | 'number-list' | 'to-do' | 'toggle' | 'board' | 'quote' | 'table' | 'divider' |
+  'image' | 'video' | 'audio' | 'file' | 'code' | 'form' | 'table-of-contents' |
+  'two-columns' | 'three-columns' | 'four-columns' | 'five-columns' |
+  'embed' | 'figma' | 'pdf' | 'adobe';
   content: string;
   url?: string;
   title?: string;
@@ -56,6 +56,7 @@ export interface BlockType {
 export interface PageType {
   id: string;
   title: string;
+  projectId: string;
   icon?: string;
   cover?: string;
   description?: string;
@@ -64,6 +65,7 @@ export interface PageType {
   updatedAt: string;
   path?: string[];
   parentId?: string;
+  type?: 'page' | 'conversation';
 }
 
 export interface ProjectType {
@@ -79,6 +81,9 @@ export interface ProjectType {
   };
   coverHeight?: string;
   description?: string;
+  parentId?: string;
+  path?: string[];
+  organizationId?: string;
 }
 
 export interface ActivityType {
@@ -88,4 +93,13 @@ export interface ActivityType {
   target: string;
   targetType: string;
   timestamp: string;
+}
+
+export interface OrganizationType {
+  id: string;
+  name: string;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  isDefault?: boolean;
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Home, 
-  Folder, 
-  Users, 
-  Calendar, 
-  Settings, 
-  Plus, 
+import {
+  Home,
+  Folder,
+  Users,
+  Calendar,
+  Settings,
+  Plus,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -23,7 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Link, useLocation } from 'react-router-dom';
-import { ProjectType, PageType, OrganizationType } from '@/types/index';
+import { ProjectType, PageType, OrganizationType } from '@/types';
 import CreatePageModal from '@/components/CreatePageModal';
 import PageContextMenu from '@/components/PageContextMenu';
 import ProjectContextMenu from '@/components/ProjectContextMenu';
@@ -32,7 +32,7 @@ import OrganizationSwitcher from './OrganizationSwitcher';
 
 interface SidebarItemProps {
   icon: React.ElementType;
-  label: string;
+  label: string | React.ReactNode;
   isExpanded?: boolean;
   onToggle?: () => void;
   isFolder?: boolean;
@@ -47,10 +47,10 @@ interface SidebarItemProps {
   onDeleteProject?: (projectId: string) => void;
 }
 
-const SidebarItem = ({ 
-  icon: Icon, 
-  label, 
-  isExpanded, 
+const SidebarItem = ({
+  icon: Icon,
+  label,
+  isExpanded,
   onToggle,
   isFolder,
   onCreateNew,
@@ -73,12 +73,12 @@ const SidebarItem = ({
   };
 
   const content = (
-    <div 
+    <div
       className="group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div 
+      <div
         className={cn(
           "flex items-center px-2 py-1.5 rounded-md cursor-pointer",
           "hover:bg-secondary/50 transition-colors",
@@ -95,24 +95,24 @@ const SidebarItem = ({
               ) : hasChildren ? (
                 <>
                   <Folder className={cn(
-                    "h-4 w-4 text-blue-500 absolute transition-opacity",
+                    "h-4 w-4 text-primary absolute transition-opacity",
                     (isHovered || isExpanded) ? "opacity-0" : "opacity-100"
                   )} />
                   <ChevronRight className={cn(
-                    "h-4 w-4 text-blue-500 absolute transition-all",
+                    "h-4 w-4 text-primary absolute transition-all",
                     (isHovered || isExpanded) ? "opacity-100" : "opacity-0",
                     isExpanded && "rotate-90"
                   )} />
                 </>
               ) : (
-                <Folder className="h-4 w-4 text-blue-500" />
+                <Folder className="h-4 w-4 text-primary" />
               )}
             </div>
           ) : (
             // Regular navigation item
             <Icon className={cn(
               "h-4 w-4",
-              type === 'conversation' ? "text-blue-500" : ""
+              type === 'conversation' ? "text-primary" : ""
             )} />
           )}
           <span className="text-sm truncate">{label}</span>
@@ -122,13 +122,13 @@ const SidebarItem = ({
             "flex items-center gap-1"
           )}>
             <CreatePageModal
-              onCreatePage={onCreateNew || (() => {})}
-              onCreateConversation={onCreateNew || (() => {})}
+              onCreatePage={onCreateNew || (() => { })}
+              onCreateConversation={onCreateNew || (() => { })}
             />
             <PageContextMenu
-              itemName={label}
-              onRename={onRenameProject || (() => {})}
-              onDelete={onDeleteProject || (() => {})}
+              itemName={label as string}
+              onRename={() => { }}
+              onDelete={() => { }}
             />
           </div>
         )}
@@ -137,19 +137,19 @@ const SidebarItem = ({
             "flex items-center gap-1"
           )}>
             <CreatePageModal
-              onCreatePage={onCreateNew || (() => {})}
-              onCreateConversation={onCreateNew || (() => {})}
+              onCreatePage={onCreateNew || (() => { })}
+              onCreateConversation={onCreateNew || (() => { })}
             />
             <ProjectContextMenu
               project={project}
-              onRename={onRenameProject || (() => {})}
-              onDuplicate={onDuplicateProject || (() => {})}
-              onDelete={onDeleteProject || (() => {})}
+              onRename={onRenameProject || (() => { })}
+              onDuplicate={onDuplicateProject || (() => { })}
+              onDelete={onDeleteProject || (() => { })}
             />
           </div>
         )}
       </div>
-      
+
       {isExpanded && project && project.pages.length > 0 && (
         <div className="ml-4 space-y-1 mt-1">
           {project.pages.map((page) => (
@@ -187,7 +187,7 @@ interface SidebarProps {
   currentOrganization?: OrganizationType;
   organizations?: OrganizationType[];
   onOrganizationChange?: (organization: OrganizationType) => void;
-  onCreateOrganization?: () => void;
+  onCreateOrganization?: (name: string, image?: string) => void;
   onUpdateOrganization?: (id: string, name: string, image?: string) => void;
   onDeleteOrganization?: (id: string) => void;
   isAdmin?: boolean;
@@ -200,15 +200,15 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
   if (!highlight.trim()) {
     return <span>{text}</span>;
   }
-  
+
   const regex = new RegExp(`(${highlight})`, 'gi');
   const parts = text.split(regex);
-  
+
   return (
     <>
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         regex.test(part) ? (
-          <span key={i} className="font-semibold bg-yellow-100 dark:bg-amber-700/60 text-black dark:text-white">{part}</span>
+          <span key={i} className="font-semibold bg-accent text-accent-foreground">{part}</span>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -217,8 +217,8 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
   );
 };
 
-export default function Sidebar({ 
-  projects, 
+export default function Sidebar({
+  projects,
   onCreateProject,
   onProjectSelect,
   selectedProjectId,
@@ -230,13 +230,13 @@ export default function Sidebar({
   // Organization props
   currentOrganization,
   organizations = [],
-  onOrganizationChange = () => {},
-  onCreateOrganization = () => {},
+  onOrganizationChange = () => { },
+  onCreateOrganization = () => { },
   onUpdateOrganization,
   onDeleteOrganization,
   isAdmin = true,
   // Navigation
-  onNavigateHome = () => {}
+  onNavigateHome = () => { }
 }: SidebarProps) {
   const [expandedProjects, setExpandedProjects] = useState<{ [key: string]: boolean }>({});
   const [searchActive, setSearchActive] = useState(false);
@@ -245,7 +245,7 @@ export default function Sidebar({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const originalProjectsOrder = useRef<string[]>([]);
   const location = useLocation();
-  
+
   // For pagination
   const PROJECTS_PER_PAGE = 10;
   const [showAllProjects, setShowAllProjects] = useState(false);
@@ -299,7 +299,7 @@ export default function Sidebar({
 
   const toggleShowAllProjects = () => {
     setShowAllProjects(prev => !prev);
-    
+
     // If showing all projects, scroll to top with smooth animation
     if (!showAllProjects && projectsContainerRef.current) {
       setTimeout(() => {
@@ -323,7 +323,7 @@ export default function Sidebar({
     }
 
     // Filter projects that match the search term
-    const filtered = projects.filter(project => 
+    const filtered = projects.filter(project =>
       project.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
     );
 
@@ -332,14 +332,14 @@ export default function Sidebar({
       const aTitle = a.title.toLowerCase();
       const bTitle = b.title.toLowerCase();
       const searchTerm = debouncedSearchTerm.toLowerCase();
-      
+
       // If one title starts with the search term but the other doesn't, prioritize the one that starts with it
       const aStartsWith = aTitle.startsWith(searchTerm);
       const bStartsWith = bTitle.startsWith(searchTerm);
-      
+
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
-      
+
       // If both or neither start with the search term, prioritize by index of the match
       const aIndex = aTitle.indexOf(searchTerm);
       const bIndex = bTitle.indexOf(searchTerm);
@@ -349,8 +349,8 @@ export default function Sidebar({
 
   const filteredAndSortedProjects = getFilteredAndSortedProjects();
   // Get visible projects (either all when searching/expanded, or limited when collapsed)
-  const visibleProjects = showAllProjects 
-    ? filteredAndSortedProjects 
+  const visibleProjects = showAllProjects
+    ? filteredAndSortedProjects
     : filteredAndSortedProjects.slice(0, PROJECTS_PER_PAGE);
   const hasMoreProjects = filteredAndSortedProjects.length > PROJECTS_PER_PAGE;
 
@@ -365,48 +365,48 @@ export default function Sidebar({
     }
     
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2);
+      background-color: hsl(var(--muted-foreground) / 0.3);
       border-radius: 10px;
       transition: background-color 0.3s ease;
     }
     
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(0, 0, 0, 0.4);
+      background-color: hsl(var(--muted-foreground) / 0.5);
     }
     
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: hsl(var(--muted-foreground) / 0.3);
     }
     
     .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.4);
+      background-color: hsl(var(--muted-foreground) / 0.5);
     }
     
     .custom-scrollbar {
       scrollbar-width: thin;
-      scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+      scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
     }
     
     .dark .custom-scrollbar {
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
     }
   `;
 
   return (
     <div className="w-64 h-screen fixed top-0 left-0 bg-background border-r flex flex-col p-4 z-30">
       <style>{scrollbarStyles}</style>
-      
+
       {/* Logo */}
       <div className="flex items-center justify-center gap-2 mb-6">
-        <img 
-          src="/logo horizontal.webp" 
-          alt="AM GRAPHICS" 
-          className="h-7 max-w-[180px] object-contain dark:hidden" 
+        <img
+          src="/logo horizontal.webp"
+          alt="AM GRAPHICS"
+          className="h-7 max-w-[180px] object-contain dark:hidden"
         />
-        <img 
-          src="/logo-horizontal-white.png" 
-          alt="AM GRAPHICS" 
-          className="h-7 max-w-[180px] object-contain hidden dark:block" 
+        <img
+          src="/logo-horizontal-white.png"
+          alt="AM GRAPHICS"
+          className="h-7 max-w-[180px] object-contain hidden dark:block"
         />
       </div>
 
@@ -435,7 +435,7 @@ export default function Sidebar({
                     ref={searchInputRef}
                     type="text"
                     placeholder="Search projects..."
-                    className="w-32 h-7 px-2 py-1 pr-6 text-xs bg-secondary/50 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-foreground"
+                    className="w-32 h-7 px-2 py-1 pr-6 text-xs bg-secondary/50 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
                     value={searchInputValue}
                     onChange={(e) => setSearchInputValue(e.target.value)}
                     onBlur={() => {
@@ -476,7 +476,7 @@ export default function Sidebar({
         </div>
 
         {/* Project List (Scrollable) */}
-        <div 
+        <div
           ref={projectsContainerRef}
           className="flex-1 overflow-y-auto custom-scrollbar space-y-1 px-0.5 pb-2 -mx-0.5 scroll-smooth"
         >
@@ -486,8 +486,8 @@ export default function Sidebar({
               icon={Folder}
               label={
                 debouncedSearchTerm ? (
-                  <HighlightedText 
-                    text={project.title} 
+                  <HighlightedText
+                    text={project.title}
                     highlight={debouncedSearchTerm}
                   />
                 ) : project.title
@@ -508,13 +508,13 @@ export default function Sidebar({
               onDeleteProject={onDeleteProject}
             />
           ))}
-          
+
           {filteredAndSortedProjects.length === 0 && debouncedSearchTerm && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
               No projects found
             </div>
           )}
-          
+
           {hasMoreProjects && (
             <div className="flex justify-center mt-2">
               <Button
@@ -543,7 +543,7 @@ export default function Sidebar({
       {/* Footer */}
       <div className="mt-auto pt-4">
         <Separator className="mb-2" />
-        
+
         {/* Organization Switcher */}
         {currentOrganization && (
           <div>

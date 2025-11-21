@@ -194,7 +194,7 @@ const Settings = () => {
       case 'developer':
         return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
       case 'team lead':
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+        return "bg-blue-100 text-blue-700 dark:bg-primary/20 dark:text-primary";
       case 'ui designer':
         return "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
       case 'lead developer':
@@ -718,7 +718,7 @@ const Settings = () => {
             <div className="flex flex-col">
               <Button
                 variant="ghost"
-                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "general" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
+                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "general" ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium" : ""}`}
                 onClick={() => setActiveTab("general")}
               >
                 <User className="h-4 w-4 mr-2" />
@@ -732,7 +732,7 @@ const Settings = () => {
 
               <Button
                 variant="ghost"
-                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "members" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
+                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "members" ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("members");
                   setActiveTeamTab("members");
@@ -744,7 +744,7 @@ const Settings = () => {
 
               <Button
                 variant="ghost"
-                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "teams" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
+                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "teams" ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("teams");
                   setActiveTeamTab("teams");
@@ -756,7 +756,7 @@ const Settings = () => {
 
               <Button
                 variant="ghost"
-                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "roles" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
+                className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "roles" ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("roles");
                   setActiveTeamTab("roles");
@@ -859,7 +859,7 @@ const Settings = () => {
 
                 <div>
                   <Button
-                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    
                     onClick={() => setInviteMemberDialogOpen(true)}
                   >
                     <span className="mr-1">+</span> Invite Member
@@ -884,7 +884,7 @@ const Settings = () => {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border">
                             <AvatarImage src={user.avatar} />
-                            <AvatarFallback className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                            <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium">
                               {user.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
@@ -946,7 +946,7 @@ const Settings = () => {
 
                 <div>
                   <Button
-                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    
                     onClick={() => {
                       setCurrentTeam({
                         id: '',
@@ -982,7 +982,7 @@ const Settings = () => {
                               variant="outline"
                               size="sm"
                               onClick={(e) => handleAddMemberToTeam(team.id, e)}
-                              className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                              className="border-primary text-primary hover:bg-accent dark:hover:bg-accent"
                             >
                               <UserPlus className="h-3.5 w-3.5 mr-1" />
                               Add Member
@@ -1029,7 +1029,7 @@ const Settings = () => {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10 border">
                                   <AvatarImage src={member.avatar} />
-                                  <AvatarFallback className="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium">
+                                  <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-medium">
                                     {member.name.charAt(0)}
                                   </AvatarFallback>
                                 </Avatar>
@@ -1100,7 +1100,7 @@ const Settings = () => {
                         });
                         setCreateTeamDialogOpen(true);
                       }}
-                      className="bg-blue-500 text-white hover:bg-blue-600"
+                      
                     >
                       <span className="mr-1">+</span> Create Team
                     </Button>
@@ -1118,7 +1118,7 @@ const Settings = () => {
 
                 <div>
                   <Button
-                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    
                     onClick={(e) => handleCreateRole(e)}
                   >
                     <span className="mr-1">+</span> Create Role
@@ -1195,7 +1195,7 @@ const Settings = () => {
         {/* Footer with save button */}
         <div className="border-t py-3 px-4 flex justify-end mt-auto">
           <Button
-            className="bg-blue-500 text-white hover:bg-blue-600"
+            
             onClick={saveChanges}
           >
             Save Changes
@@ -1262,7 +1262,7 @@ const Settings = () => {
               setEditRoleDialogOpen(false);
               setCurrentRole(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveRoleEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
+            <Button onClick={(e) => handleSaveRoleEdit(e)} >Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1339,7 +1339,7 @@ const Settings = () => {
               setCreateTeamDialogOpen(false);
               setCurrentTeam(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleCreateTeam(e)} className="bg-blue-500 text-white hover:bg-blue-600">Create Team</Button>
+            <Button onClick={(e) => handleCreateTeam(e)} >Create Team</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1387,7 +1387,7 @@ const Settings = () => {
               setEditTeamDialogOpen(false);
               setCurrentTeam(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveTeamEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
+            <Button onClick={(e) => handleSaveTeamEdit(e)} >Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1458,7 +1458,7 @@ const Settings = () => {
                     <div className="text-right">
                       <Button
                         size="sm"
-                        className="bg-blue-500 text-white hover:bg-blue-600"
+                        
                         onClick={() => {
                           handleSaveNewMember({
                             id: "user-2",
@@ -1487,7 +1487,7 @@ const Settings = () => {
                     <div className="text-right">
                       <Button
                         size="sm"
-                        className="bg-blue-500 text-white hover:bg-blue-600"
+                        
                         onClick={() => {
                           handleSaveNewMember({
                             id: "user-3",
@@ -1542,7 +1542,7 @@ const Settings = () => {
                 </div>
                 <div className="flex justify-end">
                   <Button
-                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    
                     onClick={() => {
                       // In a real app, you would validate and get values from form inputs
                       const newMember: TeamMember = {
@@ -1667,7 +1667,7 @@ const Settings = () => {
                 <Button
                   type="submit"
                   disabled={isInviting}
-                  className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
+                  className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {isInviting ? (
                     <>
@@ -1738,7 +1738,7 @@ const Settings = () => {
               setEditUserDialogOpen(false);
               setCurrentUser(null);
             }}>Cancel</Button>
-            <Button onClick={(e) => handleSaveUserEdit(e)} className="bg-blue-500 text-white hover:bg-blue-600">Save changes</Button>
+            <Button onClick={(e) => handleSaveUserEdit(e)} >Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

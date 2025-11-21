@@ -1199,7 +1199,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="flex items-center gap-2 text-sm text-blue-500 hover:opacity-70 transition-opacity py-1">
+                    <button className="flex items-center gap-2 text-sm text-primary hover:opacity-70 transition-opacity py-1">
                       <Plus className="h-5 w-5" />
                       <span>Add block</span>
                     </button>
@@ -1227,7 +1227,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             )}
             {block.type === 'to-do' && (
               <button
-                className={`w-4 h-4 border rounded ${item.checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'} flex items-center justify-center`}
+                className={`w-4 h-4 border rounded ${item.checked ? 'bg-primary border-primary' : 'border-gray-300'} flex items-center justify-center`}
                 onClick={() => {
                   const newBlocks = [...blocks];
                   if (isNested && block.parentId) {
@@ -1586,8 +1586,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       <button
                         className="group flex items-center gap-2 hover:opacity-70 transition-opacity"
                       >
-                        <Plus className="h-5 w-5 text-blue-500" />
-                        <span className="text-blue-500 text-sm font-medium">Add blocks</span>
+                        <Plus className="h-5 w-5 text-primary" />
+                        <span className="text-primary text-sm font-medium">Add blocks</span>
                       </button>
                     </PopoverTrigger>
                     <BlockTypePopover

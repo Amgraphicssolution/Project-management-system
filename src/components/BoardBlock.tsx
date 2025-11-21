@@ -318,9 +318,9 @@ interface BoardData {
 const getDefaultBoardData = (): BoardData => {
   return {
     columns: [
-      { id: 'col-1', title: 'To do', tasks: [], color: '#9CA3AF' },
-      { id: 'col-2', title: 'Doing', tasks: [], color: '#60A5FA' },
-      { id: 'col-3', title: 'Done', tasks: [], color: '#34D399' },
+      { id: 'col-1', title: 'To do', tasks: [], color: 'hsl(var(--muted-foreground))' },
+      { id: 'col-2', title: 'Doing', tasks: [], color: 'hsl(var(--primary))' },
+      { id: 'col-3', title: 'Done', tasks: [], color: 'hsl(var(--green-500))' }, // Using a specific green if semantic 'success' is not defined, or fallback to primary
     ],
     tasks: {}
   };
@@ -333,13 +333,13 @@ const generateId = (prefix: string = 'item') => `${prefix}-${Date.now()}-${Math.
 const getDefaultColumnColor = (title: string): string => {
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes('todo') || lowerTitle.includes('not')) {
-    return '#9CA3AF'; // Gray for To Do/Not Started
+    return 'hsl(var(--muted-foreground))'; // Gray for To Do/Not Started
   } else if (lowerTitle.includes('progress') || lowerTitle.includes('doing')) {
-    return '#60A5FA'; // Blue for In Progress/Doing
+    return 'hsl(var(--primary))'; // Primary for In Progress/Doing
   } else if (lowerTitle.includes('done') || lowerTitle.includes('complete')) {
-    return '#34D399'; // Green for Done/Completed
+    return 'hsl(var(--green-500))'; // Green for Done/Completed (assuming green-500 exists or use hex if must)
   }
-  return '#9CA3AF'; // Default gray
+  return 'hsl(var(--muted-foreground))'; // Default gray
 };
 
 // Six-dot handle component for drag and drop
@@ -360,10 +360,10 @@ const TaskCard = ({ task, onClick, onDelete }: { task: Task; onClick: () => void
 
   // Priority colors
   const priorityColors: Record<string, string> = {
-    'high': '#EF4444',
-    'medium': '#F59E0B',
-    'low': '#10B981',
-    'none': '#9CA3AF'
+    'high': 'hsl(var(--destructive))',
+    'medium': '#F59E0B', // Keep orange for medium as warning
+    'low': '#10B981', // Keep green for low as success
+    'none': 'hsl(var(--muted-foreground))'
   };
 
   return (
@@ -405,7 +405,7 @@ const TaskCard = ({ task, onClick, onDelete }: { task: Task; onClick: () => void
               {task.assignedUsers.slice(0, 3).map((user) => (
                 <Avatar key={user.id} className="h-5 w-5 border border-white">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="text-xs bg-blue-500 text-white">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
               {task.assignedUsers.length > 3 && (
@@ -613,7 +613,7 @@ const BoardColumn = ({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex-1 overflow-y-auto min-h-[100px] space-y-2 mb-2 ${snapshot.isDraggingOver ? "bg-blue-50" : ""
+            className={`flex-1 overflow-y-auto min-h-[100px] space-y-2 mb-2 ${snapshot.isDraggingOver ? "bg-accent/50" : ""
               }`}
           >
             {Array.isArray(tasks) && tasks.length > 0 ? (
@@ -697,7 +697,7 @@ const BoardTableView = ({
                 </div>
               </td>
               <td className="p-3 text-sm" onClick={() => onTaskClick(task)}>
-                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary">
                   {capitalizeFirstLetter(task.status)}
                 </span>
               </td>
@@ -785,10 +785,10 @@ const TaskDetailDialog = ({
 
   // Priority options
   const priorityOptions = [
-    { value: 'high', label: 'High', color: '#EF4444' },
+    { value: 'high', label: 'High', color: 'hsl(var(--destructive))' },
     { value: 'medium', label: 'Medium', color: '#F59E0B' },
     { value: 'low', label: 'Low', color: '#10B981' },
-    { value: 'none', label: 'None', color: '#9CA3AF' }
+    { value: 'none', label: 'None', color: 'hsl(var(--muted-foreground))' }
   ];
 
   useEffect(() => {
@@ -1544,7 +1544,7 @@ const TaskDetailDialog = ({
                               {editedTask.assignedUsers.slice(0, 3).map((user) => (
                                 <Avatar key={user.id} className="h-5 w-5 border border-white">
                                   <AvatarImage src={user.avatar} />
-                                  <AvatarFallback className="text-xs bg-blue-500 text-white">{user.name.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">{user.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                               ))}
                               {editedTask.assignedUsers.length > 3 && (
@@ -2551,7 +2551,7 @@ const BoardBlock = ({
                 <div className="flex items-center">
                   <Button
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
+                    className="h-8 w-8 rounded-full bg-blue-500 hover:bg-primary/90 text-white"
                     onClick={handleAddColumn}
                   >
                     <Plus className="h-4 w-4" />

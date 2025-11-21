@@ -43,9 +43,9 @@ export default function CoverPickerModal({
             <TabsTrigger value="color" className="flex-1">Color</TabsTrigger>
           </TabsList>
           <TabsContent value="upload" className="mt-4">
-            <div className="flex flex-col items-center justify-center gap-4 p-8 border-2 border-dashed rounded-lg">
+            <div className="flex flex-col items-center justify-center gap-4 p-8 border-2 border-dashed border-border rounded-lg">
               <ImageIcon className="w-12 h-12 text-muted-foreground" />
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -67,8 +67,8 @@ export default function CoverPickerModal({
           <TabsContent value="color" className="mt-4">
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
-                <div 
-                  className="w-32 h-32 rounded-lg border"
+                <div
+                  className="w-32 h-32 rounded-lg border border-border"
                   style={{ backgroundColor: color }}
                 />
                 <div className="flex-1 space-y-4">
@@ -106,4 +106,4 @@ export default function CoverPickerModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

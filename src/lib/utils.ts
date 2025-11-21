@@ -22,7 +22,11 @@ export function shouldUseTopAlignedGrip(blockType: BlockType['type']): boolean {
     'pdf',
     'figma',
     'adobe',
-    'board'
+    'board',
+    'two-columns',
+    'three-columns',
+    'four-columns',
+    'five-columns'
   ];
   
   return largeHeightBlocks.includes(blockType);

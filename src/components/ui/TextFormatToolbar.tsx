@@ -21,7 +21,7 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [savedSelection, setSavedSelection] = useState<Range | null>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
-  
+
   const colors = [
     { name: 'Default', value: 'inherit' },
     { name: 'Gray', value: '#6b7280' },
@@ -71,11 +71,11 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
   const checkSelection = () => {
     setTimeout(() => {
       const selection = window.getSelection();
-      
+
       if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
-        
+
         if (rect.width > 0) {
           setPosition({
             top: window.scrollY + rect.top,
@@ -95,7 +95,7 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
     document.addEventListener('mouseup', checkSelection);
     document.addEventListener('keyup', checkSelection);
     document.addEventListener('selectionchange', checkSelection);
-    
+
     return () => {
       document.removeEventListener('mouseup', checkSelection);
       document.removeEventListener('keyup', checkSelection);
@@ -120,17 +120,17 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div 
-      className="fixed z-[100] bg-white shadow-lg rounded-md p-1.5 flex items-center gap-1.5 border border-gray-200"
-      style={{ 
-        top: `${position.top - 45}px`, 
+    <div
+      className="fixed z-[100] bg-popover text-popover-foreground shadow-lg rounded-md p-1.5 flex items-center gap-1.5 border border-border"
+      style={{
+        top: `${position.top - 45}px`,
         left: `${position.left}px`,
         transform: 'translateX(-50%)'
       }}
       onMouseDown={(e) => e.preventDefault()}
     >
-      <button 
-        className="p-1.5 hover:bg-gray-100 rounded-sm"
+      <button
+        className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm"
         onClick={(e) => {
           e.preventDefault();
           onBold();
@@ -138,8 +138,8 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
       >
         <Bold className="h-4 w-4" />
       </button>
-      <button 
-        className="p-1.5 hover:bg-gray-100 rounded-sm"
+      <button
+        className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm"
         onClick={(e) => {
           e.preventDefault();
           onItalic();
@@ -147,8 +147,8 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
       >
         <Italic className="h-4 w-4" />
       </button>
-      <button 
-        className="p-1.5 hover:bg-gray-100 rounded-sm"
+      <button
+        className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm"
         onClick={(e) => {
           e.preventDefault();
           onUnderline();
@@ -157,8 +157,8 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
         <Underline className="h-4 w-4" />
       </button>
       <div ref={colorPickerRef} className="relative">
-        <button 
-          className="p-1.5 hover:bg-gray-100 rounded-sm"
+        <button
+          className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm"
           onClick={(e) => {
             e.preventDefault();
             saveSelection();
@@ -168,8 +168,8 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
           <Palette className="h-4 w-4" />
         </button>
         {colorPickerOpen && (
-          <div 
-            className="absolute top-full left-0 mt-1 bg-white shadow-lg rounded-md p-2 border border-gray-200 z-[101]"
+          <div
+            className="absolute top-full left-0 mt-1 bg-popover text-popover-foreground shadow-lg rounded-md p-2 border border-border z-[101]"
             style={{ width: '120px' }}
             onMouseDown={(e) => e.preventDefault()}
           >
@@ -177,15 +177,15 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
               {colors.map((color) => (
                 <button
                   key={color.value}
-                  className="p-2 rounded hover:bg-gray-100 flex items-center justify-center"
+                  className="p-2 rounded hover:bg-accent hover:text-accent-foreground flex items-center justify-center"
                   onMouseDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     handleColorButtonClick(color.value);
                   }}
                 >
-                  <div 
-                    className="w-4 h-4 rounded-full border" 
+                  <div
+                    className="w-4 h-4 rounded-full border border-border"
                     style={{ backgroundColor: color.value === 'inherit' ? 'currentColor' : color.value }}
                   />
                 </button>
@@ -195,8 +195,8 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
         )}
       </div>
       {onLink && (
-        <button 
-          className="p-1.5 hover:bg-gray-100 rounded-sm"
+        <button
+          className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-sm"
           onClick={handleLinkButtonClick}
         >
           <Link className="h-4 w-4" />
@@ -206,4 +206,4 @@ const TextFormatToolbar: React.FC<TextFormatToolbarProps> = ({
   );
 };
 
-export default TextFormatToolbar; 
+export default TextFormatToolbar;

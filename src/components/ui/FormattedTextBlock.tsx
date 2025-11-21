@@ -207,7 +207,7 @@ const FormattedTextBlock: React.FC<FormattedTextBlockProps> = ({
                 Cancel
               </button>
               <button 
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                className="px-3 py-1 bg-btn-primary text-btn-primary-foreground rounded-md hover:bg-btn-primary-hover"
                 onClick={handleInsertLink}
               >
                 Insert

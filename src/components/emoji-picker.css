@@ -38,11 +38,11 @@
   margin: 4px 4px !important;
   padding: 4px !important;
   border-radius: 4px !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid hsl(var(--border)) !important;
   pointer-events: auto !important;
   opacity: 1 !important;
-  background-color: white !important;
-  color: black !important;
+  background-color: hsl(var(--popover)) !important;
+  color: hsl(var(--popover-foreground)) !important;
   z-index: 100 !important;
   position: relative !important;
 }
@@ -109,4 +109,4 @@
 .emoji-picker-container button.emoji-mart-emoji {
   margin: 0 !important;
   padding: 0 !important;
-} 
+}

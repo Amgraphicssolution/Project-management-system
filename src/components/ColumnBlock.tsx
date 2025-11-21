@@ -44,7 +44,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
-import { cn } from "@/lib/utils";
+import { cn, shouldUseTopAlignedGrip } from "@/lib/utils";
 
 // Function to generate a unique ID
 const generateId = () => `id-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -305,7 +305,10 @@ export default function ColumnBlock({
   return (
     <div className="relative group w-full">
       <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5 mb-2">
-        <div className="flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 items-center">
+        <div className={cn(
+          "flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100",
+          shouldUseTopAlignedGrip(block.type) ? "items-start pt-4" : "items-center"
+        )}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
@@ -318,7 +321,7 @@ export default function ColumnBlock({
                   <LayoutGrid className="h-4 w-4" />
                   Convert to
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
+                <DropdownMenuSubContent className="max-h-[400px] overflow-y-auto">
                   <div className="flex items-center gap-2 px-2 py-1.5 border-b">
                     <Search className="h-4 w-4 text-muted-foreground/70" />
                     <input
@@ -336,6 +339,31 @@ export default function ColumnBlock({
                       }}
                     />
                   </div>
+                  {columnBlockCategories.map((category) => {
+                    const filteredBlocks = category.blocks.filter(blockType =>
+                      blockType.label.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+                    
+                    if (filteredBlocks.length === 0) return null;
+                    
+                    return (
+                      <div key={category.name}>
+                        {filteredBlocks.map((blockType) => (
+                          <DropdownMenuItem
+                            key={blockType.type}
+                            onClick={() => {
+                              onConvert(blockType.type);
+                              setSearchQuery('');
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <blockType.icon className="h-4 w-4" />
+                            {blockType.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
               <DropdownMenuItem onClick={onMoveUp} className="flex items-center gap-2">
@@ -419,8 +447,8 @@ export default function ColumnBlock({
                             <button
                               className="group flex items-center gap-2 hover:opacity-70 transition-opacity"
                             >
-                              <Plus className="h-5 w-5 text-blue-500" />
-                              <span className="text-blue-500 text-sm font-medium">Add block</span>
+                              <Plus className="h-5 w-5 text-primary" />
+                              <span className="text-primary text-sm font-medium">Add block</span>
                             </button>
                           </PopoverTrigger>
                           <BlockTypePopover 
@@ -440,8 +468,8 @@ export default function ColumnBlock({
                             <button
                               className="group flex items-center gap-2 hover:opacity-70 transition-opacity"
                             >
-                              <Plus className="h-4 w-4 text-blue-500" />
-                              <span className="text-blue-500 text-xs font-medium">Add block</span>
+                              <Plus className="h-4 w-4 text-primary" />
+                              <span className="text-primary text-xs font-medium">Add block</span>
                             </button>
                           </PopoverTrigger>
                           <BlockTypePopover 
