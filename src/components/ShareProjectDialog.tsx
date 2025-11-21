@@ -126,7 +126,7 @@ export default function ShareProjectDialog({
   const [showAccessOptions, setShowAccessOptions] = useState(false);
   const [selectedAccess, setSelectedAccess] = useState<AccessType>("clients");
   const [userSearchOpen, setUserSearchOpen] = useState(false);
-  
+
   // Filter out users who already have access
   const filteredUsers = availableUsers.filter(
     user => !usersWithAccess.some(u => u.id === user.id)
@@ -192,12 +192,12 @@ export default function ShareProjectDialog({
   };
 
   const handleChangeUserRole = (userId: string, newRole: UserRole) => {
-    setUsersWithAccess(prevUsers => 
-      prevUsers.map(user => 
+    setUsersWithAccess(prevUsers =>
+      prevUsers.map(user =>
         user.id === userId ? { ...user, role: newRole } : user
       )
     );
-    
+
     toast({
       title: "Role updated",
       description: `User role has been updated to ${newRole}`,
@@ -209,7 +209,7 @@ export default function ShareProjectDialog({
     if (usersWithAccess.some(u => u.id === user.id)) {
       return;
     }
-    
+
     // Add user with default Viewer role
     setUsersWithAccess(prev => [
       ...prev,
@@ -218,11 +218,11 @@ export default function ShareProjectDialog({
         role: "Viewer" as UserRole
       }
     ]);
-    
+
     // Close the popover and reset search
     setUserSearchOpen(false);
     setSearchValue("");
-    
+
     toast({
       title: "User added",
       description: `${user.name} has been added with Viewer access`,
@@ -230,8 +230,8 @@ export default function ShareProjectDialog({
   };
 
   return (
-    <Dialog 
-      open={isOpen} 
+    <Dialog
+      open={isOpen}
       onOpenChange={(open) => {
         console.log("Dialog onOpenChange called with:", open);
         if (!open) onClose();
@@ -269,15 +269,13 @@ export default function ShareProjectDialog({
             {accessOptions.map((option) => (
               <div
                 key={option.id}
-                className={`flex items-center justify-between border rounded-md p-3 cursor-pointer hover:bg-blue-50/50 transition-colors ${
-                  selectedAccess === option.id ? "border-blue-500 bg-blue-50/50" : "border-gray-200"
-                }`}
+                className={`flex items-center justify-between border rounded-md p-3 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAccess === option.id ? "border-blue-500 bg-blue-50/50" : "border-gray-200"
+                  }`}
                 onClick={() => handleSelectAccess(option.id)}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`${
-                    selectedAccess === option.id ? "bg-blue-100 text-blue-500" : "bg-gray-100 text-gray-600"
-                  } h-8 w-8 rounded-full flex items-center justify-center`}>
+                  <div className={`${selectedAccess === option.id ? "bg-blue-100 text-blue-500" : "bg-gray-100 text-gray-600"
+                    } h-8 w-8 rounded-full flex items-center justify-center`}>
                     {option.icon}
                   </div>
                   <div>
@@ -322,7 +320,7 @@ export default function ShareProjectDialog({
                     <CommandEmpty>No users found</CommandEmpty>
                     <CommandGroup>
                       {filteredUsers
-                        .filter(user => 
+                        .filter(user =>
                           user.name.toLowerCase().includes(searchValue.toLowerCase()) ||
                           user.email.toLowerCase().includes(searchValue.toLowerCase())
                         )
@@ -352,7 +350,7 @@ export default function ShareProjectDialog({
             {/* Users with access section */}
             <div className="space-y-4">
               <h3 className="text-sm text-blue-700 font-medium">Users with Access</h3>
-              
+
               {usersWithAccess.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-2 rounded-md hover:bg-blue-50/50">
                   <div className="flex items-center gap-3">
@@ -368,14 +366,13 @@ export default function ShareProjectDialog({
                   <div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="h-8 px-3 flex items-center gap-1 text-sm font-normal border-blue-200 hover:border-blue-500"
                         >
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            roleOptions.find(r => r.id === user.role)?.color
-                          }`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${roleOptions.find(r => r.id === user.role)?.color
+                            }`}>
                             {roleOptions.find(r => r.id === user.role)?.icon} {user.role}
                           </span>
                           <ChevronDown className="h-3 w-3 ml-1 opacity-70" />
@@ -383,7 +380,7 @@ export default function ShareProjectDialog({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56 z-50">
                         {roleOptions.map((role) => (
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             key={role.id}
                             className="flex items-start gap-2 py-2 cursor-pointer hover:bg-blue-50"
                             onClick={() => {
@@ -409,8 +406,8 @@ export default function ShareProjectDialog({
             {/* General access section */}
             <div className="space-y-4 pt-2">
               <h3 className="text-sm text-gray-500 font-medium">General Access</h3>
-              
-              <div 
+
+              <div
                 className="flex items-center justify-between border border-gray-200 rounded-md p-3 cursor-pointer hover:bg-blue-50/50 transition-colors"
                 onClick={() => setShowAccessOptions(true)}
               >

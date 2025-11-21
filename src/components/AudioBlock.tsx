@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Download, 
-  Maximize, 
-  ExternalLink, 
-  X, 
+import {
+  Download,
+  Maximize,
+  ExternalLink,
+  X,
   GripVertical,
   Upload,
   Link as LinkIcon,
@@ -38,20 +38,20 @@ import {
 } from 'lucide-react';
 import { cn, shouldUseTopAlignedGrip } from '@/lib/utils';
 import { BlockType } from '@/types';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogClose 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from "@/components/ui/tabs";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -129,9 +129,9 @@ interface AudioBlockProps {
   onConvert?: (newType: BlockType['type']) => void;
 }
 
-const AudioBlock: React.FC<AudioBlockProps> = ({ 
-  block, 
-  onUpdate, 
+const AudioBlock: React.FC<AudioBlockProps> = ({
+  block,
+  onUpdate,
   onDelete,
   onMoveUp,
   onMoveDown,
@@ -157,7 +157,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isControlsVisible, setIsControlsVisible] = useState<boolean>(true);
-  
+
   // Refs
   const audioRef = useRef<HTMLAudioElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -169,45 +169,45 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       url: audioUrl,
       content: caption,
     });
-    
+
     // Determine if the audio is embedded (external link) or uploaded
     if (audioUrl) {
       setIsEmbedded(audioUrl.startsWith('http') && !audioUrl.startsWith(window.location.origin));
     }
   }, [audioUrl, caption]);
-  
+
   // Handle audio events
   useEffect(() => {
     const audioElement = audioRef.current;
     if (!audioElement) return;
-    
+
     const handleTimeUpdate = () => {
       setCurrentTime(audioElement.currentTime);
     };
-    
+
     const handleDurationChange = () => {
       setDuration(audioElement.duration);
     };
-    
+
     const handleEnded = () => {
       setIsPlaying(false);
     };
-    
+
     audioElement.addEventListener('timeupdate', handleTimeUpdate);
     audioElement.addEventListener('durationchange', handleDurationChange);
     audioElement.addEventListener('ended', handleEnded);
-    
+
     return () => {
       audioElement.removeEventListener('timeupdate', handleTimeUpdate);
       audioElement.removeEventListener('durationchange', handleDurationChange);
       audioElement.removeEventListener('ended', handleEnded);
     };
   }, [audioRef.current]);
-  
+
   // Control playback
   useEffect(() => {
     if (!audioRef.current) return;
-    
+
     if (isPlaying) {
       audioRef.current.play().catch(error => {
         console.error("Error playing audio:", error);
@@ -217,21 +217,21 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       audioRef.current.pause();
     }
   }, [isPlaying]);
-  
+
   // Handle volume changes
   useEffect(() => {
     if (!audioRef.current) return;
-    
+
     audioRef.current.volume = isMuted ? 0 : volume;
   }, [volume, isMuted]);
-  
+
   // Format time for display (mm:ss)
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-  
+
   // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -243,12 +243,12 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
         size: file.size,
         lastModified: new Date(file.lastModified).toISOString()
       });
-      
+
       // Check file extension
       const fileName = file.name.toLowerCase();
       const validExtensions = ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma'];
       const isValidAudioFile = validExtensions.some(ext => fileName.endsWith(ext));
-      
+
       if (!isValidAudioFile) {
         alert('Please upload a valid audio file (MP3, WAV, OGG, etc.)');
         return;
@@ -259,40 +259,40 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
         const result = event.target?.result as string;
         setAudioUrl(result);
         setIsUploadDialogOpen(false);
-        
+
         // Test if the audio is playable
         const testAudio = document.createElement('audio');
         testAudio.muted = true;
         testAudio.preload = 'metadata';
-        
+
         testAudio.onloadedmetadata = () => {
           console.info("Audio loaded successfully");
           setShowPlaceholder(false);
         };
-        
+
         testAudio.onerror = () => {
           console.warn("Browser cannot play this audio format directly");
           setShowPlaceholder(true);
         };
-        
+
         // Test the audio
         testAudio.src = result;
       };
-      
+
       reader.onerror = (error) => {
         console.error("Error reading file:", error);
         alert('Error reading the audio file. Please try another file.');
       };
-      
+
       reader.readAsDataURL(file);
     }
   };
-  
+
   // Handle link input change
   const handleLinkInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setLinkInput(url);
-    
+
     // Try to get a preview image for the audio (from services like SoundCloud, Spotify, etc.)
     if (url.includes('soundcloud.com')) {
       setPreviewUrl('/images/soundcloud-preview.png'); // Placeholder - replace with actual preview if available
@@ -302,34 +302,34 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       setPreviewUrl(''); // No preview available for generic audio links
     }
   };
-  
+
   // Check if URL is a valid audio URL
   const isValidAudioUrl = (url: string): boolean => {
     // Check if it's a direct audio file
     if (/\.(mp3|wav|ogg|aac|flac|m4a)$/i.test(url)) {
       return true;
     }
-    
+
     // Check if it's from a common audio service
-    if (url.includes('soundcloud.com') || 
-        url.includes('spotify.com') || 
-        url.includes('apple.music.com')) {
+    if (url.includes('soundcloud.com') ||
+      url.includes('spotify.com') ||
+      url.includes('apple.music.com')) {
       return true;
     }
-    
+
     return false;
   };
-  
+
   // Handle link submission
   const handleLinkSubmit = () => {
     if (!linkInput) return;
-    
+
     // Validate URL
     if (!isValidAudioUrl(linkInput)) {
       alert('Please enter a valid audio URL or embed link from SoundCloud, Spotify, etc.');
       return;
     }
-    
+
     // Handle different services
     if (linkInput.includes('spotify.com')) {
       // Convert Spotify track URL to embed URL
@@ -346,21 +346,21 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       setAudioUrl(linkInput);
       setIsEmbedded(true);
     }
-    
+
     setIsUploadDialogOpen(false);
   };
-  
+
   // Handle audio playback error
   const handleAudioError = () => {
     console.error("Error loading audio");
     setShowPlaceholder(true);
     setAudioError(true);
   };
-  
+
   // Handle audio download
   const handleDownload = () => {
     if (!audioUrl) return;
-    
+
     const link = document.createElement('a');
     link.href = audioUrl;
     link.download = `audio-${Date.now()}.${audioUrl.split('.').pop() || 'mp3'}`;
@@ -368,7 +368,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
     link.click();
     document.body.removeChild(link);
   };
-  
+
   // Toggle caption visibility
   const handleCaptionToggle = () => {
     setShowCaption(!showCaption);
@@ -376,17 +376,17 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       setCaption("Add caption here...");
     }
   };
-  
+
   // Toggle play/pause
   const togglePlayPause = () => {
     setIsPlaying(!isPlaying);
   };
-  
+
   // Toggle mute
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
-  
+
   // Handle volume slider change
   const handleVolumeChange = (newValue: number[]) => {
     const volumeValue = newValue[0];
@@ -395,11 +395,11 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
       setIsMuted(false);
     }
   };
-  
+
   // Handle timeline slider change
   const handleTimelineChange = (newValue: number[]) => {
     if (!audioRef.current || !duration) return;
-    
+
     const percentage = newValue[0];
     const newTime = (percentage / 100) * duration;
     audioRef.current.currentTime = newTime;
@@ -410,7 +410,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
     <div className="relative">
       {audioUrl ? (
         <div className="flex justify-center my-4">
-          <div 
+          <div
             className="relative group w-full"
             onMouseEnter={() => {
               setIsHovered(true);
@@ -430,7 +430,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
               )}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button 
+                    <button
                       className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
                     >
                       <GripVertical className="h-5 w-5 text-muted-foreground/50" />
@@ -465,16 +465,16 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                             const filteredBlocks = category.blocks.filter(block =>
                               block.label.toLowerCase().includes(searchQuery.toLowerCase())
                             );
-                            
+
                             if (filteredBlocks.length === 0) return null;
-                            
+
                             return (
                               <div key={category.name}>
                                 <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                                   {category.name}
                                 </DropdownMenuItem>
                                 {filteredBlocks.map((blockType) => (
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     key={blockType.type}
                                     className="flex items-center gap-2 px-2"
                                     onClick={() => onConvert && onConvert(blockType.type as BlockType['type'])}
@@ -487,15 +487,15 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                               </div>
                             );
                           })}
-                          {!blockCategories.some(category => 
-                            category.blocks.some(block => 
+                          {!blockCategories.some(category =>
+                            category.blocks.some(block =>
                               block.label.toLowerCase().includes(searchQuery.toLowerCase())
                             )
                           ) && (
-                            <div className="text-sm text-muted-foreground text-center py-2">
-                              No blocks found
-                            </div>
-                          )}
+                              <div className="text-sm text-muted-foreground text-center py-2">
+                                No blocks found
+                              </div>
+                            )}
                         </div>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
@@ -518,7 +518,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              
+
               <div className="flex-1">
                 {/* Audio with potential placeholder fallback */}
                 {showPlaceholder ? (
@@ -527,8 +527,8 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                     <p className="text-lg text-white">Audio could not be played in browser</p>
                     <p className="text-sm text-gray-300 mt-1 mb-4">This audio format is not supported for in-browser playback</p>
                     {isEmbedded && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="mt-4 text-white border-white hover:bg-white/10"
                         onClick={() => window.open(audioUrl, '_blank')}
                       >
@@ -558,9 +558,9 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                   <div className="w-full bg-gray-100 rounded-md relative" style={{ minHeight: '80px' }}>
                     <div className="flex items-center p-3 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm">
                       {/* Play/pause button - larger and more prominent */}
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-12 w-12 text-blue-600 hover:bg-blue-100/80 rounded-full mr-3 shadow-sm flex-shrink-0"
                         onClick={togglePlayPause}
                       >
@@ -570,7 +570,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                           <Play className="h-6 w-6" />
                         )}
                       </Button>
-                      
+
                       <div className="flex-grow flex flex-col">
                         {/* Waveform visualization with gradient */}
                         <div className="h-14 bg-white rounded-lg overflow-hidden flex items-end p-1 shadow-inner">
@@ -580,17 +580,16 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                             const baseHeight = Math.sin(i * 0.2) * 0.3 + 0.5;
                             const randomFactor = Math.random() * 0.4;
                             const heightPercentage = Math.max(15, Math.min(95, (baseHeight + randomFactor) * 100));
-                            
+
                             // Determine if this bar should be highlighted (played portion)
                             const isPlayed = currentTime / duration > i / 60;
-                            
+
                             return (
-                              <div 
-                                key={i} 
-                                className={`w-1 mx-0.5 rounded-t-sm transition-all duration-150 ${
-                                  isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
-                                }`}
-                                style={{ 
+                              <div
+                                key={i}
+                                className={`w-1 mx-0.5 rounded-t-sm transition-all duration-150 ${isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
+                                  }`}
+                                style={{
                                   height: `${heightPercentage}%`,
                                   opacity: isPlayed ? 1 : 0.7
                                 }}
@@ -598,7 +597,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                             );
                           })}
                         </div>
-                        
+
                         {/* Progress and time info */}
                         <div className="flex items-center mt-1.5 px-1">
                           <span className="text-xs font-medium text-gray-700">{formatTime(currentTime)}</span>
@@ -615,12 +614,12 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                           <span className="text-xs font-medium text-gray-700">{formatTime(duration)}</span>
                         </div>
                       </div>
-                      
+
                       {/* Volume control */}
                       <div className="ml-3 flex items-center gap-1 flex-shrink-0">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-gray-700 hover:bg-gray-200/80 rounded-full"
                           onClick={toggleMute}
                         >
@@ -642,10 +641,10 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         </div>
                       </div>
                     </div>
-                    
-                    <audio 
+
+                    <audio
                       ref={audioRef}
-                      src={audioUrl} 
+                      src={audioUrl}
                       className="hidden"
                       onError={handleAudioError}
                       controls={false}
@@ -657,38 +656,38 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                     </audio>
                   </div>
                 )}
-                
+
                 {/* Hover actions (only for top-right corner) */}
-                <div 
+                <div
                   className={cn(
                     "absolute top-2 right-2 flex gap-1 transition-opacity duration-200",
                     isHovered ? "opacity-100" : "opacity-0"
                   )}
                 >
                   {!isEmbedded && (
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
+                    <Button
+                      variant="secondary"
+                      size="icon"
                       className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                       onClick={handleDownload}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
                   )}
-                  
-                  <Button 
-                    variant="secondary" 
-                    size="icon" 
+
+                  <Button
+                    variant="secondary"
+                    size="icon"
                     className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                     onClick={handleCaptionToggle}
                   >
                     <span className="text-xs font-medium">Aa</span>
                   </Button>
-                  
+
                   {isEmbedded && (
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
+                    <Button
+                      variant="secondary"
+                      size="icon"
                       className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                       onClick={() => window.open(audioUrl, '_blank')}
                     >
@@ -698,7 +697,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                 </div>
               </div>
             </div>
-            
+
             {/* Caption */}
             {showCaption && (
               <div className="mt-2 w-full">
@@ -719,7 +718,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
             <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button 
+                  <button
                     className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
                   >
                     <GripVertical className="h-5 w-5 text-muted-foreground/50" />
@@ -754,16 +753,16 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                           const filteredBlocks = category.blocks.filter(block =>
                             block.label.toLowerCase().includes(searchQuery.toLowerCase())
                           );
-                          
+
                           if (filteredBlocks.length === 0) return null;
-                          
+
                           return (
                             <div key={category.name}>
                               <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                                 {category.name}
                               </DropdownMenuItem>
                               {filteredBlocks.map((blockType) => (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   key={blockType.type}
                                   className="flex items-center gap-2 px-2"
                                   onClick={() => onConvert && onConvert(blockType.type as BlockType['type'])}
@@ -776,15 +775,15 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                             </div>
                           );
                         })}
-                        {!blockCategories.some(category => 
-                          category.blocks.some(block => 
+                        {!blockCategories.some(category =>
+                          category.blocks.some(block =>
                             block.label.toLowerCase().includes(searchQuery.toLowerCase())
                           )
                         ) && (
-                          <div className="text-sm text-muted-foreground text-center py-2">
-                            No blocks found
-                          </div>
-                        )}
+                            <div className="text-sm text-muted-foreground text-center py-2">
+                              No blocks found
+                            </div>
+                          )}
                       </div>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -809,8 +808,8 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-6 min-h-[150px]">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setIsUploadDialogOpen(true)}
                   className="flex items-center gap-2"
                 >
@@ -822,7 +821,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Fullscreen dialog */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
         <DialogContent className="max-w-[90vw] w-full h-[90vh] flex items-center justify-center bg-transparent">
@@ -838,8 +837,8 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                 <p className="text-lg text-white">Audio could not be played in browser</p>
                 <p className="text-sm text-gray-300 mt-1 mb-4">This audio format is not supported for in-browser playback</p>
                 {isEmbedded && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-4 text-white border-white hover:bg-white/10"
                     onClick={() => window.open(audioUrl, '_blank')}
                   >
@@ -874,7 +873,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         <Play className="h-10 w-10 text-blue-600" />
                       </div>
                     </div>
-                    
+
                     {/* Title and metadata */}
                     <div className="mb-6 flex justify-between items-center">
                       <div>
@@ -882,9 +881,9 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         <p className="text-sm text-gray-500">Duration: {formatTime(duration)}</p>
                       </div>
                       {!isEmbedded && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
                           onClick={handleDownload}
                         >
@@ -893,7 +892,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         </Button>
                       )}
                     </div>
-                    
+
                     {/* Enhanced waveform visualization */}
                     <div className="h-28 bg-white rounded-lg overflow-hidden flex items-end p-2 shadow-inner mb-4">
                       {/* Create a better-looking waveform with gradient coloring */}
@@ -902,17 +901,16 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         const baseHeight = Math.sin(i * 0.1) * 0.3 + 0.5;
                         const randomFactor = Math.random() * 0.4;
                         const heightPercentage = Math.max(15, Math.min(95, (baseHeight + randomFactor) * 100));
-                        
+
                         // Determine if this bar should be highlighted (played portion)
                         const isPlayed = currentTime / duration > i / 100;
-                        
+
                         return (
-                          <div 
-                            key={i} 
-                            className={`w-1.5 mx-0.5 rounded-t-sm transition-all duration-150 ${
-                              isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
-                            }`}
-                            style={{ 
+                          <div
+                            key={i}
+                            className={`w-1.5 mx-0.5 rounded-t-sm transition-all duration-150 ${isPlayed ? 'bg-gradient-to-t from-blue-500 to-indigo-400' : 'bg-gray-300'
+                              }`}
+                            style={{
                               height: `${heightPercentage}%`,
                               opacity: isPlayed ? 1 : 0.7
                             }}
@@ -920,7 +918,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         );
                       })}
                     </div>
-                    
+
                     {/* Advanced controls */}
                     <div className="flex flex-col gap-2">
                       {/* Time and progress bar */}
@@ -928,7 +926,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         <span className="text-sm font-medium text-gray-700">{formatTime(currentTime)}</span>
                         <span className="text-sm font-medium text-gray-700">{formatTime(duration)}</span>
                       </div>
-                      
+
                       <Slider
                         value={[!isNaN(duration) && duration > 0 ? (currentTime / duration) * 100 : 0]}
                         min={0}
@@ -937,13 +935,13 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                         onValueChange={handleTimelineChange}
                         className="h-2"
                       />
-                      
+
                       {/* Playback controls */}
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-12 w-12 text-blue-600 hover:bg-blue-100/80 rounded-full shadow-sm"
                             onClick={togglePlayPause}
                           >
@@ -954,11 +952,11 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                             )}
                           </Button>
                         </div>
-                        
+
                         <div className="flex items-center gap-3">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-10 w-10 text-gray-700 hover:bg-gray-100 rounded-full"
                             onClick={toggleMute}
                           >
@@ -993,7 +991,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Upload dialog */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -1045,7 +1043,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                       onChange={handleLinkInputChange}
                       className="border-border focus-visible:ring-primary"
                     />
-                    <Button 
+                    <Button
                       onClick={handleLinkSubmit}
                       disabled={!linkInput}
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -1056,7 +1054,7 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                   <p className="text-xs text-muted-foreground mb-4">
                     Embed audio from SoundCloud, Spotify, or any direct audio URL
                   </p>
-                  
+
                   <div className="flex items-center gap-4 justify-center py-2">
                     <div className="flex items-center gap-2">
                       <Music className="h-4 w-4 text-muted-foreground" />
@@ -1071,14 +1069,14 @@ const AudioBlock: React.FC<AudioBlockProps> = ({
                       <span className="text-xs text-muted-foreground">Direct URL</span>
                     </div>
                   </div>
-                  
+
                   {/* Audio Preview */}
                   {previewUrl && (
                     <div className="mt-4 border rounded-md overflow-hidden">
                       <div className="relative aspect-video bg-background flex items-center justify-center">
-                        <img 
-                          src={previewUrl} 
-                          alt="Preview" 
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
                           className="max-w-full max-h-full object-contain"
                           onError={() => setAudioError(true)}
                         />

@@ -25,18 +25,18 @@ const DEFAULT_COLS = 3;
 const MIN_COLUMN_WIDTH = 60; // Minimum width in pixels
 
 // Six-dot handle component
-const SixDotHandle = ({ onClick, className, visible = false, horizontal = false }: { 
-  onClick?: React.MouseEventHandler, 
-  className?: string, 
+const SixDotHandle = ({ onClick, className, visible = false, horizontal = false }: {
+  onClick?: React.MouseEventHandler,
+  className?: string,
   visible?: boolean,
   horizontal?: boolean
 }) => (
-  <div 
+  <div
     className={cn(
-      "transition-opacity", 
+      "transition-opacity",
       visible ? "opacity-80" : "opacity-0",
       className
-    )} 
+    )}
     onClick={onClick}
   >
     {horizontal ? (
@@ -50,14 +50,14 @@ const SixDotHandle = ({ onClick, className, visible = false, horizontal = false 
 // Color picker submenu component
 const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
   const [tempColor, setTempColor] = useState(value);
-  
+
   // Update tempColor when value changes or component opens
   useEffect(() => {
     if (isOpen) {
       setTempColor(value);
     }
   }, [value, isOpen]);
-  
+
   // Get default color based on the current value type
   const getDefaultColor = () => {
     if (value === 'transparent' || value.includes('rgba') || value.includes('rgb')) {
@@ -65,7 +65,7 @@ const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
     }
     return '#222'; // Default text color
   };
-  
+
   // Handle reset to default color
   const handleReset = () => {
     const defaultColor = getDefaultColor();
@@ -73,17 +73,17 @@ const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
     onChange(defaultColor);
     onClose();
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
-    <div 
-      className="fixed inset-0 z-50" 
+    <div
+      className="fixed inset-0 z-50"
       onClick={onClose}
     >
-      <div 
+      <div
         className="absolute bg-white rounded-md border shadow-md p-3 w-[220px]"
-        style={{ 
+        style={{
           top: '0',
           left: '100%',
           transform: 'translateX(10px)'
@@ -106,25 +106,25 @@ const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
           <HexColorPicker color={tempColor} onChange={setTempColor} />
           <div className="flex items-center gap-2 mt-2">
             <Label className="text-xs">Hex</Label>
-            <Input 
-              type="text" 
-              value={tempColor} 
-              onChange={(e) => setTempColor(e.target.value)} 
+            <Input
+              type="text"
+              value={tempColor}
+              onChange={(e) => setTempColor(e.target.value)}
               className="h-7 text-xs"
               autoFocus
             />
           </div>
           <div className="flex justify-end gap-2 mt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onClose}
               className="h-8 text-xs"
             >
               Cancel
             </Button>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={() => {
                 onChange(tempColor);
                 onClose();
@@ -141,7 +141,7 @@ const ColorPickerSubmenu = ({ value, onChange, isOpen, onClose }) => {
 };
 
 // Row and column option popup content
-const RowColumnPopupContent = ({ 
+const RowColumnPopupContent = ({
   type, // 'row' or 'column'
   index,
   styles,
@@ -151,17 +151,17 @@ const RowColumnPopupContent = ({
   onDelete
 }) => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
-  
+
   // Close submenu handler
   const handleCloseSubmenu = () => {
     setActiveSubmenu(null);
   };
-  
+
   return (
     <div className="relative py-1">
       <div className="flex flex-col gap-1">
         {/* Text Color Option */}
-        <div 
+        <div
           className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
           onClick={() => setActiveSubmenu('textColor')}
         >
@@ -182,15 +182,15 @@ const RowColumnPopupContent = ({
             >
               <RotateCcw className="h-3 w-3" />
             </Button>
-            <div 
-              className="w-4 h-4 rounded border border-gray-300" 
+            <div
+              className="w-4 h-4 rounded border border-gray-300"
               style={{ backgroundColor: styles?.textColor || '#222' }}
             />
           </div>
         </div>
-        
+
         {/* Cell Color Option */}
-        <div 
+        <div
           className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
           onClick={() => setActiveSubmenu('bgColor')}
         >
@@ -211,18 +211,18 @@ const RowColumnPopupContent = ({
             >
               <RotateCcw className="h-3 w-3" />
             </Button>
-            <div 
-              className="w-4 h-4 rounded border border-gray-300" 
+            <div
+              className="w-4 h-4 rounded border border-gray-300"
               style={{ backgroundColor: styles?.bgColor || 'transparent' }}
             />
           </div>
         </div>
-        
+
         {/* Separator */}
         <div className="h-px bg-gray-200 my-1" />
-        
+
         {/* Duplicate Option */}
-        <div 
+        <div
           className="flex items-center px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
           onClick={onDuplicate}
         >
@@ -231,9 +231,9 @@ const RowColumnPopupContent = ({
             <span className="text-sm">Duplicate</span>
           </div>
         </div>
-        
+
         {/* Delete Option */}
-        <div 
+        <div
           className="flex items-center px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-red-500"
           onClick={onDelete}
         >
@@ -243,17 +243,17 @@ const RowColumnPopupContent = ({
           </div>
         </div>
       </div>
-      
+
       {/* Color Picker Submenus */}
-      <ColorPickerSubmenu 
-        value={styles?.textColor || '#222'} 
+      <ColorPickerSubmenu
+        value={styles?.textColor || '#222'}
         onChange={(color) => onTextColorChange(index, color)}
         isOpen={activeSubmenu === 'textColor'}
         onClose={handleCloseSubmenu}
       />
-      
-      <ColorPickerSubmenu 
-        value={styles?.bgColor || 'transparent'} 
+
+      <ColorPickerSubmenu
+        value={styles?.bgColor || 'transparent'}
         onChange={(color) => onBgColorChange(index, color)}
         isOpen={activeSubmenu === 'bgColor'}
         onClose={handleCloseSubmenu}
@@ -274,13 +274,13 @@ const TableBlock = ({
   );
   const [headerRow, setHeaderRow] = useState(block.headerRow || false);
   const [headerCol, setHeaderCol] = useState(block.headerCol || false);
-  
+
   // Hover states for specific areas
   const [isBottomHovered, setIsBottomHovered] = useState(false);
   const [isRightHovered, setIsRightHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
-  
+
   // Hover state for rows and columns
   const [hoveredRow, setHoveredRow] = useState(null);
   const [hoveredCol, setHoveredCol] = useState(null);
@@ -294,7 +294,7 @@ const TableBlock = ({
   const [columnWidths, setColumnWidths] = useState(block.columnWidths || Array(DEFAULT_COLS).fill(null));
   const [isResizing, setIsResizing] = useState(false);
   const [resizingColumnIndex, setResizingColumnIndex] = useState(null);
-  
+
   // Dragging state
   const [dragState, setDragState] = useState(null); // { type, source, destination }
 
@@ -323,7 +323,7 @@ const TableBlock = ({
 
     // Add event listener
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     // Cleanup
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -333,63 +333,63 @@ const TableBlock = ({
   // Handle drag end for rows or columns
   const handleDragEnd = (result) => {
     const { source, destination, type } = result;
-    
+
     // Drop outside the list or no movement
     if (!destination || (source.index === destination.index)) {
       return;
     }
-    
+
     // Handle row reordering
     if (type === 'row') {
       // Create new arrays
       const newRows = Array.from(rows);
       const newRowStyles = Array.from(rowStyles);
-      
+
       // Remove the dragged item
       const [removedRow] = newRows.splice(source.index, 1);
       const [removedStyle] = newRowStyles.splice(source.index, 1);
-      
+
       // Insert at the new position
       newRows.splice(destination.index, 0, removedRow);
       newRowStyles.splice(destination.index, 0, removedStyle);
-      
+
       // Update state
       setRows(newRows);
       setRowStyles(newRowStyles);
-      onUpdate && onUpdate({ 
-        ...block, 
+      onUpdate && onUpdate({
+        ...block,
         rows: newRows,
         rowStyles: newRowStyles
       });
     }
-    
+
     // Handle column reordering
     if (type === 'column') {
       // Create new arrays
       const newRows = rows.map(row => Array.from(row));
       const newColStyles = Array.from(colStyles);
       const newColumnWidths = Array.from(columnWidths);
-      
+
       // For each row, move the cell from source to destination
       newRows.forEach(row => {
         const [removedCell] = row.splice(source.index, 1);
         row.splice(destination.index, 0, removedCell);
       });
-      
+
       // Move the column style
       const [removedStyle] = newColStyles.splice(source.index, 1);
       newColStyles.splice(destination.index, 0, removedStyle);
-      
+
       // Move the column width
       const [removedWidth] = newColumnWidths.splice(source.index, 1);
       newColumnWidths.splice(destination.index, 0, removedWidth);
-      
+
       // Update state
       setRows(newRows);
       setColStyles(newColStyles);
       setColumnWidths(newColumnWidths);
-      onUpdate && onUpdate({ 
-        ...block, 
+      onUpdate && onUpdate({
+        ...block,
         rows: newRows,
         colStyles: newColStyles,
         columnWidths: newColumnWidths
@@ -444,11 +444,11 @@ const TableBlock = ({
     const newRow = Array.from({ length: rows[0].length }, defaultCell);
     const newRows = [...rows, newRow];
     const newRowStyles = [...rowStyles, { textColor: '#222', bgColor: 'transparent' }];
-    
+
     setRows(newRows);
     setRowStyles(newRowStyles);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       rowStyles: newRowStyles
     });
@@ -458,12 +458,12 @@ const TableBlock = ({
     const newRows = rows.map(row => [...row, defaultCell()]);
     const newColStyles = [...colStyles, { textColor: '#222', bgColor: 'transparent' }];
     const newColumnWidths = [...columnWidths, null]; // Add with auto width
-    
+
     setRows(newRows);
     setColStyles(newColStyles);
     setColumnWidths(newColumnWidths);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       colStyles: newColStyles,
       columnWidths: newColumnWidths
@@ -504,15 +504,15 @@ const TableBlock = ({
     const newRows = [...rows];
     const newRow = [...rows[rowIdx]];
     newRows.splice(rowIdx + 1, 0, newRow);
-    
+
     const newRowStyles = [...rowStyles];
     const newStyle = { ...rowStyles[rowIdx] };
     newRowStyles.splice(rowIdx + 1, 0, newStyle);
-    
+
     setRows(newRows);
     setRowStyles(newRowStyles);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       rowStyles: newRowStyles
     });
@@ -520,17 +520,17 @@ const TableBlock = ({
 
   const handleDeleteRow = (rowIdx) => {
     if (rows.length <= 1) return; // Prevent deleting the last row
-    
+
     const newRows = [...rows];
     newRows.splice(rowIdx, 1);
-    
+
     const newRowStyles = [...rowStyles];
     newRowStyles.splice(rowIdx, 1);
-    
+
     setRows(newRows);
     setRowStyles(newRowStyles);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       rowStyles: newRowStyles
     });
@@ -561,15 +561,15 @@ const TableBlock = ({
     const newColStyles = [...colStyles];
     const newStyle = { ...colStyles[colIdx] };
     newColStyles.splice(colIdx + 1, 0, newStyle);
-    
+
     const newColumnWidths = [...columnWidths];
     newColumnWidths.splice(colIdx + 1, 0, columnWidths[colIdx]);
-    
+
     setRows(newRows);
     setColStyles(newColStyles);
     setColumnWidths(newColumnWidths);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       colStyles: newColStyles,
       columnWidths: newColumnWidths
@@ -578,7 +578,7 @@ const TableBlock = ({
 
   const handleDeleteCol = (colIdx) => {
     if (rows[0].length <= 1) return; // Prevent deleting the last column
-    
+
     const newRows = rows.map(row => {
       const newRow = [...row];
       newRow.splice(colIdx, 1);
@@ -587,15 +587,15 @@ const TableBlock = ({
 
     const newColStyles = [...colStyles];
     newColStyles.splice(colIdx, 1);
-    
+
     const newColumnWidths = [...columnWidths];
     newColumnWidths.splice(colIdx, 1);
-    
+
     setRows(newRows);
     setColStyles(newColStyles);
     setColumnWidths(newColumnWidths);
-    onUpdate && onUpdate({ 
-      ...block, 
+    onUpdate && onUpdate({
+      ...block,
       rows: newRows,
       colStyles: newColStyles,
       columnWidths: newColumnWidths
@@ -623,55 +623,55 @@ const TableBlock = ({
   const handleResizeStart = (e, colIdx) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Store initial mouse position
     const initialX = e.clientX;
-    
+
     // Get direct reference to the table and cells
     const tableElement = tableRef.current;
     if (!tableElement) return;
-    
+
     // Get all cells in this column
     const cells = tableElement.querySelectorAll(`td:nth-child(${colIdx + 1})`);
     if (cells.length === 0) return;
-    
+
     // Get initial width from first cell
     const firstCell = cells[0];
     const initialWidth = firstCell.offsetWidth;
     console.log('Initial width:', initialWidth); // Debug
-    
+
     // Setup UI for resize
     setIsResizing(true);
     setResizingColumnIndex(colIdx);
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-    
+
     // Create mousemove handler
     function onMouseMove(moveEvent) {
       // Calculate width change
       const deltaX = moveEvent.clientX - initialX;
       const newWidth = Math.max(MIN_COLUMN_WIDTH, initialWidth + deltaX);
-      
+
       console.log('Resizing to width:', newWidth); // Debug
-      
+
       // Apply width to all cells in this column
       cells.forEach(cell => {
         cell.style.width = `${newWidth}px`;
         cell.style.minWidth = `${newWidth}px`;
       });
-      
+
       // Also update the colgroup
       const colElement = tableElement.querySelector(`colgroup col:nth-child(${colIdx + 1})`);
       if (colElement) {
         colElement.style.width = `${newWidth}px`;
       }
-      
+
       // Update state
       const newColumnWidths = [...columnWidths];
       newColumnWidths[colIdx] = newWidth;
       setColumnWidths(newColumnWidths);
     }
-    
+
     // Create mouseup handler
     function onMouseUp(upEvent) {
       // Clean up
@@ -679,19 +679,19 @@ const TableBlock = ({
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      
+
       // Update final state
       setIsResizing(false);
       setResizingColumnIndex(null);
-      
+
       // Measure final width
       const finalWidth = firstCell.offsetWidth;
       console.log('Final width:', finalWidth); // Debug
-      
+
       // Create new column widths array with the updated width
       const finalColumnWidths = [...columnWidths];
       finalColumnWidths[colIdx] = finalWidth;
-      
+
       // Update the state and notify parent
       setColumnWidths(finalColumnWidths);
       onUpdate && onUpdate({
@@ -699,16 +699,16 @@ const TableBlock = ({
         columnWidths: finalColumnWidths
       });
     }
-    
+
     // Add listeners
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
-  
+
   // Placeholder for unused functions
-  const handleResizeMove = () => {};
-  const handleResizeEnd = () => {};
-  
+  const handleResizeMove = () => { };
+  const handleResizeEnd = () => { };
+
   // Effect to clean up when component unmounts during resize
   useEffect(() => {
     return () => {
@@ -719,7 +719,7 @@ const TableBlock = ({
       }
     };
   }, [isResizing]);
-  
+
   // Update table style to allow resizable columns
   useEffect(() => {
     if (tableRef.current) {
@@ -731,14 +731,14 @@ const TableBlock = ({
   return (
     <div className={cn("relative my-4", className)}>
       {/* Table Options Button - Always visible outside the table */}
-      <div 
+      <div
         className="absolute right-0 top-4 z-100 transform -translate-y-full translate-x-0"
         onClick={handleMenuClick}
         onMouseEnter={() => setIsMenuButtonHovered(true)}
         onMouseLeave={() => !isMenuOpen && setIsMenuButtonHovered(false)}
       >
-        <DropdownMenu 
-          open={isMenuOpen} 
+        <DropdownMenu
+          open={isMenuOpen}
           onOpenChange={(open) => {
             setIsMenuOpen(open);
             if (!open) {
@@ -748,9 +748,9 @@ const TableBlock = ({
           }}
         >
           <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className={cn(
                 "h-6 w-6 p-0 opacity-30 transition-opacity",
                 (isMenuButtonHovered || isMenuOpen) && "opacity-100"
@@ -763,8 +763,8 @@ const TableBlock = ({
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            align="end" 
+          <DropdownMenuContent
+            align="end"
             className="w-40"
             onInteractOutside={(e) => {
               setIsMenuOpen(false);
@@ -772,8 +772,8 @@ const TableBlock = ({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <DropdownMenuItem 
-              className="px-2 py-1 cursor-default" 
+            <DropdownMenuItem
+              className="px-2 py-1 cursor-default"
               onSelect={(e) => {
                 e.preventDefault();
               }}
@@ -782,14 +782,14 @@ const TableBlock = ({
                 <div className="flex items-center gap-2">
                   <span className="text-sm">Header row</span>
                 </div>
-                <Switch 
-                  checked={headerRow} 
+                <Switch
+                  checked={headerRow}
                   onCheckedChange={handleToggleHeaderRow}
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="px-2 py-1 cursor-default"
               onSelect={(e) => {
                 e.preventDefault();
@@ -799,16 +799,16 @@ const TableBlock = ({
                 <div className="flex items-center gap-2">
                   <span className="text-sm">Header column</span>
                 </div>
-                <Switch 
-                  checked={headerCol} 
+                <Switch
+                  checked={headerCol}
                   onCheckedChange={handleToggleHeaderCol}
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive" 
+            <DropdownMenuItem
+              className="text-destructive"
               onSelect={() => {
                 setIsMenuOpen(false);
                 setIsMenuButtonHovered(false);
@@ -821,7 +821,7 @@ const TableBlock = ({
         </DropdownMenu>
       </div>
 
-      <DragDropContext 
+      <DragDropContext
         onDragEnd={(result) => {
           // Clear drag state
           setDragState(null);
@@ -830,7 +830,7 @@ const TableBlock = ({
         onDragStart={(start) => {
           // Clear any existing selections when starting a new drag
           setSelectedCell(null);
-          
+
           // Set initial drag state
           setDragState({
             type: start.type,
@@ -841,10 +841,10 @@ const TableBlock = ({
         onDragUpdate={(update) => {
           // Show visual feedback based on the current drag position
           const { destination, source, draggableId, type } = update;
-          
+
           // If no valid destination, maintain last known destination
           if (!destination) return;
-          
+
           // Update drag state with new destination
           setDragState({
             type,
@@ -858,13 +858,13 @@ const TableBlock = ({
           {isResizing && (
             <div className="absolute inset-0 bg-transparent z-30" />
           )}
-          
+
           {/* Column Headers with Drag Handles */}
           <div className="relative h-4 mb-1">
             <Droppable droppableId="columns" direction="horizontal" type="column">
               {(provided, snapshot) => (
-                <div 
-                  ref={provided.innerRef} 
+                <div
+                  ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
                     "flex absolute left-0 right-0 h-4",
@@ -903,7 +903,7 @@ const TableBlock = ({
                               }
                             }}>
                               <PopoverTrigger asChild>
-                                <div 
+                                <div
                                   className="absolute top-1.5 left-1/2 -translate-x-1/2 -translate-y-1/2"
                                   {...provided.dragHandleProps}
                                 >
@@ -914,7 +914,7 @@ const TableBlock = ({
                                 </div>
                               </PopoverTrigger>
                               <PopoverContent className="w-60 p-2" align="start">
-                                <RowColumnPopupContent 
+                                <RowColumnPopupContent
                                   type="column"
                                   index={colIdx}
                                   styles={colStyles[colIdx]}
@@ -938,23 +938,23 @@ const TableBlock = ({
 
           {/* Column Drag Guide - Only visible during column dragging */}
           {dragState && dragState.type === 'column' && (
-            <div 
+            <div
               className="absolute top-0 bottom-0 bg-blue-500/20 border-2 border-blue-500 transition-all duration-150 pointer-events-none"
               style={{
                 width: '6px',
                 left: (() => {
                   // Calculate position based on destination index
                   if (!tableRef.current) return 0;
-                  
+
                   const table = tableRef.current;
                   const cells = table.rows[0]?.cells || [];
-                  
+
                   if (dragState.destination >= cells.length) {
                     // If dragging to the end, position after the last column
                     const lastCell = cells[cells.length - 1];
                     return lastCell.offsetLeft + lastCell.offsetWidth;
                   }
-                  
+
                   // Position at the left of the destination column
                   return cells[dragState.destination].offsetLeft;
                 })(),
@@ -963,24 +963,24 @@ const TableBlock = ({
               }}
             />
           )}
-          
+
           {/* Row Drag Guide - Only visible during row dragging */}
           {dragState && dragState.type === 'row' && (
-            <div 
+            <div
               className="absolute left-0 right-0 bg-blue-500/20 border-2 border-blue-500 transition-all duration-150 pointer-events-none"
               style={{
                 height: '6px',
                 top: (() => {
                   // Calculate position based on destination index
                   if (!tableRef.current) return 0;
-                  
+
                   const rows = tableRef.current.rows;
                   if (dragState.destination >= rows.length) {
                     // If dragging to the end, position after the last row
                     const lastRow = rows[rows.length - 1];
                     return lastRow.offsetTop + lastRow.offsetHeight;
                   }
-                  
+
                   // Position at the top of the destination row
                   return rows[dragState.destination].offsetTop;
                 })(),
@@ -989,7 +989,7 @@ const TableBlock = ({
               }}
             />
           )}
-          
+
           {/* Table with Draggable Rows */}
           <table className="w-full border-collapse table-fixed" ref={tableRef}>
             {/* Column group for width definitions */}
@@ -997,7 +997,7 @@ const TableBlock = ({
               {colIds.map((colId, colIdx) => {
                 const width = columnWidths[colIdx];
                 return (
-                  <col 
+                  <col
                     key={colId}
                     className="resize-col"
                     data-col-index={colIdx}
@@ -1009,7 +1009,7 @@ const TableBlock = ({
                 );
               })}
             </colgroup>
-            
+
             <Droppable droppableId="rows" type="row">
               {(provided, snapshot) => (
                 <tbody
@@ -1022,11 +1022,11 @@ const TableBlock = ({
                   {rowIds.map((rowId, rowIdx) => {
                     const row = rows[rowIdx];
                     const isHeaderRowCell = headerRow && rowIdx === 0;
-                    
+
                     return (
                       <Draggable key={rowId} draggableId={rowId} index={rowIdx}>
                         {(provided, snapshot) => (
-                          <tr 
+                          <tr
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={cn(
@@ -1034,8 +1034,8 @@ const TableBlock = ({
                               isHeaderRowCell && !rowStyles[rowIdx]?.bgColor ? "bg-gray-50 font-semibold" : ""
                             )}
                             style={{
-                              backgroundColor: snapshot.isDragging 
-                                ? '#f0f9ff' 
+                              backgroundColor: snapshot.isDragging
+                                ? '#f0f9ff'
                                 : (rowStyles[rowIdx]?.bgColor || (isHeaderRowCell ? '#f9fafb' : 'transparent')),
                               color: rowStyles[rowIdx]?.textColor || '#222',
                               border: snapshot.isDragging ? '2px solid #3b82f6' : null,
@@ -1049,10 +1049,10 @@ const TableBlock = ({
                             {row.map((cell, colIdx) => {
                               const isHeaderColCell = headerCol && colIdx === 0;
                               const isHeader = isHeaderRowCell || isHeaderColCell;
-                              
+
                               // Determine the cell background color with priority
                               let bgColor = 'transparent';
-                              
+
                               // First check for custom colors on the cell's row or column
                               if (rowStyles[rowIdx]?.bgColor && rowStyles[rowIdx]?.bgColor !== 'transparent') {
                                 bgColor = rowStyles[rowIdx]?.bgColor; // Row style takes precedence
@@ -1065,7 +1065,7 @@ const TableBlock = ({
 
                               // Determine text color with priority
                               let textColor = '#222';
-                              
+
                               // First check for custom colors on the cell's row or column
                               if (rowStyles[rowIdx]?.textColor && rowStyles[rowIdx]?.textColor !== '#222') {
                                 textColor = rowStyles[rowIdx]?.textColor; // Row style takes precedence
@@ -1075,7 +1075,7 @@ const TableBlock = ({
                                 // Only apply default header styling if no custom color is set
                                 textColor = '#111';
                               }
-                              
+
                               return (
                                 <td
                                   key={colIdx}
@@ -1109,18 +1109,18 @@ const TableBlock = ({
                                       }
                                     }}>
                                       <PopoverTrigger asChild>
-                                        <div 
+                                        <div
                                           className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 cursor-grab"
                                           {...provided.dragHandleProps}
                                           onMouseEnter={() => setHoveredRow(rowIdx)}
                                         >
-                                          <SixDotHandle 
-                                            visible={hoveredRow === rowIdx || snapshot.isDragging || selectedRow === rowIdx} 
+                                          <SixDotHandle
+                                            visible={hoveredRow === rowIdx || snapshot.isDragging || selectedRow === rowIdx}
                                           />
                                         </div>
                                       </PopoverTrigger>
                                       <PopoverContent className="w-60 p-2" align="start">
-                                        <RowColumnPopupContent 
+                                        <RowColumnPopupContent
                                           type="row"
                                           index={rowIdx}
                                           styles={rowStyles[rowIdx]}
@@ -1138,7 +1138,7 @@ const TableBlock = ({
                                     value={cell.value}
                                     onChange={(e) => handleCellChange(rowIdx, colIdx, e.target.value)}
                                     className="w-full outline-none bg-transparent"
-                                    style={{ 
+                                    style={{
                                       padding: '6px',
                                       fontWeight: isHeader ? 600 : 400,
                                       color: 'inherit' // Inherit from the parent td
@@ -1158,7 +1158,7 @@ const TableBlock = ({
                                       onMouseDown={(e) => handleResizeStart(e, colIdx)}
                                     >
                                       {/* Visible line indicator that shows on hover */}
-                                      <div 
+                                      <div
                                         className={cn(
                                           "absolute inset-0 pointer-events-none",
                                           "before:absolute before:top-0 before:bottom-0 before:left-[2px] before:w-[2px]",
@@ -1174,18 +1174,20 @@ const TableBlock = ({
                               );
                             })}
                           </tr>
-                        )}
+                        )
+                        }
                       </Draggable>
                     );
                   })}
                   {provided.placeholder}
                 </tbody>
-              )}
+              )
+              }
             </Droppable>
           </table>
 
           {/* Add Row Button - Below the table, centered */}
-          <div 
+          <div
             className={cn(
               "absolute left-1/2 -translate-x-1/2 -bottom-10 opacity-0 transition-opacity",
               isBottomHovered ? "opacity-100" : ""
@@ -1200,7 +1202,7 @@ const TableBlock = ({
           </div>
 
           {/* Add Column Button - Right of the table, centered */}
-          <div 
+          <div
             className={cn(
               "absolute top-1/2 -translate-y-1/2 -right-10 opacity-0 transition-opacity",
               isRightHovered ? "opacity-100" : ""
@@ -1214,8 +1216,8 @@ const TableBlock = ({
             </div>
           </div>
         </div>
-      </DragDropContext>
-    </div>
+      </DragDropContext >
+    </div >
   );
 };
 

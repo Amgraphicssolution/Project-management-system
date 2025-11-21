@@ -6,85 +6,157 @@
 
 @layer base {
   :root {
+    /* Base colors - using greyscale palette */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* white */
+    --foreground: 232 31% 13%;
+    /* greyscale-900 #1A1C26 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted colors - lighter greyscale for subtle UI elements */
+    --muted: 228 11% 93%;
+    /* greyscale-40 #EDEEF1 */
+    --muted-foreground: 231 10% 47%;
+    /* greyscale-300 #6D728B */
 
+    /* Popover colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* white */
+    --popover-foreground: 232 31% 13%;
+    /* greyscale-900 */
 
+    /* Card colors */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* white */
+    --card-foreground: 232 31% 13%;
+    /* greyscale-900 */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    /* Border and input - light greyscale */
+    --border: 228 11% 93%;
+    /* greyscale-40 #EDEEF1 */
+    --input: 228 8% 82%;
+    /* greyscale-50 #C7C9D2 */
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - using blue-500 */
+    --primary: 230 76% 56%;
+    /* blue-500 #3853EA */
+    --primary-foreground: 0 0% 100%;
+    /* white */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - light blue for secondary actions */
+    --secondary: 228 11% 93%;
+    /* greyscale-40 */
+    --secondary-foreground: 232 31% 13%;
+    /* greyscale-900 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - lighter blue for hover states */
+    --accent: 229 82% 95%;
+    /* blue-40 #F5F7FD */
+    --accent-foreground: 230 76% 56%;
+    /* blue-500 */
 
+    /* Destructive colors */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --ring: 215 20.2% 65.1%;
+    /* Ring/focus - blue-500 */
+    --ring: 230 76% 56%;
+    /* blue-500 */
 
     --radius: 0.5rem;
 
+    /* Sidebar colors - using blue palette */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5% 26%;
-    --sidebar-primary: 255 80% 75%;
+    /* white */
+    --sidebar-foreground: 232 31% 13%;
+    /* greyscale-900 */
+    --sidebar-primary: 230 76% 56%;
+    /* blue-500 */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 60% 96%;
-    --sidebar-accent-foreground: 240 10% 4%;
-    --sidebar-border: 240 10% 90%;
-    --sidebar-ring: 255 80% 75%;
+    /* white */
+    --sidebar-accent: 229 82% 95%;
+    /* blue-40 */
+    --sidebar-accent-foreground: 230 76% 56%;
+    /* blue-500 */
+    --sidebar-border: 228 11% 93%;
+    /* greyscale-40 */
+    --sidebar-ring: 230 76% 56%;
+    /* blue-500 */
   }
 
   .dark {
-    --background: 222.2 47.4% 11.2%;
-    --foreground: 210 40% 98%;
+    /* Base colors - dark greyscale */
+    --background: 232 31% 13%;
+    /* greyscale-900 #1A1C26 */
+    --foreground: 0 0% 100%;
+    /* white */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 75%;
+    /* Muted colors - darker greyscale for subtle elements */
+    --muted: 232 25% 18%;
+    /* greyscale-800 #1F212E */
+    --muted-foreground: 231 10% 47%;
+    /* greyscale-300 #6D728B */
 
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
+    /* Popover colors */
+    --popover: 232 25% 18%;
+    /* greyscale-800 */
+    --popover-foreground: 0 0% 100%;
+    /* white */
 
-    --card: 222.2 47.4% 11.2%;
-    --card-foreground: 210 40% 98%;
+    /* Card colors */
+    --card: 232 25% 18%;
+    /* greyscale-800 */
+    --card-foreground: 0 0% 100%;
+    /* white */
 
-    --border: 217.2 32.6% 26%;
-    --input: 217.2 32.6% 26%;
+    /* Border and input - medium greyscale */
+    --border: 229 19% 25%;
+    /* greyscale-600 #34384E */
+    --input: 229 19% 25%;
+    /* greyscale-600 */
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary - brighter blue for dark mode */
+    --primary: 230 76% 56%;
+    /* blue-500 #3853EA */
+    --primary-foreground: 0 0% 100%;
+    /* white */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - darker greyscale */
+    --secondary: 232 25% 18%;
+    /* greyscale-800 */
+    --secondary-foreground: 0 0% 100%;
+    /* white */
 
-    --accent: 217.2 32.6% 25%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - darker background with blue tint */
+    --accent: 232 25% 18%;
+    /* greyscale-800 */
+    --accent-foreground: 230 76% 56%;
+    /* blue-500 */
 
+    /* Destructive colors */
     --destructive: 0 62.8% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --ring: 217.2 32.6% 35%;
+    /* Ring/focus - brighter blue */
+    --ring: 230 76% 56%;
+    /* blue-500 */
 
-    --sidebar-background: 222.2 47.4% 11.2%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 255 80% 75%;
+    /* Sidebar colors - dark mode */
+    --sidebar-background: 232 31% 13%;
+    /* greyscale-900 */
+    --sidebar-foreground: 0 0% 100%;
+    /* white */
+    --sidebar-primary: 230 76% 56%;
+    /* blue-500 */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 26%;
-    --sidebar-ring: 255 90% 60%;
+    /* white */
+    --sidebar-accent: 232 25% 18%;
+    /* greyscale-800 */
+    --sidebar-accent-foreground: 0 0% 100%;
+    /* white */
+    --sidebar-border: 229 19% 25%;
+    /* greyscale-600 */
+    --sidebar-ring: 230 76% 56%;
+    /* blue-500 */
   }
 }
 
@@ -102,7 +174,12 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     @apply font-medium tracking-tight;
   }
@@ -111,18 +188,23 @@
   h1 {
     @apply text-3xl md:text-4xl mb-4;
   }
+
   h2 {
     @apply text-2xl md:text-3xl mb-3;
   }
+
   h3 {
     @apply text-xl md:text-2xl mb-3;
   }
+
   h4 {
     @apply text-lg md:text-xl mb-2;
   }
+
   h5 {
     @apply text-base md:text-lg mb-2 font-semibold;
   }
+
   h6 {
     @apply text-sm md:text-base mb-2 font-semibold text-muted-foreground;
   }
@@ -133,21 +215,21 @@
 }
 
 .card-shadow {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
 .dark .card-shadow {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .card-shadow:hover {
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
 .dark .card-shadow:hover {
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Editor styles */
@@ -195,8 +277,8 @@
   /* Block menu styles */
   .block-menu {
     box-shadow: 0 0 0 1px hsl(var(--border)/40%),
-                0 2px 4px hsl(var(--foreground)/10%),
-                0 8px 24px hsl(var(--foreground)/10%);
+      0 2px 4px hsl(var(--foreground)/10%),
+      0 8px 24px hsl(var(--foreground)/10%);
   }
 
   /* Input styles */
@@ -236,11 +318,13 @@
 }
 
 /* Make sure the text formatting is preserved */
-[contenteditable] b, [contenteditable] strong {
+[contenteditable] b,
+[contenteditable] strong {
   font-weight: bold;
 }
 
-[contenteditable] i, [contenteditable] em {
+[contenteditable] i,
+[contenteditable] em {
   font-style: italic;
 }
 
@@ -309,20 +393,24 @@
 
 /* Primary button in dark mode */
 .dark .bg-primary {
-  background-color: hsl(217, 91%, 60%);
+  background-color: hsl(230, 76%, 56%);
+  /* blue-500 */
   color: white;
 }
 
 .dark .bg-primary:hover {
-  background-color: hsl(217, 91%, 50%);
+  background-color: hsl(230, 76%, 48%);
+  /* slightly darker blue */
 }
 
 /* Blue button in dark mode */
 .dark .bg-blue-600 {
-  background-color: hsl(217, 91%, 60%);
+  background-color: hsl(230, 76%, 56%);
+  /* blue-500 */
   color: white;
 }
 
 .dark .bg-blue-600:hover {
-  background-color: hsl(217, 91%, 50%);
+  background-color: hsl(230, 76%, 48%);
+  /* slightly darker blue */
 }

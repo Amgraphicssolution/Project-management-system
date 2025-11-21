@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PageType, BlockType } from "../types";
-import { 
-  Plus, 
-  GripVertical, 
-  Copy, 
-  Trash2, 
-  FileText, 
-  Type, 
-  ListOrdered, 
-  Quote, 
-  Code, 
-  Image, 
+import {
+  Plus,
+  GripVertical,
+  Copy,
+  Trash2,
+  FileText,
+  Type,
+  ListOrdered,
+  Quote,
+  Code,
+  Image,
   Search,
   List,
   Table,
@@ -144,13 +144,42 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   const [activeListItemId, setActiveListItemId] = useState<string | null>(null);
 
   const handleUpdateBlock = (index: number, updatedBlock: BlockType) => {
-    const newBlocks = [...blocks];
-    newBlocks[index] = updatedBlock;
-    setBlocks(newBlocks);
-    
-    if (onUpdatePage) {
-      onUpdatePage({ ...page, blocks: newBlocks });
-    }
+    setBlocks(prevBlocks => {
+      // Safety check: if index is out of bounds, return previous state
+      if (index < 0 || index >= prevBlocks.length) {
+        console.warn("handleUpdateBlock: Index out of bounds", index);
+        return prevBlocks;
+      }
+
+      // Safety check: verify ID matches to prevent overwriting wrong block (e.g. after delete)
+      if (prevBlocks[index].id !== updatedBlock.id) {
+        console.warn("handleUpdateBlock: ID mismatch at index", index, "Expected:", prevBlocks[index].id, "Got:", updatedBlock.id);
+        // Try to find the correct index
+        const realIndex = prevBlocks.findIndex(b => b.id === updatedBlock.id);
+        if (realIndex !== -1) {
+          const newBlocks = [...prevBlocks];
+          newBlocks[realIndex] = updatedBlock;
+          if (onUpdatePage) {
+            // We need to call this outside, but we can't easily.
+            // Since onUpdatePage likely just updates parent state, it's okay to call it here
+            // or we accept that it might be slightly delayed if we don't.
+            // But to be safe, let's call it with the new state.
+            onUpdatePage({ ...page, blocks: newBlocks });
+          }
+          return newBlocks;
+        }
+        return prevBlocks; // Block not found (deleted)
+      }
+
+      const newBlocks = [...prevBlocks];
+      newBlocks[index] = updatedBlock;
+
+      if (onUpdatePage) {
+        onUpdatePage({ ...page, blocks: newBlocks });
+      }
+
+      return newBlocks;
+    });
   };
 
   const handleMoveNestedBlockUp = (parentIndex: number, blockIndex: number) => {
@@ -158,8 +187,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     const newBlocks = [...blocks];
     const parentBlock = newBlocks[parentIndex];
     if (parentBlock.children) {
-      [parentBlock.children[blockIndex - 1], parentBlock.children[blockIndex]] = 
-      [parentBlock.children[blockIndex], parentBlock.children[blockIndex - 1]];
+      [parentBlock.children[blockIndex - 1], parentBlock.children[blockIndex]] =
+        [parentBlock.children[blockIndex], parentBlock.children[blockIndex - 1]];
       setBlocks(newBlocks);
       if (onUpdatePage) {
         onUpdatePage({ ...page, blocks: newBlocks });
@@ -171,8 +200,8 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     const parentBlock = blocks[parentIndex];
     if (!parentBlock.children || blockIndex === parentBlock.children.length - 1) return;
     const newBlocks = [...blocks];
-    [newBlocks[parentIndex].children![blockIndex], newBlocks[parentIndex].children![blockIndex + 1]] = 
-    [newBlocks[parentIndex].children![blockIndex + 1], newBlocks[parentIndex].children![blockIndex]];
+    [newBlocks[parentIndex].children![blockIndex], newBlocks[parentIndex].children![blockIndex + 1]] =
+      [newBlocks[parentIndex].children![blockIndex + 1], newBlocks[parentIndex].children![blockIndex]];
     setBlocks(newBlocks);
     if (onUpdatePage) {
       onUpdatePage({ ...page, blocks: newBlocks });
@@ -183,7 +212,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     // Only handle Enter and Backspace keys, let other keys (like Space) work normally
     if (e.key === 'Enter') {
       e.preventDefault();
-      
+
       if (isListType(block.type)) {
         // Add new item to the list
         const newBlocks = [...blocks];
@@ -209,7 +238,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
         if (targetBlock) {
           const listItems = targetBlock.listItems || [];
-          
+
           // Initialize list items if empty
           if (listItems.length === 0) {
             listItems.push({
@@ -249,19 +278,19 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
           setBlocks(newBlocks);
           setActiveListItemId(newItemId);
-          
+
           if (onUpdatePage) {
             onUpdatePage({ ...page, blocks: newBlocks });
           }
         }
       } else {
         // Regular block behavior
-      const newBlock: BlockType = {
-        id: `block-${Date.now()}`,
+        const newBlock: BlockType = {
+          id: `block-${Date.now()}`,
           type: block.type,
-        content: ''
-      };
-      
+          content: ''
+        };
+
         // If this is a nested block in a toggle list
         if (block.parentId) {
           const parentIndex = blocks.findIndex(b => b.id === block.parentId);
@@ -278,29 +307,29 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             return;
           }
         }
-        
+
         // Regular block addition
-      const newBlocks = [
-        ...blocks.slice(0, index + 1),
-        newBlock,
-        ...blocks.slice(index + 1)
-      ];
-      
-      setBlocks(newBlocks);
+        const newBlocks = [
+          ...blocks.slice(0, index + 1),
+          newBlock,
+          ...blocks.slice(index + 1)
+        ];
+
+        setBlocks(newBlocks);
         setActiveInputIndex(index + 1);
         setActiveListItemId(null);
-      if (onUpdatePage) {
-        onUpdatePage({ ...page, blocks: newBlocks });
+        if (onUpdatePage) {
+          onUpdatePage({ ...page, blocks: newBlocks });
         }
       }
     } else if (e.key === 'Backspace') {
       if (isListType(block.type)) {
         const listItems = block.listItems || [];
         const currentItem = listItems[itemIndex || 0];
-        
+
         if (!currentItem.content) {
           e.preventDefault();
-          
+
           const newBlocks = [...blocks];
           let targetBlock: BlockType;
           let parentIndex: number = -1;
@@ -376,7 +405,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
           }
         }
       } else if (!block.content) {
-      e.preventDefault();
+        e.preventDefault();
         // Regular block deletion
         if (block.parentId) {
           // If this is a nested block in a toggle list
@@ -387,15 +416,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
             if (parentBlock.children) {
               const blockIndex = parentBlock.children.findIndex(b => b.id === block.id);
               parentBlock.children.splice(blockIndex, 1);
-      setBlocks(newBlocks);
-      if (onUpdatePage) {
-        onUpdatePage({ ...page, blocks: newBlocks });
-      }
+              setBlocks(newBlocks);
+              if (onUpdatePage) {
+                onUpdatePage({ ...page, blocks: newBlocks });
+              }
             }
             return;
           }
         }
-        
+
         // Regular block deletion
         const newBlocks = blocks.filter((_, i) => i !== index);
         setBlocks(newBlocks);
@@ -430,9 +459,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
     }
   };
 
-  const renderBlock = (block: BlockType, index: number, isNested: boolean = false) => {
+  const renderBlock = (block: BlockType, index: number, isNested: boolean = false, dragHandleProps?: any) => {
     const numericIndex = isNested ? -1 : index;
-    
+
     if (block.type === 'table') {
       return (
         <div className="relative group">
@@ -473,16 +502,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                           const filteredBlocks = category.blocks.filter(block =>
                             block.label.toLowerCase().includes(searchQuery.toLowerCase())
                           );
-                          
+
                           if (filteredBlocks.length === 0) return null;
-                          
+
                           return (
                             <div key={category.name}>
                               <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                                 {category.name}
                               </DropdownMenuItem>
                               {filteredBlocks.map((blockType) => (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   key={blockType.type}
                                   className="flex items-center gap-2 px-2"
                                   onClick={() => handleConvertBlock(numericIndex, blockType.type)}
@@ -495,15 +524,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                             </div>
                           );
                         })}
-                        {!blockCategories.some(category => 
-                          category.blocks.some(block => 
+                        {!blockCategories.some(category =>
+                          category.blocks.some(block =>
                             block.label.toLowerCase().includes(searchQuery.toLowerCase())
                           )
                         ) && (
-                          <div className="text-sm text-muted-foreground text-center py-2">
-                            No blocks found
-                          </div>
-                        )}
+                            <div className="text-sm text-muted-foreground text-center py-2">
+                              No blocks found
+                            </div>
+                          )}
                       </div>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
@@ -538,7 +567,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
-    
+
     if (block.type === 'image') {
       return (
         <div className="relative group">
@@ -602,7 +631,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
-    
+
     if (block.type === 'code') {
       return (
         <div className="relative group">
@@ -634,10 +663,10 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
-    
+
     // Handle column blocks
-    if (block.type === 'two-columns' || block.type === 'three-columns' || 
-        block.type === 'four-columns' || block.type === 'five-columns') {
+    if (block.type === 'two-columns' || block.type === 'three-columns' ||
+      block.type === 'four-columns' || block.type === 'five-columns') {
       return (
         <div className="relative group">
           <ColumnBlock
@@ -672,7 +701,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
         </div>
       );
     }
-    
+
     if (block.type === 'figma') {
       return (
         <div className="relative group">
@@ -697,16 +726,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                           const filteredBlocks = category.blocks.filter(blockType =>
                             blockType.label.toLowerCase().includes(searchQuery.toLowerCase())
                           );
-                          
+
                           if (filteredBlocks.length === 0) return null;
-                          
+
                           return (
                             <div key={category.name}>
                               <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                                 {category.name}
                               </DropdownMenuItem>
                               {filteredBlocks.map((blockType) => (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   key={blockType.type}
                                   className="flex items-center gap-2 px-2"
                                   onClick={() => handleConvertBlock(numericIndex, blockType.type)}
@@ -756,12 +785,110 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
     if (block.type === 'board') {
       return (
-        <BoardBlock
-          key={block.id}
-          block={block as any}
-          onUpdate={(updatedBlock) => handleUpdateBlock(index, updatedBlock as any)}
-          onDelete={() => handleDeleteBlock(index)}
-        />
+        <div className="relative group">
+          <div className="flex items-center gap-4 group-hover:bg-accent/5 rounded-sm py-1.5">
+            <div className="flex-shrink-0 flex self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100 items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
+                    {...dragHandleProps}
+                  >
+                    <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={2} align="start" className="w-[160px] z-50">
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4" />
+                      Convert to
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                        <Search className="h-4 w-4 text-muted-foreground/70" />
+                        <input
+                          type="text"
+                          placeholder="Filter..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Escape') {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                        {blockCategories.map((category) => {
+                          const filteredBlocks = category.blocks.filter(blockType =>
+                            blockType.label.toLowerCase().includes(searchQuery.toLowerCase())
+                          );
+
+                          if (filteredBlocks.length === 0) return null;
+
+                          return (
+                            <div key={category.name}>
+                              <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                                {category.name}
+                              </DropdownMenuItem>
+                              {filteredBlocks.map((blockType) => (
+                                <DropdownMenuItem
+                                  key={blockType.type}
+                                  className="flex items-center gap-2 px-2"
+                                  onClick={() => handleConvertBlock(numericIndex, blockType.type)}
+                                >
+                                  <blockType.icon className="h-4 w-4 shrink-0" />
+                                  <span className="truncate">{blockType.label}</span>
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator className="mx-2" />
+                            </div>
+                          );
+                        })}
+                        {!blockCategories.some(category =>
+                          category.blocks.some(block =>
+                            block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                          )
+                        ) && (
+                            <div className="text-sm text-muted-foreground text-center py-2">
+                              No blocks found
+                            </div>
+                          )}
+                      </div>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  {!isNested && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleMoveBlockUp(numericIndex)} className="flex items-center gap-2">
+                        <ArrowUp className="h-4 w-4" />
+                        Move up
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleMoveBlockDown(numericIndex)} className="flex items-center gap-2">
+                        <ArrowDown className="h-4 w-4" />
+                        Move down
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteBlock(numericIndex)} className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex-1 min-h-[32px]">
+              <BoardBlock
+                key={block.id}
+                block={block as any}
+                onUpdate={(updatedBlock) => handleUpdateBlock(numericIndex, updatedBlock as any)}
+                onDelete={() => handleDeleteBlock(numericIndex)}
+              />
+            </div>
+          </div>
+        </div>
       );
     }
 
@@ -804,16 +931,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         const filteredBlocks = category.blocks.filter(block =>
                           block.label.toLowerCase().includes(searchQuery.toLowerCase())
                         );
-                        
+
                         if (filteredBlocks.length === 0) return null;
-                        
+
                         return (
                           <div key={category.name}>
                             <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                               {category.name}
                             </DropdownMenuItem>
                             {filteredBlocks.map((blockType) => (
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 key={blockType.type}
                                 className="flex items-center gap-2 px-2"
                                 onClick={() => handleConvertBlock(numericIndex, blockType.type)}
@@ -826,15 +953,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                           </div>
                         );
                       })}
-                      {!blockCategories.some(category => 
-                        category.blocks.some(block => 
+                      {!blockCategories.some(category =>
+                        category.blocks.some(block =>
                           block.label.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                       ) && (
-                        <div className="text-sm text-muted-foreground text-center py-2">
-                          No blocks found
-                        </div>
-                      )}
+                          <div className="text-sm text-muted-foreground text-center py-2">
+                            No blocks found
+                          </div>
+                        )}
                     </div>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -890,9 +1017,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         }
                       }
                     } else {
-                      handleUpdateBlock(numericIndex, { 
-                        ...block, 
-                        content: e.target.value 
+                      handleUpdateBlock(numericIndex, {
+                        ...block,
+                        content: e.target.value
                       });
                     }
                   }}
@@ -935,9 +1062,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       }
                     }
                   } else {
-                    handleUpdateBlock(numericIndex, { 
-                      ...block, 
-                      content: newContent 
+                    handleUpdateBlock(numericIndex, {
+                      ...block,
+                      content: newContent
                     });
                   }
                 }}
@@ -968,9 +1095,9 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       }
                     }
                   } else {
-                    handleUpdateBlock(numericIndex, { 
-                      ...block, 
-                      content: e.target.value 
+                    handleUpdateBlock(numericIndex, {
+                      ...block,
+                      content: e.target.value
                     });
                   }
                 }}
@@ -1003,7 +1130,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
     if (block.type === 'toggle') {
       const isExpanded = expandedToggles.has(block.id);
-      
+
       return (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
@@ -1077,7 +1204,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                       <span>Add block</span>
                     </button>
                   </PopoverTrigger>
-                  <BlockTypePopover 
+                  <BlockTypePopover
                     onSelect={(type) => handleAddNestedBlock(index, type)}
                   />
                 </Popover>
@@ -1218,22 +1345,22 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       type,
       content: ''
     };
-    
+
     let newBlocks;
     if (index === -1) {
       newBlocks = [newBlock];
     } else {
       newBlocks = [
-      ...blocks.slice(0, index + 1),
-      newBlock,
-      ...blocks.slice(index + 1)
-    ];
+        ...blocks.slice(0, index + 1),
+        newBlock,
+        ...blocks.slice(index + 1)
+      ];
     }
-    
+
     setBlocks(newBlocks);
     setActiveInputIndex(index === -1 ? 0 : index + 1);
     setIsPopoverOpen(false);
-    
+
     if (onUpdatePage) {
       onUpdatePage({ ...page, blocks: newBlocks });
     }
@@ -1253,13 +1380,13 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       ...blockToDuplicate,
       id: `block-${Date.now()}`
     };
-    
+
     const newBlocks = [
       ...blocks.slice(0, index + 1),
       duplicatedBlock,
       ...blocks.slice(index + 1)
     ];
-    
+
     setBlocks(newBlocks);
     if (onUpdatePage) {
       onUpdatePage({ ...page, blocks: newBlocks });
@@ -1267,21 +1394,60 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
   };
 
   const handleDeleteBlock = (index: number) => {
-    const newBlocks = blocks.filter((_, i) => i !== index);
-    setBlocks(newBlocks);
-    if (onUpdatePage) {
-      onUpdatePage({ ...page, blocks: newBlocks });
-    }
+    setBlocks(prevBlocks => {
+      const newBlocks = prevBlocks.filter((_, i) => i !== index);
+      if (onUpdatePage) {
+        onUpdatePage({ ...page, blocks: newBlocks });
+      }
+      return newBlocks;
+    });
   };
 
   const handleConvertBlock = (index: number, newType: BlockType['type']) => {
-    const newBlocks = blocks.map((block, i) => 
-      i === index ? { ...block, type: newType } : block
-    );
-    setBlocks(newBlocks);
-    if (onUpdatePage) {
-      onUpdatePage({ ...page, blocks: newBlocks });
-    }
+    setBlocks(prevBlocks => {
+      // Safety check: if index is out of bounds, return previous state
+      if (index < 0 || index >= prevBlocks.length) {
+        console.warn("handleConvertBlock: Index out of bounds", index);
+        return prevBlocks;
+      }
+
+      const newBlocks = prevBlocks.map((block, i) => {
+        if (i !== index) return block;
+
+        // If converting from a complex block type to a text-based block, reset content
+        // Complex types that store JSON/structured data in content
+        const complexTypes = ['board', 'table', 'image', 'video', 'audio', 'file', 'code', 'embed', 'figma', 'pdf'];
+        const isComplexType = complexTypes.includes(block.type);
+
+        let newContent = block.content;
+        if (isComplexType && !complexTypes.includes(newType)) {
+          newContent = ''; // Reset content to empty string
+        }
+
+        // Initialize list items if converting to a list type
+        let newListItems = block.listItems;
+        if (['bullet-list', 'number-list', 'to-do', 'toggle'].includes(newType) && !newListItems) {
+          newListItems = [{
+            id: `item-${Date.now()}`,
+            content: newContent || '',
+            checked: newType === 'to-do' ? false : undefined
+          }];
+        }
+
+        return {
+          ...block,
+          type: newType,
+          content: newContent,
+          listItems: newListItems
+        };
+      });
+
+      if (onUpdatePage) {
+        onUpdatePage({ ...page, blocks: newBlocks });
+      }
+
+      return newBlocks;
+    });
   };
 
   const handleDragEnd = (result: any) => {
@@ -1319,71 +1485,71 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
 
   const BlockTypePopover = ({ onSelect }: { onSelect: (type: BlockType['type']) => void }) => {
     const [localSearchQuery, setLocalSearchQuery] = useState("");
-    
+
     return (
-      <PopoverContent 
-        align="start" 
+      <PopoverContent
+        align="start"
         className="w-64 p-2"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-2 py-1 border rounded-md">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
               placeholder="Type to filter..."
               value={localSearchQuery}
               onChange={(e) => setLocalSearchQuery(e.target.value)}
-            className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
+              className="flex-1 h-8 bg-transparent border-0 outline-none text-sm focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   e.preventDefault();
                 }
               }}
-          />
-        </div>
+            />
+          </div>
           <div className="space-y-4 max-h-[400px] overflow-y-auto">
             {blockCategories.map((category) => {
               const filteredBlocks = category.blocks.filter(block =>
                 block.label.toLowerCase().includes(localSearchQuery.toLowerCase())
               );
-              
+
               if (filteredBlocks.length === 0) return null;
-              
+
               return (
                 <div key={category.name} className="space-y-1">
                   <div className="text-sm font-medium text-muted-foreground px-2">
                     {category.name}
                   </div>
                   {filteredBlocks.map((block) => (
-            <button
+                    <button
                       key={block.type}
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
-              onClick={() => {
+                      className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent/5 rounded-sm"
+                      onClick={() => {
                         onSelect(block.type);
                         setLocalSearchQuery("");
-              }}
-            >
+                      }}
+                    >
                       <block.icon className="h-4 w-4" />
                       {block.label}
-            </button>
-          ))}
+                    </button>
+                  ))}
                 </div>
               );
             })}
-            {!blockCategories.some(category => 
-              category.blocks.some(block => 
+            {!blockCategories.some(category =>
+              category.blocks.some(block =>
                 block.label.toLowerCase().includes(localSearchQuery.toLowerCase())
               )
             ) && (
-            <div className="text-sm text-muted-foreground text-center py-2">
-              No blocks found
-            </div>
-          )}
+                <div className="text-sm text-muted-foreground text-center py-2">
+                  No blocks found
+                </div>
+              )}
+          </div>
         </div>
-      </div>
-    </PopoverContent>
-  );
+      </PopoverContent>
+    );
   };
 
   return (
@@ -1391,7 +1557,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="blocks">
           {(provided) => (
-            <div 
+            <div
               ref={provided.innerRef}
               {...provided.droppableProps}
               className="space-y-3"
@@ -1399,19 +1565,19 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
               {blocks.map((block, index) => (
                 <Draggable key={block.id} draggableId={block.id} index={index}>
                   {(provided) => (
-                    <div 
+                    <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       data-block-id={block.id}
                       className="relative group py-1"
                     >
-                      {renderBlock(block, index)}
+                      {renderBlock(block, index, false, provided.dragHandleProps)}
                     </div>
                   )}
                 </Draggable>
               ))}
               {provided.placeholder}
-              
+
               {/* Add Block Button */}
               {blocks.length > 0 && (
                 <div className="flex justify-start !mt-6 px-2 opacity-0 hover:opacity-100 transition-opacity">
@@ -1424,7 +1590,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         <span className="text-blue-500 text-sm font-medium">Add blocks</span>
                       </button>
                     </PopoverTrigger>
-                    <BlockTypePopover 
+                    <BlockTypePopover
                       onSelect={(type) => {
                         handleAddBlock(blocks.length - 1, type);
                       }}
@@ -1432,15 +1598,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                   </Popover>
                 </div>
               )}
-              
+
               {blocks.length === 0 && (
                 <div className="flex items-start gap-2 py-1 px-2 rounded-sm hover:bg-accent/5">
                   <div className="flex items-center h-[1.5em] mt-0.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                      <div className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
-                        <GripVertical className="h-5 w-5 text-muted-foreground/50" />
-                      </div>
+                        <div className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab">
+                          <GripVertical className="h-5 w-5 text-muted-foreground/50" />
+                        </div>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent sideOffset={2} align="start" className="w-[160px]">
                         <DropdownMenuSub>
@@ -1471,16 +1637,16 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                 const filteredBlocks = category.blocks.filter(block =>
                                   block.label.toLowerCase().includes(searchQuery.toLowerCase())
                                 );
-                                
+
                                 if (filteredBlocks.length === 0) return null;
-                                
+
                                 return (
                                   <div key={category.name}>
                                     <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                                       {category.name}
                                     </DropdownMenuItem>
                                     {filteredBlocks.map((blockType) => (
-                                      <DropdownMenuItem 
+                                      <DropdownMenuItem
                                         key={blockType.type}
                                         className="flex items-center gap-2 px-2"
                                         onClick={() => handleConvertBlock(-1, blockType.type)}
@@ -1493,15 +1659,15 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                                   </div>
                                 );
                               })}
-                              {!blockCategories.some(category => 
-                                category.blocks.some(block => 
+                              {!blockCategories.some(category =>
+                                category.blocks.some(block =>
                                   block.label.toLowerCase().includes(searchQuery.toLowerCase())
                                 )
                               ) && (
-                                <div className="text-sm text-muted-foreground text-center py-2">
-                                  No blocks found
-                                </div>
-                              )}
+                                  <div className="text-sm text-muted-foreground text-center py-2">
+                                    No blocks found
+                                  </div>
+                                )}
                             </div>
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
@@ -1520,18 +1686,18 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
-                          >
-                            <Plus className="h-5 w-5 text-muted-foreground" />
-                          </button>
-                        </PopoverTrigger>
-                        <BlockTypePopover 
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-pointer"
+                        >
+                          <Plus className="h-5 w-5 text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <BlockTypePopover
                         onSelect={(type) => handleAddBlock(-1, type)}
-                        />
-                      </Popover>
+                      />
+                    </Popover>
                   </div>
                   <textarea
                     placeholder="Type here..."

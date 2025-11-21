@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BlockType } from '@/types/block';
+import { BlockType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { 
-  ExternalLink, GripVertical, MoreHorizontal, ArrowUp, ArrowDown, 
-  Trash2, LayoutGrid, Search, Music, FileIcon, Image as ImageIcon, 
+import {
+  ExternalLink, GripVertical, MoreHorizontal, ArrowUp, ArrowDown,
+  Trash2, LayoutGrid, Search, Music, FileIcon, Image as ImageIcon,
   Video as VideoIcon, Maximize, X, Figma, FileDigit, FileText,
   Type, List, ListOrdered, CheckSquare, Quote, Table, Minus, Code,
   Layout, FormInput, ListTree, Upload, Link as LinkIcon
 } from 'lucide-react';
-import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
-  DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, 
-  DropdownMenuSubTrigger, DropdownMenuSubContent 
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub,
+  DropdownMenuSubTrigger, DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogClose, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -103,18 +103,18 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [embedError, setEmbedError] = useState<boolean>(false);
   const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
-  
+
   // Constants for embed sizing
   const MAX_WIDTH_PERCENTAGE = 100;
   const MIN_WIDTH_PERCENTAGE = 40;
   const DEFAULT_WIDTH_PERCENTAGE = 100;
-  
+
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(0);
   const parentWidthRef = useRef<number>(0);
-  
+
   // Update parent component when embed or caption changes
   useEffect(() => {
     onUpdate({
@@ -123,13 +123,13 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
       content: caption,
       width
     });
-    
+
     // Determine embed type based on URL
     if (embedUrl) {
       detectEmbedType(embedUrl);
     }
   }, [embedUrl, caption, width]);
-  
+
   // Detect the type of embed from the URL
   const detectEmbedType = (url: string) => {
     if (url.includes('spotify.com')) {
@@ -152,19 +152,19 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
       setEmbedType('generic');
     }
   };
-  
+
   // Handle link input change
   const handleLinkInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkInput(e.target.value);
   };
-  
+
   // Handle link submit
   const handleLinkSubmit = () => {
     if (!linkInput) return;
-    
+
     // Process the URL based on the service
     let processedUrl = linkInput;
-    
+
     // Spotify
     if (linkInput.includes('spotify.com')) {
       if (linkInput.includes('spotify.com/track/')) {
@@ -210,19 +210,19 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
         }
       }
     }
-    
+
     setEmbedUrl(processedUrl);
     detectEmbedType(processedUrl);
     setIsUploadDialogOpen(false);
   };
-  
+
   // Extract YouTube video ID from URL
   const getYouTubeVideoId = (url: string): string | null => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
-  
+
   // Handle caption toggle
   const handleCaptionToggle = () => {
     setShowCaption(!showCaption);
@@ -235,52 +235,52 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
       }, 0);
     }
   };
-  
+
   // Handle resize start
   const handleResizeStart = (e: React.MouseEvent, direction: 'left' | 'right') => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!containerRef.current || !containerRef.current.parentElement) return;
-    
+
     setIsResizing(true);
     startXRef.current = e.clientX;
     startWidthRef.current = containerRef.current.offsetWidth;
     parentWidthRef.current = containerRef.current.parentElement.offsetWidth;
-    
+
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!containerRef.current || !containerRef.current.parentElement) return;
-      
+
       const delta = moveEvent.clientX - startXRef.current;
-      
+
       // Calculate new width based on the delta (same formula for both sides)
       const deltaWidth = direction === 'right' ? delta : -delta;
       const newWidth = startWidthRef.current + deltaWidth * 2; // Multiply by 2 to expand equally from both sides
-      
+
       // Calculate width as percentage of parent, with min/max constraints
       const widthPercentage = Math.max(
-        MIN_WIDTH_PERCENTAGE, 
+        MIN_WIDTH_PERCENTAGE,
         Math.min(MAX_WIDTH_PERCENTAGE, (newWidth / parentWidthRef.current) * 100)
       );
-      
+
       setWidth(widthPercentage);
     };
-    
+
     const handleMouseUp = () => {
       setIsResizing(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-    
+
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
-  
+
   // Handle replace
   const handleReplace = () => {
     setIsUploadDialogOpen(true);
   };
-  
+
   // Get icon based on embed type
   const getEmbedIcon = () => {
     switch (embedType) {
@@ -303,7 +303,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
         return <ExternalLink className="h-8 w-8 text-gray-500" />;
     }
   };
-  
+
   // If no embed is set, show upload dialog
   if (!embedUrl) {
     return (
@@ -312,7 +312,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
           <div className="flex-shrink-0 flex items-center self-stretch opacity-0 group-hover:opacity-100 transition-opacity duration-100">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button 
+                <button
                   className="w-[40px] h-8 flex items-center justify-center hover:bg-accent/10 rounded-sm cursor-grab"
                 >
                   <GripVertical className="h-5 w-5 text-muted-foreground/50" />
@@ -324,56 +324,56 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                     <LayoutGrid className="h-4 w-4" />
                     Convert to
                   </DropdownMenuSubTrigger>
-                                  <DropdownMenuSubContent>
-                  <div className="flex items-center gap-2 px-2 py-1.5 border-b">
-                    <Search className="h-4 w-4 text-muted-foreground/70" />
-                    <input
-                      type="text"
-                      placeholder="Filter..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-                    {blockCategories.map((category) => {
-                      const filteredBlocks = category.blocks.filter(block =>
-                        block.label.toLowerCase().includes(searchQuery.toLowerCase())
-                      );
-                      
-                      if (filteredBlocks.length === 0) return null;
-                      
-                      return (
-                        <div key={category.name}>
-                          <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
-                            {category.name}
-                          </DropdownMenuItem>
-                          {filteredBlocks.map((blockType) => (
-                            <DropdownMenuItem 
-                              key={blockType.type}
-                              className="flex items-center gap-2 px-2"
-                              onClick={() => onConvert && onConvert(blockType.type as BlockType['type'])}
-                            >
-                              <blockType.icon className="h-4 w-4 shrink-0" />
-                              <span className="truncate">{blockType.label}</span>
+                  <DropdownMenuSubContent>
+                    <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                      <Search className="h-4 w-4 text-muted-foreground/70" />
+                      <input
+                        type="text"
+                        placeholder="Filter..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 h-5 bg-transparent border-0 outline-none text-sm focus:outline-none"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                      {blockCategories.map((category) => {
+                        const filteredBlocks = category.blocks.filter(block =>
+                          block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                        );
+
+                        if (filteredBlocks.length === 0) return null;
+
+                        return (
+                          <div key={category.name}>
+                            <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
+                              {category.name}
                             </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuSeparator className="mx-2" />
-                        </div>
-                      );
-                    })}
-                    {!blockCategories.some(category => 
-                      category.blocks.some(block => 
-                        block.label.toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                    ) && (
-                      <div className="text-sm text-muted-foreground text-center py-2">
-                        No blocks found
-                      </div>
-                    )}
-                  </div>
-                </DropdownMenuSubContent>
+                            {filteredBlocks.map((blockType) => (
+                              <DropdownMenuItem
+                                key={blockType.type}
+                                className="flex items-center gap-2 px-2"
+                                onClick={() => onConvert && onConvert(blockType.type as BlockType['type'])}
+                              >
+                                <blockType.icon className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{blockType.label}</span>
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator className="mx-2" />
+                          </div>
+                        );
+                      })}
+                      {!blockCategories.some(category =>
+                        category.blocks.some(block =>
+                          block.label.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                      ) && (
+                          <div className="text-sm text-muted-foreground text-center py-2">
+                            No blocks found
+                          </div>
+                        )}
+                    </div>
+                  </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 {onMoveUp && (
                   <DropdownMenuItem onClick={onMoveUp} className="flex items-center gap-2">
@@ -394,9 +394,9 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           <div className="flex-1">
-            <div 
+            <div
               className="w-full h-full flex flex-col items-center justify-center bg-gray-100 rounded-lg p-8"
               onClick={() => setIsUploadDialogOpen(true)}
             >
@@ -413,7 +413,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
             </div>
           </div>
         </div>
-        
+
         {/* Upload dialog */}
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogContent className="sm:max-w-md">
@@ -443,7 +443,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                         onChange={handleLinkInputChange}
                         className="border-border focus-visible:ring-primary"
                       />
-                      <Button 
+                      <Button
                         onClick={handleLinkSubmit}
                         disabled={!linkInput}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -498,16 +498,16 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                       const filteredBlocks = category.blocks.filter(block =>
                         block.label.toLowerCase().includes(searchQuery.toLowerCase())
                       );
-                      
+
                       if (filteredBlocks.length === 0) return null;
-                      
+
                       return (
                         <div key={category.name}>
                           <DropdownMenuItem disabled className="opacity-50 pointer-events-none px-2">
                             {category.name}
                           </DropdownMenuItem>
                           {filteredBlocks.map((blockType) => (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               key={blockType.type}
                               className="flex items-center gap-2 px-2"
                               onClick={() => onConvert && onConvert(blockType.type as BlockType['type'])}
@@ -520,15 +520,15 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                         </div>
                       );
                     })}
-                    {!blockCategories.some(category => 
-                      category.blocks.some(block => 
+                    {!blockCategories.some(category =>
+                      category.blocks.some(block =>
                         block.label.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                     ) && (
-                      <div className="text-sm text-muted-foreground text-center py-2">
-                        No blocks found
-                      </div>
-                    )}
+                        <div className="text-sm text-muted-foreground text-center py-2">
+                          No blocks found
+                        </div>
+                      )}
                   </div>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
@@ -551,43 +551,43 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
         {/* Main embed block content */}
         <div className="flex-1">
-          <div 
+          <div
             className="relative flex flex-col items-center"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <div 
+            <div
               ref={containerRef}
               className="relative overflow-hidden rounded-md"
               style={{ width: `${width}%`, maxWidth: "900px" }}
             >
               {/* Resize handles */}
-              <div 
+              <div
                 className={cn(
                   "absolute top-0 left-0 w-1 h-full cursor-ew-resize opacity-0 group-hover:opacity-100 hover:bg-blue-500 hover:opacity-100 z-10",
                   isResizing && "opacity-100 bg-blue-500"
                 )}
                 onMouseDown={(e) => handleResizeStart(e, 'left')}
               />
-              <div 
+              <div
                 className={cn(
                   "absolute top-0 right-0 w-1 h-full cursor-ew-resize opacity-0 group-hover:opacity-100 hover:bg-blue-500 hover:opacity-100 z-10",
                   isResizing && "opacity-100 bg-blue-500"
                 )}
                 onMouseDown={(e) => handleResizeStart(e, 'right')}
               />
-              
+
               {/* Embed content */}
               {showPlaceholder ? (
                 <div className="w-full aspect-video bg-gray-100 rounded-md flex flex-col items-center justify-center">
                   <ExternalLink className="h-16 w-16 text-gray-300 mb-2" />
                   <p className="text-sm text-gray-500">Embed could not be loaded</p>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="mt-2 text-blue-500"
                     onClick={() => window.open(embedUrl, '_blank')}
                   >
@@ -608,7 +608,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                   ></iframe>
                 </div>
               )}
-              
+
               {/* Hover actions */}
               <div
                 className={cn(
@@ -616,36 +616,36 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                   isHovered ? "opacity-100" : "opacity-0"
                 )}
               >
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
+                <Button
+                  variant="secondary"
+                  size="icon"
                   className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                   onClick={handleCaptionToggle}
                 >
                   <span className="text-xs font-medium">Aa</span>
                 </Button>
-                
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
+
+                <Button
+                  variant="secondary"
+                  size="icon"
                   className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                   onClick={() => setIsFullscreen(true)}
                 >
                   <Maximize className="h-4 w-4" />
                 </Button>
-                
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
+
+                <Button
+                  variant="secondary"
+                  size="icon"
                   className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                   onClick={() => window.open(embedUrl, '_blank')}
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>
-                
-                <Button 
-                  variant="secondary" 
-                  size="icon" 
+
+                <Button
+                  variant="secondary"
+                  size="icon"
                   className="h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
                   onClick={handleReplace}
                 >
@@ -653,7 +653,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                 </Button>
               </div>
             </div>
-            
+
             {/* Caption */}
             {showCaption && (
               <div className="mt-2 w-full" style={{ width: `${width}%`, maxWidth: "90%" }}>
@@ -669,7 +669,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Fullscreen dialog */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
         <DialogContent className="max-w-[90vw] w-full h-[90vh] flex items-center justify-center bg-transparent">
@@ -678,7 +678,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
               <X className="h-5 w-5" />
             </Button>
           </DialogClose>
-          
+
           <div className="w-full max-w-4xl h-full max-h-[80vh] bg-white rounded-lg overflow-hidden shadow-xl">
             <iframe
               src={embedUrl}
@@ -689,7 +689,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
               loading="lazy"
             ></iframe>
           </div>
-          
+
           {caption && (
             <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black/50 py-2">
               {caption}
@@ -697,7 +697,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Upload dialog for replacement */}
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -727,7 +727,7 @@ const EmbedBlock: React.FC<EmbedBlockProps> = ({
                       onChange={handleLinkInputChange}
                       className="border-border focus-visible:ring-primary"
                     />
-                    <Button 
+                    <Button
                       onClick={handleLinkSubmit}
                       disabled={!linkInput}
                       className="bg-primary hover:bg-primary/90 text-primary-foreground"

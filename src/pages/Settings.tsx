@@ -97,7 +97,7 @@ const Settings = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  
+
   // Add state for users
   const [users, setUsers] = useState<User[]>([
     { id: "user-1", name: "Mavis Barry", email: "abdullah.maqsood1100@gmail.com", role: "Owner", joinedDate: "5-may-2025" },
@@ -105,12 +105,12 @@ const Settings = () => {
     { id: "user-3", name: "Sarah Wilson", email: "sarah@email.com", role: "Member", joinedDate: "6-may-2025" },
     { id: "user-4", name: "Michael Chen", email: "michael@email.com", role: "Developer", joinedDate: "6-may-2025" }
   ]);
-  
+
   // Add state for user management dialogs
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
+
   // Add state for role editing
   const [editRoleDialogOpen, setEditRoleDialogOpen] = useState(false);
   const [deleteRoleDialogOpen, setDeleteRoleDialogOpen] = useState(false);
@@ -120,14 +120,14 @@ const Settings = () => {
     { id: "member", name: "Member", description: "Limited Access", memberCount: 2, createdDate: "5-may-2025" },
     { id: "owner", name: "Owner", description: "Full Access", memberCount: 1, createdDate: "5-may-2025" }
   ]);
-  
+
   // Add state for team management
   const [teams, setTeams] = useState<Team[]>([
-    { 
-      id: "team-1", 
-      name: "Design Team", 
-      description: "UI/UX Design Team", 
-      memberCount: 3, 
+    {
+      id: "team-1",
+      name: "Design Team",
+      description: "UI/UX Design Team",
+      memberCount: 3,
       createdDate: "5-may-2025",
       members: [
         { id: "user-1", name: "Mavis Barry", email: "abdullah.maqsood1100@gmail.com", role: "Team Lead", joinedDate: "5-may-2025" },
@@ -135,11 +135,11 @@ const Settings = () => {
         { id: "user-3", name: "Sarah Wilson", email: "sarah@email.com", role: "UI Designer", joinedDate: "6-may-2025" }
       ]
     },
-    { 
-      id: "team-2", 
-      name: "Development Team", 
-      description: "Frontend & Backend Development", 
-      memberCount: 2, 
+    {
+      id: "team-2",
+      name: "Development Team",
+      description: "Frontend & Backend Development",
+      memberCount: 2,
       createdDate: "6-may-2025",
       members: [
         { id: "user-1", name: "Mavis Barry", email: "abdullah.maqsood1100@gmail.com", role: "Developer", joinedDate: "5-may-2025" },
@@ -153,14 +153,14 @@ const Settings = () => {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [newTeamMemberDialogOpen, setNewTeamMemberDialogOpen] = useState(false);
   const [selectedTeamForMember, setSelectedTeamForMember] = useState<string | null>(null);
-  
+
   // Store current settings and pending changes
   const [currentSettings, setCurrentSettings] = useState<UserSettings>({
     fullName: "Abdullah Maqsood",
     password: "",
     theme: theme as 'light' | 'dark',
   });
-  
+
   const [pendingSettings, setPendingSettings] = useState<UserSettings>({
     fullName: "Abdullah Maqsood",
     password: "",
@@ -182,7 +182,7 @@ const Settings = () => {
 
   // Function to get color based on role
   const getRoleColor = (role: string) => {
-    switch(role.toLowerCase()) {
+    switch (role.toLowerCase()) {
       case 'owner':
         return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
       case 'admin':
@@ -210,11 +210,11 @@ const Settings = () => {
       // For testing purposes, initialize with dummy data
       if (dummyOrganizations && dummyOrganizations.length > 0) {
         setOrganizations(dummyOrganizations);
-        
+
         // Set the default organization as current
         const defaultOrg = dummyOrganizations.find(org => org.isDefault) || dummyOrganizations[0];
         setCurrentOrganization(defaultOrg);
-        
+
         // Filter projects for the default organization
         if (dummyProjects && dummyProjects.length > 0) {
           const orgProjects = dummyProjects.filter(
@@ -242,11 +242,11 @@ const Settings = () => {
 
   // Check for unsaved changes
   useEffect(() => {
-    const hasChanges = 
+    const hasChanges =
       pendingSettings.fullName !== currentSettings.fullName ||
       pendingSettings.password !== currentSettings.password ||
       pendingSettings.theme !== currentSettings.theme;
-    
+
     setHasUnsavedChanges(hasChanges);
   }, [pendingSettings, currentSettings]);
 
@@ -261,7 +261,7 @@ const Settings = () => {
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -285,14 +285,14 @@ const Settings = () => {
   const saveChanges = () => {
     // Apply all pending changes
     setCurrentSettings(pendingSettings);
-    
+
     // Apply theme change
     if (currentSettings.theme !== pendingSettings.theme) {
       setTheme(pendingSettings.theme);
     }
-    
+
     // Here you would typically send these changes to your backend
-    
+
     // Show success toast
     toast({
       title: "Settings saved",
@@ -367,18 +367,18 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentRole) return;
-    
+
     // Update the role in the roles array
-    setRoles(prev => prev.map(role => 
+    setRoles(prev => prev.map(role =>
       role.id === currentRole.id ? currentRole : role
     ));
-    
+
     // Here you would typically update the role in your backend
     toast({
       title: "Role updated",
       description: `${currentRole.name} role has been updated successfully.`,
     });
-    
+
     // Close the dialog and reset the current role
     setEditRoleDialogOpen(false);
     setCurrentRole(null);
@@ -390,16 +390,16 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentRole) return;
-    
+
     // Remove the role from the roles array
     setRoles(prev => prev.filter(role => role.id !== currentRole.id));
-    
+
     // Here you would typically delete the role from your backend
     toast({
       title: "Role deleted",
       description: `${currentRole.name} role has been deleted successfully.`,
     });
-    
+
     // Close the dialog and reset the current role
     setDeleteRoleDialogOpen(false);
     setCurrentRole(null);
@@ -429,17 +429,17 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentTeam) return;
-    
+
     // Update the team in the teams array
-    setTeams(prev => prev.map(team => 
+    setTeams(prev => prev.map(team =>
       team.id === currentTeam.id ? currentTeam : team
     ));
-    
+
     toast({
       title: "Team updated",
       description: `${currentTeam.name} team has been updated successfully.`,
     });
-    
+
     // Close the dialog and reset the current team
     setEditTeamDialogOpen(false);
     setCurrentTeam(null);
@@ -451,15 +451,15 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentTeam) return;
-    
+
     // Remove the team from the teams array
     setTeams(prev => prev.filter(team => team.id !== currentTeam.id));
-    
+
     toast({
       title: "Team deleted",
       description: `${currentTeam.name} team has been deleted successfully.`,
     });
-    
+
     // Close the dialog and reset the current team
     setDeleteTeamDialogOpen(false);
     setCurrentTeam(null);
@@ -471,7 +471,7 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentTeam) return;
-    
+
     const newTeam: Team = {
       ...currentTeam,
       id: `team-${teams.length + 1}`,
@@ -479,14 +479,14 @@ const Settings = () => {
       createdDate: new Date().toLocaleDateString(),
       members: []
     };
-    
+
     setTeams(prev => [...prev, newTeam]);
-    
+
     toast({
       title: "Team created",
       description: `${newTeam.name} team has been created successfully.`,
     });
-    
+
     // Close the dialog and reset the current team
     setCreateTeamDialogOpen(false);
     setCurrentTeam(null);
@@ -503,7 +503,7 @@ const Settings = () => {
 
   const handleSaveNewMember = (member: TeamMember) => {
     if (!selectedTeamForMember) return;
-    
+
     setTeams(prev => prev.map(team => {
       if (team.id === selectedTeamForMember) {
         return {
@@ -514,12 +514,12 @@ const Settings = () => {
       }
       return team;
     }));
-    
+
     toast({
       title: "Member added",
       description: `${member.name} has been added to the team successfully.`,
     });
-    
+
     // Close the dialog and reset the selected team
     setNewTeamMemberDialogOpen(false);
     setSelectedTeamForMember(null);
@@ -535,7 +535,7 @@ const Settings = () => {
 
   const handleSendInvitation = (e: FormEvent) => {
     e.preventDefault();
-    
+
     // Validate email
     if (!inviteFormData.email || !inviteFormData.email.includes('@')) {
       toast({
@@ -545,24 +545,24 @@ const Settings = () => {
       });
       return;
     }
-    
+
     setIsInviting(true);
-    
+
     // Simulate API call to send invitation
     setTimeout(() => {
       // In a real app, you would make an API call to send the invitation
-      
+
       // Add the invited user to the members list with "Pending" status
       // This would typically be handled by your backend
-      
+
       setIsInviting(false);
       setInvitationSent(true);
-      
+
       toast({
         title: "Invitation sent",
         description: `An invitation has been sent to ${inviteFormData.email}.`,
       });
-      
+
       // Reset form after 2 seconds and close dialog
       setTimeout(() => {
         setInviteFormData({
@@ -615,18 +615,18 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentUser) return;
-    
+
     // Update the user in the users array
-    setUsers(prev => prev.map(user => 
+    setUsers(prev => prev.map(user =>
       user.id === currentUser.id ? currentUser : user
     ));
-    
+
     // Here you would typically update the user in your backend
     toast({
       title: "User updated",
       description: `${currentUser.name}'s information has been updated successfully.`,
     });
-    
+
     // Close the dialog and reset the current user
     setEditUserDialogOpen(false);
     setCurrentUser(null);
@@ -638,16 +638,16 @@ const Settings = () => {
       e.stopPropagation();
     }
     if (!currentUser) return;
-    
+
     // Remove the user from the users array
     setUsers(prev => prev.filter(user => user.id !== currentUser.id));
-    
+
     // Here you would typically delete the user from your backend
     toast({
       title: "User removed",
       description: `${currentUser.name} has been removed from the workspace.`,
     });
-    
+
     // Close the dialog and reset the current user
     setDeleteUserDialogOpen(false);
     setCurrentUser(null);
@@ -668,21 +668,21 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar 
+      <Sidebar
         projects={projects}
-        onCreateProject={() => {}}
+        onCreateProject={() => { }}
         onProjectSelect={handleProjectSelect}
-        onCreatePage={() => {}}
-        onCreateChat={() => {}}
-        onRenameProject={() => {}}
-        onDuplicateProject={() => {}}
-        onDeleteProject={() => {}}
+        onCreatePage={() => { }}
+        onCreateChat={() => { }}
+        onRenameProject={() => { }}
+        onDuplicateProject={() => { }}
+        onDeleteProject={() => { }}
         currentOrganization={currentOrganization || undefined}
         organizations={organizations}
-        onOrganizationChange={() => {}}
-        onCreateOrganization={() => {}}
-        onUpdateOrganization={() => {}}
-        onDeleteOrganization={() => {}}
+        onOrganizationChange={() => { }}
+        onCreateOrganization={() => { }}
+        onUpdateOrganization={() => { }}
+        onDeleteOrganization={() => { }}
         isAdmin={true}
         onNavigateHome={navigateToHome}
       />
@@ -692,9 +692,9 @@ const Settings = () => {
 
         {/* Navigation breadcrumb */}
         <div className="px-6 py-2 border-b flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-7 px-2"
             onClick={() => handleNavigation("/")}
           >
@@ -704,9 +704,9 @@ const Settings = () => {
           <span className="text-muted-foreground text-sm">Settings</span>
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
           <span className="text-muted-foreground text-sm">
-            {activeTab === "general" ? "General" : 
-             activeTab === "members" ? "Members" : 
-             activeTab === "teams" ? "Teams" : "Roles & Permission"}
+            {activeTab === "general" ? "General" :
+              activeTab === "members" ? "Members" :
+                activeTab === "teams" ? "Teams" : "Roles & Permission"}
           </span>
         </div>
 
@@ -714,24 +714,24 @@ const Settings = () => {
           {/* Left sidebar */}
           <div className="w-[240px] border-r bg-gray-50/50 dark:bg-gray-800/50">
             <h2 className="text-xl font-semibold p-4 pb-2">Settings</h2>
-            
+
             <div className="flex flex-col">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "general" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
                 onClick={() => setActiveTab("general")}
               >
                 <User className="h-4 w-4 mr-2" />
                 General
               </Button>
-              
+
               {/* Team & Roles Section Heading */}
               <div className="mt-4 px-4 py-2">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Team & roles</h3>
               </div>
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "members" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("members");
@@ -741,9 +741,9 @@ const Settings = () => {
                 <Users className="h-4 w-4 mr-2" />
                 Members
               </Button>
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "teams" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("teams");
@@ -753,9 +753,9 @@ const Settings = () => {
                 <UserPlus className="h-4 w-4 mr-2" />
                 Teams
               </Button>
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 className={`w-full justify-start rounded-none text-left px-4 py-2 h-10 ${activeTab === "roles" ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 font-medium" : ""}`}
                 onClick={() => {
                   setActiveTab("roles");
@@ -774,7 +774,7 @@ const Settings = () => {
               <div className="space-y-8">
                 <div>
                   <h3 className="text-lg font-medium mb-6">Profile</h3>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Avatar</label>
@@ -783,44 +783,44 @@ const Settings = () => {
                         <AvatarFallback>User</AvatarFallback>
                       </Avatar>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Full Name</label>
-                      <Input 
+                      <Input
                         name="fullName"
-                        value={pendingSettings.fullName} 
+                        value={pendingSettings.fullName}
                         onChange={handleInputChange}
-                        className="max-w-md" 
+                        className="max-w-md"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Email</label>
                       <Input defaultValue="abdullah.maqsood1100@gmail.com" className="max-w-md" readOnly />
                     </div>
-                    
+
                     <div>
                       <label className="text-sm font-medium mb-2 block">Password</label>
-                      <Input 
+                      <Input
                         name="password"
-                        type="password" 
-                        placeholder="Enter New Password" 
+                        type="password"
+                        placeholder="Enter New Password"
                         value={pendingSettings.password}
                         onChange={handleInputChange}
-                        className="max-w-md" 
+                        className="max-w-md"
                       />
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-medium mb-6">Appearance</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium mb-3 block">Theme</label>
                       <div className="flex gap-3">
-                        <Card 
+                        <Card
                           className={`w-[140px] cursor-pointer transition-all ${pendingSettings.theme === "light" ? "ring-2 ring-blue-500" : "hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                           onClick={() => handleThemeSelection("light")}
                         >
@@ -832,7 +832,7 @@ const Settings = () => {
                           </CardContent>
                         </Card>
 
-                        <Card 
+                        <Card
                           className={`w-[140px] cursor-pointer transition-all ${pendingSettings.theme === "dark" ? "ring-2 ring-blue-500" : "hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                           onClick={() => handleThemeSelection("dark")}
                         >
@@ -856,16 +856,16 @@ const Settings = () => {
                   <h3 className="text-lg font-medium">Members</h3>
                   <p className="text-sm text-muted-foreground">Manage members, or invite new users</p>
                 </div>
-                
+
                 <div>
-                  <Button 
+                  <Button
                     className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => setInviteMemberDialogOpen(true)}
                   >
                     <span className="mr-1">+</span> Invite Member
                   </Button>
                 </div>
-                
+
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
                   {/* Table Header */}
                   <div className="grid grid-cols-[1fr,120px,100px] px-6 py-4 bg-gray-50 dark:bg-gray-800/80 text-sm font-medium border-b">
@@ -873,12 +873,12 @@ const Settings = () => {
                     <div>Joined</div>
                     <div className="text-right">Actions</div>
                   </div>
-                  
+
                   {/* Table Body */}
                   <div>
                     {users.map((user, index) => (
-                      <div 
-                        key={user.id} 
+                      <div
+                        key={user.id}
                         className={`grid grid-cols-[1fr,120px,100px] px-6 py-4 items-center transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== users.length - 1 ? 'border-b' : ''}`}
                       >
                         <div className="flex items-center gap-3">
@@ -905,7 +905,7 @@ const Settings = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   handleEditUser(user, e);
                                   setDropdownOpen(null);
@@ -916,7 +916,7 @@ const Settings = () => {
                                 Change Role
                               </DropdownMenuItem>
                               {user.role !== "Owner" && (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={(e) => {
                                     handleDeleteUser(user, e);
                                     setDropdownOpen(null);
@@ -943,9 +943,9 @@ const Settings = () => {
                   <h3 className="text-lg font-medium">Teams</h3>
                   <p className="text-sm text-muted-foreground">Create and manage teams to organize your workspace members</p>
                 </div>
-                
+
                 <div>
-                  <Button 
+                  <Button
                     className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => {
                       setCurrentTeam({
@@ -962,7 +962,7 @@ const Settings = () => {
                     <span className="mr-1">+</span> Create Team
                   </Button>
                 </div>
-                
+
                 {teams.length > 0 ? (
                   <div className="space-y-5">
                     {teams.map(team => (
@@ -978,8 +978,8 @@ const Settings = () => {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={(e) => handleAddMemberToTeam(team.id, e)}
                               className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
@@ -994,7 +994,7 @@ const Settings = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={(e) => {
                                     handleEditTeam(team, e);
                                     setDropdownOpen(null);
@@ -1004,7 +1004,7 @@ const Settings = () => {
                                   <Pencil className="h-4 w-4" />
                                   Edit Team
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={(e) => {
                                     handleDeleteTeam(team, e);
                                     setDropdownOpen(null);
@@ -1018,12 +1018,12 @@ const Settings = () => {
                             </DropdownMenu>
                           </div>
                         </div>
-                        
+
                         {/* Team Members List */}
                         <div>
                           {team.members.map((member, index) => (
-                            <div 
-                              key={`${team.id}-${member.id}`} 
+                            <div
+                              key={`${team.id}-${member.id}`}
                               className={`p-4 flex items-center justify-between transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== team.members.length - 1 ? 'border-b' : ''}`}
                             >
                               <div className="flex items-center gap-3">
@@ -1050,7 +1050,7 @@ const Settings = () => {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="w-48">
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                       onClick={(e) => {
                                         // Handle edit member action
                                         setDropdownOpen(null);
@@ -1060,7 +1060,7 @@ const Settings = () => {
                                       <Pencil className="h-4 w-4" />
                                       Edit Member
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                       onClick={(e) => {
                                         // Handle remove member action
                                         setDropdownOpen(null);
@@ -1088,7 +1088,7 @@ const Settings = () => {
                     </div>
                     <h4 className="font-medium mb-2 text-lg">No teams created yet</h4>
                     <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">Create your first team to organize your workspace members and collaborate more effectively</p>
-                    <Button 
+                    <Button
                       onClick={() => {
                         setCurrentTeam({
                           id: '',
@@ -1115,16 +1115,16 @@ const Settings = () => {
                   <h3 className="text-lg font-medium">Roles & Permissions</h3>
                   <p className="text-sm text-muted-foreground">Create custom roles to control what each member can access and manage in your workspace.</p>
                 </div>
-                
+
                 <div>
-                  <Button 
+                  <Button
                     className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={(e) => handleCreateRole(e)}
                   >
                     <span className="mr-1">+</span> Create Role
                   </Button>
                 </div>
-                
+
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
                   {/* Table Header */}
                   <div className="grid grid-cols-[1fr,100px,100px,80px] px-6 py-4 bg-gray-50 dark:bg-gray-800/80 text-sm font-medium border-b">
@@ -1133,12 +1133,12 @@ const Settings = () => {
                     <div>Created</div>
                     <div className="text-right">Actions</div>
                   </div>
-                  
+
                   {/* Table Body */}
                   <div>
                     {roles.map((role, index) => (
-                      <div 
-                        key={role.id} 
+                      <div
+                        key={role.id}
                         className={`grid grid-cols-[1fr,100px,100px,80px] px-6 py-4 items-center transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/30 ${index !== roles.length - 1 ? 'border-b' : ''}`}
                       >
                         <div className="flex items-center gap-3">
@@ -1160,7 +1160,7 @@ const Settings = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   handleEditRole(role, e);
                                   setDropdownOpen(null);
@@ -1170,7 +1170,7 @@ const Settings = () => {
                                 <Pencil className="h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   handleDeleteRole(role, e);
                                   setDropdownOpen(null);
@@ -1191,10 +1191,10 @@ const Settings = () => {
             )}
           </div>
         </div>
-        
+
         {/* Footer with save button */}
         <div className="border-t py-3 px-4 flex justify-end mt-auto">
-          <Button 
+          <Button
             className="bg-blue-500 text-white hover:bg-blue-600"
             onClick={saveChanges}
           >
@@ -1239,7 +1239,7 @@ const Settings = () => {
               <Input
                 id="role-name"
                 value={currentRole?.name || ""}
-                onChange={(e) => setCurrentRole(prev => prev ? {...prev, name: e.target.value} : null)}
+                onChange={(e) => setCurrentRole(prev => prev ? { ...prev, name: e.target.value } : null)}
                 className="col-span-3"
               />
             </div>
@@ -1250,7 +1250,7 @@ const Settings = () => {
               <Input
                 id="role-description"
                 value={currentRole?.description || ""}
-                onChange={(e) => setCurrentRole(prev => prev ? {...prev, description: e.target.value} : null)}
+                onChange={(e) => setCurrentRole(prev => prev ? { ...prev, description: e.target.value } : null)}
                 className="col-span-3"
               />
             </div>
@@ -1314,7 +1314,7 @@ const Settings = () => {
               <Input
                 id="team-name"
                 value={currentTeam?.name || ""}
-                onChange={(e) => setCurrentTeam(prev => prev ? {...prev, name: e.target.value} : null)}
+                onChange={(e) => setCurrentTeam(prev => prev ? { ...prev, name: e.target.value } : null)}
                 className="col-span-3"
                 placeholder="e.g. Design Team"
               />
@@ -1326,7 +1326,7 @@ const Settings = () => {
               <Input
                 id="team-description"
                 value={currentTeam?.description || ""}
-                onChange={(e) => setCurrentTeam(prev => prev ? {...prev, description: e.target.value} : null)}
+                onChange={(e) => setCurrentTeam(prev => prev ? { ...prev, description: e.target.value } : null)}
                 className="col-span-3"
                 placeholder="e.g. Team responsible for UI/UX design"
               />
@@ -1364,7 +1364,7 @@ const Settings = () => {
               <Input
                 id="edit-team-name"
                 value={currentTeam?.name || ""}
-                onChange={(e) => setCurrentTeam(prev => prev ? {...prev, name: e.target.value} : null)}
+                onChange={(e) => setCurrentTeam(prev => prev ? { ...prev, name: e.target.value } : null)}
                 className="col-span-3"
               />
             </div>
@@ -1375,7 +1375,7 @@ const Settings = () => {
               <Input
                 id="edit-team-description"
                 value={currentTeam?.description || ""}
-                onChange={(e) => setCurrentTeam(prev => prev ? {...prev, description: e.target.value} : null)}
+                onChange={(e) => setCurrentTeam(prev => prev ? { ...prev, description: e.target.value } : null)}
                 className="col-span-3"
               />
             </div>
@@ -1456,7 +1456,7 @@ const Settings = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <Button 
+                      <Button
                         size="sm"
                         className="bg-blue-500 text-white hover:bg-blue-600"
                         onClick={() => {
@@ -1485,7 +1485,7 @@ const Settings = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <Button 
+                      <Button
                         size="sm"
                         className="bg-blue-500 text-white hover:bg-blue-600"
                         onClick={() => {
@@ -1541,7 +1541,7 @@ const Settings = () => {
                   </div>
                 </div>
                 <div className="flex justify-end">
-                  <Button 
+                  <Button
                     className="bg-blue-500 text-white hover:bg-blue-600"
                     onClick={() => {
                       // In a real app, you would validate and get values from form inputs
@@ -1583,7 +1583,7 @@ const Settings = () => {
               Send an invitation to join your organization.
             </DialogDescription>
           </DialogHeader>
-          
+
           {invitationSent ? (
             <div className="py-6 flex flex-col items-center justify-center text-center">
               <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
@@ -1612,7 +1612,7 @@ const Settings = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="invite-role" className="text-right">
                     Role
@@ -1631,7 +1631,7 @@ const Settings = () => {
                     <option value="Developer">Developer</option>
                   </select>
                 </div>
-                
+
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="invite-message" className="text-right pt-2">
                     Message
@@ -1646,11 +1646,11 @@ const Settings = () => {
                   />
                 </div>
               </div>
-              
+
               <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setInviteMemberDialogOpen(false);
                     setInviteFormData({
@@ -1664,8 +1664,8 @@ const Settings = () => {
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isInviting}
                   className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
                 >
@@ -1720,7 +1720,7 @@ const Settings = () => {
               <select
                 id="user-role"
                 value={currentUser?.role || ""}
-                onChange={(e) => setCurrentUser(prev => prev ? {...prev, role: e.target.value} : null)}
+                onChange={(e) => setCurrentUser(prev => prev ? { ...prev, role: e.target.value } : null)}
                 className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {roles.map(role => (
