@@ -1345,31 +1345,21 @@ const TaskDetailDialog = ({
     >
       <DialogPortal>
         <DialogOverlay className="fixed inset-0 z-50 bg-black/80" />
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={onClose}
+        >
           <div
             className="w-[80vw] h-[85vh] max-w-4xl max-h-[850px] bg-white rounded-lg shadow-lg flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing
           >
             {/* Action buttons - top right */}
             <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-              {/* Delete button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 rounded-full hover:bg-red-100 text-red-600"
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete this task?")) {
-                    onDelete(editedTask.id);
-                  }
-                }}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
               {/* Close button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                className="h-8 w-8 p-0 rounded-full bg-white/80 backdrop-blur-sm hover:bg-gray-100 shadow-sm border border-gray-100"
                 onClick={onClose}
               >
                 <X className="h-4 w-4" />
@@ -1387,10 +1377,10 @@ const TaskDetailDialog = ({
                   }
                 >
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                    <Button variant="secondary" className="bg-background/80 hover:bg-background" onClick={handleCoverAdd}>
+                    <Button variant="secondary" size="sm" className="bg-background/80 hover:bg-background" onClick={handleCoverAdd}>
                       Change Cover
                     </Button>
-                    <Button variant="secondary" className="bg-background/80 hover:bg-background" onClick={handleCoverRemove}>
+                    <Button variant="secondary" size="sm" className="bg-background/80 hover:bg-background" onClick={handleCoverRemove}>
                       Remove Cover
                     </Button>
                   </div>
@@ -1405,7 +1395,7 @@ const TaskDetailDialog = ({
                     <Button
                       variant="ghost"
                       size="lg"
-                      className="h-16 w-16 text-2xl"
+                      className="h-16 w-16 text-2xl p-0 rounded-xl hover:bg-gray-100"
                       onClick={handleIconAdd}
                     >
                       {editedTask.icon}
@@ -1414,7 +1404,7 @@ const TaskDetailDialog = ({
                     <Button
                       variant="ghost"
                       size="lg"
-                      className="h-16 w-16"
+                      className="h-16 w-16 p-0 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                       onClick={handleIconAdd}
                     >
                       <Plus className="h-8 w-8 text-muted-foreground" />
@@ -1424,40 +1414,41 @@ const TaskDetailDialog = ({
 
                 {/* Title and actions */}
                 <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
                     <input
                       type="text"
                       value={editedTask.title}
                       onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
                       placeholder="Task Name"
-                      className="text-3xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0"
+                      className="text-3xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0 placeholder:text-gray-300"
                     />
 
                     {/* Action Buttons - Right of title */}
-                    <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                      <Button variant="outline" size="sm" onClick={handleIconAdd}>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={handleIconAdd}>
                         {!editedTask.icon ? "Add Icon" : "Change Icon"}
                       </Button>
-                      <Button variant="outline" size="sm" onClick={handleCoverAdd}>
+                      <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={handleCoverAdd}>
                         {!editedTask.coverImage ? "Add Cover" : "Change Cover"}
                       </Button>
                       {!showDescription && (
-                        <Button variant="outline" size="sm" onClick={handleDescriptionAdd}>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={handleDescriptionAdd}>
                           Add Description
                         </Button>
                       )}
+                      <div className="w-px h-4 bg-gray-200 mx-1"></div>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
                         onClick={() => {
                           if (confirm('Are you sure you want to delete this task?')) {
                             onDelete(editedTask.id);
                           }
                         }}
                       >
-                        <Trash className="h-4 w-4 mr-2" />
-                        Delete Task
+                        <Trash className="h-3.5 w-3.5 mr-1.5" />
+                        Delete
                       </Button>
                     </div>
                   </div>
@@ -1876,7 +1867,7 @@ const TaskDetailDialog = ({
 };
 
 // Add a function to create a new board block
-const createNewBoardBlock = () => {
+export const createNewBoardBlock = () => {
   const defaultData = getDefaultBoardData();
   return {
     id: `board-${Date.now()}`,
@@ -2550,8 +2541,9 @@ const BoardBlock = ({
                 {/* Add Column Button - Positioned to the right of columns */}
                 <div className="flex items-center">
                   <Button
+                    type="button"
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-blue-500 hover:bg-primary/90 text-white"
+                    className="h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={handleAddColumn}
                   >
                     <Plus className="h-4 w-4" />
