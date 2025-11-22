@@ -2140,15 +2140,8 @@ const BoardBlock = ({
       onUpdate(updatedBlock);
     }
 
-    // Force a re-render by setting a timeout
-    setTimeout(() => {
-      console.log("Re-rendering after task creation");
-      const forcedUpdate = { ...newBoardData };
-      setBoardData(forcedUpdate);
-
-      // Don't automatically open the task detail dialog
-      // User can click on the task to open it manually
-    }, 50);
+    // Don't automatically open the task detail dialog
+    // User can click on the task to open it manually
   };
 
   // Handle task click
@@ -2250,12 +2243,7 @@ const BoardBlock = ({
       setSelectedTask({ ...updatedTask });
     }
 
-    // Force a re-render after a short delay
-    setTimeout(() => {
-      console.log("Re-rendering after task update");
-      const forcedUpdate = JSON.parse(JSON.stringify(newBoardData));
-      setBoardData(forcedUpdate);
-    }, 50);
+
   };
 
   // Handle task deletion
@@ -2317,12 +2305,7 @@ const BoardBlock = ({
   const handleCloseTaskDetail = () => {
     console.log("Closing task detail dialog");
 
-    // Force a re-render of the board after closing
-    setTimeout(() => {
-      console.log("Re-rendering after dialog close");
-      const forcedUpdate = JSON.parse(JSON.stringify(boardData));
-      setBoardData(forcedUpdate);
-    }, 100);
+
 
     // Close the dialog and clear selection
     setIsTaskDetailOpen(false);
