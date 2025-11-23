@@ -67,7 +67,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Textarea } from "@/components/ui/textarea";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { IconPicker } from './IconPicker';
+import { IconPicker, getIcon } from './IconPicker';
 import { EmojiPicker } from './EmojiPicker';
 
 // Icon Picker Modal Component
@@ -393,7 +393,12 @@ const TaskCard = ({ task, onClick, onDelete }: { task: Task; onClick: () => void
 
       <div className="p-2">
         {task.icon && (
-          <div className="text-lg mb-2">{task.icon}</div>
+          <div className="text-lg mb-2">
+            {(() => {
+              const IconComponent = getIcon(task.icon);
+              return IconComponent ? <IconComponent className="h-5 w-5 text-primary" /> : task.icon;
+            })()}
+          </div>
         )}
 
         <h3 className="font-medium text-sm mb-1">{task.title || "Untitled Task"}</h3>
@@ -692,7 +697,14 @@ const BoardTableView = ({
             >
               <td className="p-3 text-sm" onClick={() => onTaskClick(task)}>
                 <div className="flex items-center gap-2">
-                  {task.icon && <span>{task.icon}</span>}
+                  {task.icon && (
+                    <span>
+                      {(() => {
+                        const IconComponent = getIcon(task.icon);
+                        return IconComponent ? <IconComponent className="h-4 w-4 text-primary" /> : task.icon;
+                      })()}
+                    </span>
+                  )}
                   {task.title}
                 </div>
               </td>
@@ -1395,19 +1407,22 @@ const TaskDetailDialog = ({
                     <Button
                       variant="ghost"
                       size="lg"
-                      className="h-16 w-16 text-2xl p-0 rounded-xl hover:bg-gray-100"
+                      className="h-24 w-24 text-5xl p-0 rounded-xl hover:bg-gray-100"
                       onClick={handleIconAdd}
                     >
-                      {editedTask.icon}
+                      {(() => {
+                        const IconComponent = getIcon(editedTask.icon);
+                        return IconComponent ? <IconComponent className="!h-14 !w-14 text-primary" /> : editedTask.icon;
+                      })()}
                     </Button>
                   ) : (
                     <Button
                       variant="ghost"
                       size="lg"
-                      className="h-16 w-16 p-0 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      className="h-24 w-24 p-0 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                       onClick={handleIconAdd}
                     >
-                      <Plus className="h-8 w-8 text-muted-foreground" />
+                      <Plus className="h-10 w-10 text-muted-foreground" />
                     </Button>
                   )}
                 </div>

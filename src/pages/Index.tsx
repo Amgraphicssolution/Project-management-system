@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from '@/components/ui/use-toast';
 import IconPickerModal from '@/components/IconPickerModal';
+import { getIcon } from '@/components/IconPicker';
 import CoverPickerModal from '@/components/CoverPickerModal';
 import PageEditor from '@/components/PageEditor';
 import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
@@ -49,7 +50,7 @@ const ProjectView = ({
   currentOrganization?: OrganizationType;
   organizations?: OrganizationType[];
   onOrganizationChange?: (organization: OrganizationType) => void;
-  onCreateOrganization?: () => void;
+  onCreateOrganization?: (name: string, image?: string) => void;
   onUpdateOrganization?: (id: string, name: string, image?: string) => void;
   onDeleteOrganization?: (id: string) => void;
   onNavigateHome: () => void;
@@ -277,7 +278,10 @@ const ProjectView = ({
                     className="w-24 h-24 flex items-center justify-center cursor-pointer text-5xl relative"
                     onClick={() => setIsIconPickerOpen(true)}
                   >
-                    {project.icon}
+                    {(() => {
+                      const IconComponent = getIcon(project.icon);
+                      return IconComponent ? <IconComponent className="h-12 w-12 text-primary" /> : project.icon;
+                    })()}
                     <div className="absolute -top-1 -right-1 opacity-0 group-hover/icon:opacity-100 transition-opacity">
                       <Button
                         variant="destructive"

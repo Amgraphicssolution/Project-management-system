@@ -29,6 +29,7 @@ import PageContextMenu from '@/components/PageContextMenu';
 import ProjectContextMenu from '@/components/ProjectContextMenu';
 import { useDebounce } from '@/hooks/useDebounce';
 import OrganizationSwitcher from './OrganizationSwitcher';
+import { getIcon } from './IconPicker';
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -91,7 +92,12 @@ const SidebarItem = ({
             // Project item with folder/arrow transition
             <div className="w-4 h-4 relative flex items-center justify-center">
               {project.icon ? (
-                <span className="text-base flex items-center justify-center">{project.icon}</span>
+                <span className="text-base flex items-center justify-center">
+                  {(() => {
+                    const IconComponent = getIcon(project.icon);
+                    return IconComponent ? <IconComponent className="h-4 w-4 text-primary" /> : project.icon;
+                  })()}
+                </span>
               ) : hasChildren ? (
                 <>
                   <Folder className={cn(

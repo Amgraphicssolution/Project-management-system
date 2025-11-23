@@ -4,6 +4,7 @@ import { ImagePlus, Plus, Home, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import ShareProjectDialog from "./ShareProjectDialog";
+import { getIcon } from "./IconPicker";
 
 interface ProjectPageProps {
   page: PageType;
@@ -13,7 +14,7 @@ interface ProjectPageProps {
 
 export default function ProjectPage({ page, project, onUpdatePage }: ProjectPageProps) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  
+
   const handleIconAdd = () => {
     // TODO: Implement icon picker
     const newIcon = "📁"; // This would come from an icon picker
@@ -50,7 +51,7 @@ export default function ProjectPage({ page, project, onUpdatePage }: ProjectPage
     <div className="max-w-4xl mx-auto">
       {/* Cover Image Section */}
       {page.cover ? (
-        <div 
+        <div
           className="w-full h-48 rounded-lg mb-6 bg-cover bg-center relative group"
           style={{ backgroundImage: `url(${page.cover})` }}
         >
@@ -61,8 +62,8 @@ export default function ProjectPage({ page, project, onUpdatePage }: ProjectPage
           </div>
         </div>
       ) : (
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full h-48 rounded-lg mb-6 flex flex-col items-center justify-center gap-2"
           onClick={handleCoverAdd}
         >
@@ -78,22 +79,26 @@ export default function ProjectPage({ page, project, onUpdatePage }: ProjectPage
             <Button
               variant="outline"
               size="lg"
-              className="h-16 w-16 text-2xl"
+              className="h-24 w-24 text-5xl p-0"
               onClick={handleIconAdd}
             >
-              {page.icon}
+              {(() => {
+                const IconComponent = getIcon(page.icon);
+                return IconComponent ? <IconComponent className="!h-14 !w-14 text-primary" /> : page.icon;
+              })()}
             </Button>
           ) : (
             <Button
               variant="outline"
               size="lg"
-              className="h-16 w-16"
+              className="h-24 w-24"
               onClick={handleIconAdd}
             >
-              <Plus className="h-8 w-8 text-muted-foreground" />
+              <Plus className="h-10 w-10 text-muted-foreground" />
             </Button>
-          )}
-        </div>
+          )
+          }
+        </div >
         <div className="flex-1">
           <input
             type="text"
@@ -103,53 +108,55 @@ export default function ProjectPage({ page, project, onUpdatePage }: ProjectPage
             className="text-3xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0"
           />
         </div>
-      </div>
+      </div >
 
       {/* Breadcrumb and Share Button */}
-      <div className="flex items-center justify-between mb-6">
+      < div className="flex items-center justify-between mb-6" >
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Home className="h-4 w-4" />
           <span>/</span>
           <span>{project.title}</span>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           className="flex items-center gap-1"
           onClick={handleShareClick}
         >
           <Share2 className="h-4 w-4" />
           <span>Share</span>
         </Button>
-      </div>
+      </div >
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2 mb-8">
+      < div className="flex items-center gap-2 mb-8" >
         <Button variant="outline" onClick={handleIconAdd}>Add Icon</Button>
         <Button variant="outline" onClick={handleCoverAdd}>Add Cover</Button>
         <Button variant="outline" onClick={handleDescriptionAdd}>Add Description</Button>
-      </div>
+      </div >
 
       {/* Description */}
-      {page.description ? (
-        <div className="prose max-w-none">
-          <p>{page.description}</p>
-        </div>
-      ) : (
-        <div 
-          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-secondary/10 transition-colors"
-          onClick={handleDescriptionAdd}
-        >
-          <p className="text-muted-foreground">Add a description to your project</p>
-        </div>
-      )}
+      {
+        page.description ? (
+          <div className="prose max-w-none">
+            <p>{page.description}</p>
+          </div>
+        ) : (
+          <div
+            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-secondary/10 transition-colors"
+            onClick={handleDescriptionAdd}
+          >
+            <p className="text-muted-foreground">Add a description to your project</p>
+          </div>
+        )
+      }
 
       {/* Shared With */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-medium">Shared with</h3>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleShareClick}
           >
@@ -170,11 +177,11 @@ export default function ProjectPage({ page, project, onUpdatePage }: ProjectPage
       </div>
 
       {/* Share Dialog */}
-      <ShareProjectDialog 
+      <ShareProjectDialog
         project={project}
         isOpen={isShareDialogOpen}
         onClose={() => setIsShareDialogOpen(false)}
       />
-    </div>
+    </div >
   );
-} 
+}

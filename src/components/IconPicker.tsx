@@ -1,34 +1,34 @@
-import { 
-  AlertCircle, 
-  Archive, 
-  BarChart, 
-  Bell, 
-  Book, 
-  Bookmark, 
-  Calendar, 
-  CheckCircle, 
-  Clock, 
-  Code, 
-  FileText, 
-  Flag, 
-  Folder, 
-  Heart, 
-  Home, 
-  Image, 
-  Inbox, 
-  Link, 
-  Mail, 
-  Map, 
-  MessageCircle, 
-  Music, 
-  PenTool, 
-  Settings, 
-  Star, 
-  Tag, 
-  Target, 
-  Terminal, 
-  User, 
-  Video 
+import {
+  AlertCircle,
+  Archive,
+  BarChart,
+  Bell,
+  Book,
+  Bookmark,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Code,
+  FileText,
+  Flag,
+  Folder,
+  Heart,
+  Home,
+  Image,
+  Inbox,
+  Link,
+  Mail,
+  Map,
+  MessageCircle,
+  Music,
+  PenTool,
+  Settings,
+  Star,
+  Tag,
+  Target,
+  Terminal,
+  User,
+  Video
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
@@ -86,4 +86,10 @@ export function IconPicker({ onSelect }: IconPickerProps) {
       ))}
     </div>
   );
-} 
+}
+
+export function getIcon(name: string | undefined) {
+  if (!name) return null;
+  const iconData = icons.find(i => i.name === name);
+  return iconData ? iconData.icon : null;
+}
