@@ -351,30 +351,32 @@ const ProjectView = ({
               </div>
 
               {/* Quick Actions (Add Cover/Desc) */}
-              <div className="flex items-center gap-1 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity h-6">
-                {!project.cover && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs hover:bg-secondary/50"
-                    onClick={() => setIsCoverPickerOpen(true)}
-                  >
-                    <ImageIcon className="h-3 w-3 mr-1.5" />
-                    Add cover
-                  </Button>
-                )}
-                {!project.description && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs hover:bg-secondary/50"
-                    onClick={() => setIsEditingDescription(true)}
-                  >
-                    <FileText className="h-3 w-3 mr-1.5" />
-                    Add description
-                  </Button>
-                )}
-              </div>
+              {(!project.cover || !project.description) && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity h-6">
+                  {!project.cover && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs hover:bg-secondary/50"
+                      onClick={() => setIsCoverPickerOpen(true)}
+                    >
+                      <ImageIcon className="h-3 w-3 mr-1.5" />
+                      Add cover
+                    </Button>
+                  )}
+                  {!project.description && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs hover:bg-secondary/50"
+                      onClick={() => setIsEditingDescription(true)}
+                    >
+                      <FileText className="h-3 w-3 mr-1.5" />
+                      Add description
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Description */}
               {(project.description || isEditingDescription) && (
