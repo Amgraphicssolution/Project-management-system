@@ -879,7 +879,7 @@ export default function PageEditor({ page, onUpdatePage }: PageEditorProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="flex-1 min-h-[32px]">
+            <div className="w-full min-h-[32px]">
               <BoardBlock
                 key={block.id}
                 block={block as any}

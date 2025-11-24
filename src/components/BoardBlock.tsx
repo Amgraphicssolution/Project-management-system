@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { CustomScrollbar } from './CustomScrollbar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -2516,38 +2517,40 @@ const BoardBlock = ({
         {activeView === 'board' && (
           <div>
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="flex gap-4 overflow-x-auto pb-4">
-                {boardData.columns.map((column) => {
-                  // Ensure column has a tasks array
-                  const columnTasks = Array.isArray(column.tasks) ? column.tasks : [];
+              <CustomScrollbar className="pb-4">
+                <div className="flex gap-4">
+                  {boardData.columns.map((column) => {
+                    // Ensure column has a tasks array
+                    const columnTasks = Array.isArray(column.tasks) ? column.tasks : [];
 
-                  return (
-                    <BoardColumn
-                      key={column.id}
-                      column={column}
-                      tasks={columnTasks}
-                      onAddTask={handleAddTask}
-                      onTaskClick={handleTaskClick}
-                      onTitleChange={handleColumnTitleChange}
-                      onDeleteColumn={handleDeleteColumn}
-                      onColorChange={handleColumnColorChange}
-                      onDeleteTask={requestDeleteTask}
-                    />
-                  );
-                })}
+                    return (
+                      <BoardColumn
+                        key={column.id}
+                        column={column}
+                        tasks={columnTasks}
+                        onAddTask={handleAddTask}
+                        onTaskClick={handleTaskClick}
+                        onTitleChange={handleColumnTitleChange}
+                        onDeleteColumn={handleDeleteColumn}
+                        onColorChange={handleColumnColorChange}
+                        onDeleteTask={requestDeleteTask}
+                      />
+                    );
+                  })}
 
-                {/* Add Column Button - Positioned to the right of columns */}
-                <div className="flex items-center">
-                  <Button
-                    type="button"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
-                    onClick={handleAddColumn}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  {/* Add Column Button - Positioned to the right of columns */}
+                  <div className="flex items-center">
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={handleAddColumn}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </CustomScrollbar>
             </DragDropContext>
           </div>
         )}

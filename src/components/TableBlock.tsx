@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 
 import { MoreHorizontal, Plus, Trash, Copy, Type, Square, GripVertical, GripHorizontal, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
