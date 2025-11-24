@@ -31,6 +31,7 @@ import PageEditor from '@/components/PageEditor';
 import { dummyProjects, dummyOrganizations } from '@/utils/dummyData';
 import { useParams } from "react-router-dom";
 import ShareProjectDialog from '@/components/ShareProjectDialog';
+import ProjectContextMenu from '@/components/ProjectContextMenu';
 
 const ProjectView = ({
   project,
@@ -42,7 +43,10 @@ const ProjectView = ({
   onCreateOrganization,
   onUpdateOrganization,
   onDeleteOrganization,
-  onNavigateHome
+  onNavigateHome,
+  onRenameProject,
+  onDuplicateProject,
+  onDeleteProject
 }: {
   project: ProjectType;
   onUpdateProject: (updated: ProjectType) => void;
@@ -54,6 +58,9 @@ const ProjectView = ({
   onUpdateOrganization?: (id: string, name: string, image?: string) => void;
   onDeleteOrganization?: (id: string) => void;
   onNavigateHome: () => void;
+  onRenameProject: (id: string, newName: string) => void;
+  onDuplicateProject: (id: string) => void;
+  onDeleteProject: (id: string) => void;
 }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(project.title);
@@ -141,268 +148,287 @@ const ProjectView = ({
   };
 
   return (
-    <>
-      {/* Header */}
+    <div className="flex flex-col h-full bg-background">
+      {/* Global Header */}
       <Header title={project.title} />
 
-      {/* Breadcrumb and Actions */}
-      <div className="px-6 py-2 border-b flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      {/* Project Toolbar (Sticky) */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2"
+            className="h-8 px-2 hover:bg-secondary/80"
             onClick={onNavigateHome}
           >
             <Home className="h-4 w-4" />
           </Button>
-          <ChevronLeft className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground text-sm">{project.title}</span>
+          <span className="text-muted-foreground/40">/</span>
+          <span className="font-medium text-foreground truncate max-w-[200px]">{project.title}</span>
         </div>
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2"
-            onClick={() => {
-              console.log("Share button clicked in Index.tsx");
-              setIsShareDialogOpen(true);
-            }}
+            className="h-8 px-2 hover:bg-secondary/80"
+            onClick={() => setIsShareDialogOpen(true)}
           >
-            <Share2 className="h-4 w-4" />
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
           </Button>
+
+          {/* Collaborator Avatars */}
           <div className="flex -space-x-2">
-            <Avatar className="h-6 w-6 border-2 border-background">
+            <Avatar className="h-7 w-7 border-2 border-background">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>MB</AvatarFallback>
             </Avatar>
-            <Avatar className="h-6 w-6 border-2 border-background">
+            <Avatar className="h-7 w-7 border-2 border-background">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
           </div>
+
+          <ProjectContextMenu
+            project={project}
+            onRename={onRenameProject}
+            onDuplicate={onDuplicateProject}
+            onDelete={onDeleteProject}
+          />
         </div>
       </div>
-      {/* Project Content */}
-      <div className="relative group px-4 pt-4">
-        {project.cover ? (
-          <div
-            className="min-h-[200px] transition-all rounded-lg cursor-pointer group/cover relative"
-            style={{
-              height: project.coverHeight || '200px',
-              backgroundImage: project.cover?.type === 'image' ? `url(${project.cover.value})` : undefined,
-              backgroundColor: project.cover?.type === 'color' ? project.cover.value : 'hsl(var(--muted))',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-            onClick={() => setIsCoverPickerOpen(true)}
-          >
-            {/* Hover overlay for cover */}
-            <div className="absolute inset-0 bg-black/0 group-hover/cover:bg-black/5 transition-colors">
-              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/cover:opacity-100 transition-opacity">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="bg-background/80 hover:bg-background"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsCoverPickerOpen(true);
-                  }}
-                >
-                  Change cover
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="bg-background/80 hover:bg-background text-destructive hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveCover();
-                  }}
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
 
-        {
-          project.cover && (
-            <div
-              className="absolute bottom-0 left-0 right-0 h-4 cursor-row-resize opacity-0 group-hover:opacity-100 transition-opacity"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const startY = e.clientY;
-                const banner = e.currentTarget.previousElementSibling as HTMLElement;
-                const startHeight = banner.offsetHeight;
-
-                const handleMouseMove = (moveEvent: MouseEvent) => {
-                  moveEvent.preventDefault();
-                  const delta = moveEvent.clientY - startY;
-                  const newHeight = Math.max(100, startHeight + delta);
-                  banner.style.height = `${newHeight}px`;
-                };
-
-                const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-
-                  const banner = e.currentTarget.previousElementSibling as HTMLElement;
-                  onUpdateProject({
-                    ...project,
-                    coverHeight: `${banner.offsetHeight}px`,
-                    updatedAt: new Date().toISOString()
-                  });
-                };
-
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-              }}
-            >
-              <div className="h-1 bg-secondary/50 hover:bg-secondary rounded-full mx-auto w-12"></div>
-            </div>
-          )
-        }
-      </div >
-
-      <div className="py-6 px-4">
-        <div className="group relative max-w-3xl mx-auto">
-          {/* Title Section with Action Buttons */}
-          <div>
-            {/* Icon aligned with title */}
-            {project.icon && (
-              <div className="mb-4">
-                <div className="group/icon">
-                  <div
-                    className="w-24 h-24 flex items-center justify-center cursor-pointer text-5xl relative"
-                    onClick={() => setIsIconPickerOpen(true)}
-                  >
-                    {(() => {
-                      const IconComponent = getIcon(project.icon);
-                      return IconComponent ? <IconComponent className="h-12 w-12 text-primary" /> : project.icon;
-                    })()}
-                    <div className="absolute -top-1 -right-1 opacity-0 group-hover/icon:opacity-100 transition-opacity">
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-4 w-4 rounded-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveIcon();
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
+      {/* Main Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Cover Image */}
+        <div className="relative group/cover w-full">
+          {project.cover && (
+            <>
+              <div
+                className="relative w-full transition-all"
+                style={{
+                  height: project.coverHeight || '240px',
+                  backgroundImage: project.cover.type === 'image' ? `url(${project.cover.value})` : undefined,
+                  backgroundColor: project.cover.type === 'color' ? project.cover.value : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center 50%'
+                }}
+              >
+                {/* Cover Actions Overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover/cover:bg-black/10 transition-colors flex items-end justify-end p-4 opacity-0 group-hover/cover:opacity-100">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-7 text-xs bg-background/80 hover:bg-background shadow-sm backdrop-blur-md"
+                      onClick={() => setIsCoverPickerOpen(true)}
+                    >
+                      Change cover
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-7 text-xs bg-background/80 hover:bg-background shadow-sm backdrop-blur-md text-muted-foreground hover:text-destructive"
+                      onClick={handleRemoveCover}
+                    >
+                      Remove
+                    </Button>
                   </div>
                 </div>
               </div>
-            )}
+              {/* Resize Handle */}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-2 cursor-row-resize z-10 hover:bg-primary/20 transition-colors"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const startY = e.clientY;
+                  const banner = e.currentTarget.previousElementSibling as HTMLElement;
+                  const startHeight = banner.offsetHeight;
 
-            {/* Title and Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                {isEditingTitle ? (
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    onBlur={handleTitleSave}
-                    onKeyDown={handleKeyDown}
-                    className="text-4xl font-semibold bg-transparent border-none focus:outline-none focus:ring-0 w-[300px] px-2"
-                    autoFocus
-                  />
+                  const handleMouseMove = (moveEvent: MouseEvent) => {
+                    moveEvent.preventDefault();
+                    const delta = moveEvent.clientY - startY;
+                    const newHeight = Math.max(100, startHeight + delta);
+                    banner.style.height = `${newHeight}px`;
+                  };
+
+                  const handleMouseUp = () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+
+                    const banner = e.currentTarget.previousElementSibling as HTMLElement;
+                    onUpdateProject({
+                      ...project,
+                      coverHeight: `${banner.offsetHeight}px`,
+                      updatedAt: new Date().toISOString()
+                    });
+                  };
+
+                  document.addEventListener('mousemove', handleMouseMove);
+                  document.addEventListener('mouseup', handleMouseUp);
+                }}
+              />
+            </>
+          )}
+        </div>
+
+        {/* Content Container */}
+        <div className="max-w-4xl mx-auto px-12 pb-32">
+          {/* Header Section */}
+          <div className={`group relative mb-8 ${project.cover && project.icon ? '-mt-12' : 'mt-8'}`}>
+            {/* Icon */}
+            <div className="relative inline-block mb-4 group/icon">
+              <div
+                className={`
+                  flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95
+                  ${project.icon ? 'w-24 h-24 text-7xl' : 'w-auto h-auto'}
+                `}
+                onClick={() => setIsIconPickerOpen(true)}
+              >
+                {project.icon ? (
+                  (() => {
+                    const IconComponent = getIcon(project.icon);
+                    return IconComponent ? (
+                      <div className="bg-background rounded-xl p-2 shadow-sm border">
+                        <IconComponent className="h-16 w-16 text-primary" />
+                      </div>
+                    ) : (
+                      <span className="drop-shadow-sm filter">{project.icon}</span>
+                    );
+                  })()
                 ) : (
-                  <h1
-                    className="text-4xl font-semibold cursor-pointer hover:bg-secondary/50 px-2 rounded"
-                    onClick={() => setIsEditingTitle(true)}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity -ml-2"
                   >
-                    {project.title}
-                  </h1>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                {!project.icon && (
-                  <button
-                    onClick={() => setIsIconPickerOpen(true)}
-                    className="text-muted-foreground/50 hover:text-muted-foreground transition-colors inline-flex items-center gap-1"
-                  >
-                    <Smile className="h-4 w-4" />
+                    <Smile className="h-4 w-4 mr-2" />
                     Add icon
-                  </button>
+                  </Button>
                 )}
-                {!project.cover && (
-                  <button
-                    onClick={() => setIsCoverPickerOpen(true)}
-                    className="text-muted-foreground/50 hover:text-muted-foreground transition-colors inline-flex items-center gap-1"
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                    Add cover
-                  </button>
-                )}
-                {!project.description && (
-                  <button
-                    onClick={() => setIsEditingDescription(true)}
-                    className="text-muted-foreground/50 hover:text-muted-foreground transition-colors inline-flex items-center gap-1"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Add description
-                  </button>
+
+                {project.icon && (
+                  <div className="absolute -top-2 -right-2 opacity-0 group-hover/icon:opacity-100 transition-opacity">
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-5 w-5 rounded-full shadow-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveIcon();
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* Title & Controls */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between group/title">
+                <div className="flex-1 mr-4">
+                  {isEditingTitle ? (
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      onBlur={handleTitleSave}
+                      onKeyDown={handleKeyDown}
+                      className="w-full text-5xl font-bold bg-transparent border-none focus:outline-none focus:ring-0 placeholder:text-muted-foreground/20"
+                      placeholder="Untitled"
+                      autoFocus
+                    />
+                  ) : (
+                    <h1
+                      className="text-5xl font-bold cursor-text text-foreground break-words outline-none"
+                      onClick={() => setIsEditingTitle(true)}
+                    >
+                      {project.title || <span className="text-muted-foreground/20">Untitled</span>}
+                    </h1>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Actions (Add Cover/Desc) */}
+              <div className="flex items-center gap-1 text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity h-6">
+                {!project.cover && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs hover:bg-secondary/50"
+                    onClick={() => setIsCoverPickerOpen(true)}
+                  >
+                    <ImageIcon className="h-3 w-3 mr-1.5" />
+                    Add cover
+                  </Button>
+                )}
+                {!project.description && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs hover:bg-secondary/50"
+                    onClick={() => setIsEditingDescription(true)}
+                  >
+                    <FileText className="h-3 w-3 mr-1.5" />
+                    Add description
+                  </Button>
+                )}
+              </div>
+
+              {/* Description */}
+              {(project.description || isEditingDescription) && (
+                <div className="mt-2">
+                  {isEditingDescription ? (
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      onBlur={handleDescriptionSave}
+                      onKeyDown={handleDescriptionKeyDown}
+                      className="w-full text-lg text-muted-foreground bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                      placeholder="Add a description..."
+                      rows={1}
+                      style={{ minHeight: '1.75rem' }}
+                      autoFocus
+                    />
+                  ) : (
+                    <p
+                      className="text-lg text-muted-foreground cursor-text hover:text-foreground transition-colors"
+                      onClick={() => setIsEditingDescription(true)}
+                    >
+                      {project.description}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
-          <div>
-            {isEditingDescription ? (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                onBlur={handleDescriptionSave}
-                onKeyDown={handleDescriptionKeyDown}
-                className="w-full text-muted-foreground bg-transparent border-none p-2 resize-none focus:outline-none focus:ring-0"
-                placeholder="Add a description..."
-                rows={3}
-                autoFocus
-              />
-            ) : description ? (
-              <p
-                className="text-muted-foreground cursor-pointer hover:bg-secondary/30 p-2 rounded"
-                onClick={() => setIsEditingDescription(true)}
-              >
-                {project.description}
-              </p>
-            ) : null}
+          {/* Page Content */}
+          <div className="mt-8">
+            <PageEditor
+              page={{
+                id: project.id,
+                title: project.title,
+                blocks: project.pages[0]?.blocks || [],
+                createdAt: project.createdAt,
+                updatedAt: project.updatedAt,
+                parentId: project.id,
+                projectId: project.id
+              }}
+              onUpdatePage={(updatedPage) => {
+                const updatedProject = {
+                  ...project,
+                  pages: project.pages.map(p =>
+                    p.id === project.pages[0]?.id
+                      ? { ...p, blocks: updatedPage.blocks }
+                      : p
+                  )
+                };
+                onUpdateProject(updatedProject);
+              }}
+            />
           </div>
-        </div>
-
-        {/* Project Pages List */}
-        <div className="mt-6">
-          <PageEditor
-            page={{
-              id: project.id,
-              title: project.title,
-              blocks: project.pages[0]?.blocks || [],
-              createdAt: project.createdAt,
-              updatedAt: project.updatedAt,
-              parentId: project.id,
-              projectId: project.id
-            }}
-            onUpdatePage={(updatedPage) => {
-              const updatedProject = {
-                ...project,
-                pages: project.pages.map(p =>
-                  p.id === project.pages[0]?.id
-                    ? { ...p, blocks: updatedPage.blocks }
-                    : p
-                )
-              };
-              onUpdateProject(updatedProject);
-            }}
-          />
         </div>
       </div>
 
@@ -423,7 +449,7 @@ const ProjectView = ({
         isOpen={isShareDialogOpen}
         onClose={() => setIsShareDialogOpen(false)}
       />
-    </>
+    </div>
   );
 };
 
@@ -529,7 +555,7 @@ const Index = () => {
         console.error('Error saving projects:', error);
         toast({
           title: "Error",
-          description: "Failed to save changes.",
+          description: "Failed to save projects.",
           variant: "destructive",
         });
       }
@@ -645,362 +671,56 @@ const Index = () => {
   };
 
   const handleDeleteOrganization = (id: string) => {
-    try {
-      // Don't allow deleting the default organization
-      const orgToDelete = organizations.find(org => org.id === id);
-      if (orgToDelete?.isDefault) {
-        toast({
-          title: "Error",
-          description: "Cannot delete the default organization.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Remove the organization
-      const updatedOrgs = organizations.filter(org => org.id !== id);
-      setOrganizations(updatedOrgs);
-
-      // If the current organization was deleted, switch to the default organization
-      if (currentOrganization?.id === id) {
-        const defaultOrg = updatedOrgs.find(org => org.isDefault) || updatedOrgs[0];
-        setCurrentOrganization(defaultOrg);
-
-        // Load projects for the default organization
-        const savedProjects = localStorage.getItem('projects');
-        if (savedProjects) {
-          try {
-            const allProjects = JSON.parse(savedProjects);
-            // Filter projects for the default organization
-            const orgProjects = allProjects.filter(
-              (p: ProjectType) => p.organizationId === defaultOrg.id
-            );
-            setProjects(orgProjects);
-            setSelectedProject(null);
-            setActiveTab("projects");
-          } catch (error) {
-            console.error('Error loading projects for organization:', error);
-            setProjects([]);
-          }
-        } else {
-          setProjects([]);
-        }
-      }
-
-      // Delete all projects associated with the deleted organization
-      const savedProjects = localStorage.getItem('projects');
-      if (savedProjects) {
-        try {
-          const allProjects = JSON.parse(savedProjects);
-          // Filter out projects for the deleted organization
-          const remainingProjects = allProjects.filter(
-            (p: ProjectType) => p.organizationId !== id
-          );
-          localStorage.setItem('projects', JSON.stringify(remainingProjects));
-        } catch (error) {
-          console.error('Error updating projects after organization deletion:', error);
-        }
-      }
-
-      toast({
-        title: "Success",
-        description: "Organization deleted successfully.",
-      });
-    } catch (error) {
-      console.error('Error deleting organization:', error);
+    if (organizations.length <= 1) {
       toast({
         title: "Error",
-        description: "Failed to delete organization.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCreateProject = () => {
-    try {
-      // Validate project title uniqueness
-      const projectTitle = "New Project";
-      let uniqueTitle = projectTitle;
-      let counter = 1;
-
-      while (projects.some(p => p.title === uniqueTitle)) {
-        uniqueTitle = `${projectTitle} ${counter}`;
-        counter++;
-      }
-
-      const newProject: ProjectType = {
-        id: `project-${Date.now()}`,
-        title: uniqueTitle,
-        pages: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        organizationId: currentOrganization?.id
-      };
-
-      const newPage: PageType = {
-        id: `page-${Date.now()}`,
-        title: uniqueTitle,
-        blocks: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        path: ["projects"],
-        parentId: newProject.id,
-        projectId: newProject.id
-      };
-
-      newProject.pages = [newPage];
-
-      setProjects(prevProjects => [...prevProjects, newProject]);
-      setSelectedProject(newProject);
-      setSelectedPage(newPage);
-      setActiveTab("project");
-
-      toast({
-        title: "Success",
-        description: "Project created successfully.",
-      });
-    } catch (error) {
-      console.error('Error creating project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCreatePage = () => {
-    if (!selectedProject) {
-      toast({
-        title: "Error",
-        description: "Please select a project first.",
+        description: "Cannot delete the last organization.",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      let pageTitle = "Untitled";
-      let counter = 1;
+    const newOrgs = organizations.filter(org => org.id !== id);
+    setOrganizations(newOrgs);
 
-      while (selectedProject.pages.some(p => p.title === pageTitle)) {
-        pageTitle = `Untitled ${counter}`;
-        counter++;
-      }
-
-      const newPage: PageType = {
-        id: `page-${Date.now()}`,
-        title: pageTitle,
-        blocks: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        path: ["projects"],
-        parentId: selectedProject.id,
-        projectId: selectedProject.id
-      };
-
-      const updatedProject = {
-        ...selectedProject,
-        pages: [...selectedProject.pages, newPage],
-        updatedAt: new Date().toISOString(),
-      };
-
-      setProjects(prevProjects =>
-        prevProjects.map(p => p.id === selectedProject.id ? updatedProject : p)
-      );
-      setSelectedProject(updatedProject);
-      setSelectedPage(newPage);
-
-      toast({
-        title: "Success",
-        description: "Page created successfully.",
-      });
-    } catch (error) {
-      console.error('Error creating page:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create page. Please try again.",
-        variant: "destructive",
-      });
+    if (currentOrganization?.id === id) {
+      const defaultOrg = newOrgs.find(org => org.isDefault) || newOrgs[0];
+      handleOrganizationChange(defaultOrg);
     }
+
+    toast({
+      title: "Success",
+      description: "Organization deleted successfully.",
+    });
   };
-
-  const handleCreateChat = () => {
-    if (!selectedProject) return;
-
-    const newPage: PageType = {
-      id: `chat-${Date.now()}`,
-      title: "New Chat",
-      icon: "💬",
-      blocks: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      path: ["chat"],
-      parentId: selectedProject.id,
-      projectId: selectedProject.id
-    };
-
-    const updatedProject = {
-      ...selectedProject,
-      pages: [...selectedProject.pages, newPage]
-    };
-
-    setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-    setSelectedProject(updatedProject);
-    setSelectedPage(newPage);
-  };
-
-  const handleUpdatePage = (updatedPage: PageType) => {
-    if (!selectedProject) return;
-
-    const updatedPages = selectedProject.pages.map(page =>
-      page.id === updatedPage.id ? updatedPage : page
-    );
-
-    const updatedProject = {
-      ...selectedProject,
-      pages: updatedPages
-    };
-
-    setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-    setSelectedProject(updatedProject);
-    setSelectedPage(updatedPage);
-  };
-
-  const WelcomeView = () => (
-    <div className="p-6">
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">👋 Welcome, Mavis Barry</h2>
-        <p className="text-muted-foreground">
-          Get started by creating a new project using the sidebar.
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium">Recent Projects</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-secondary/30 rounded-lg p-4 hover:bg-secondary/50 transition-colors cursor-pointer"
-                onClick={() => {
-                  setSelectedProject(project);
-                  setActiveTab("project");
-                }}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  {project.icon ? (
-                    <span className="text-2xl">{project.icon}</span>
-                  ) : (
-                    <Folder className="h-10 w-10 text-blue-500" />
-                  )}
-                </div>
-                <h4 className="font-medium">{project.title}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {project.pages.length} {project.pages.length === 1 ? 'page' : 'pages'}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-
-  const MainContent = () => (
-    <div className="flex-1">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="hidden">
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="project">Project</TabsTrigger>
-        </TabsList>
-        <TabsContent value="projects">
-          <Header title="Home" />
-          <WelcomeView />
-        </TabsContent>
-
-        <TabsContent value="project">
-          {selectedProject && (
-            <ProjectView
-              project={selectedProject}
-              onUpdateProject={(updated) => {
-                setProjects(prevProjects =>
-                  prevProjects.map(p => p.id === updated.id ? updated : p)
-                );
-                setSelectedProject(updated);
-              }}
-              setProjects={setProjects}
-              currentOrganization={currentOrganization || undefined}
-              organizations={organizations}
-              onOrganizationChange={handleOrganizationChange}
-              onCreateOrganization={handleCreateOrganization}
-              onUpdateOrganization={handleUpdateOrganization}
-              onDeleteOrganization={handleDeleteOrganization}
-              onNavigateHome={() => {
-                setSelectedProject(null);
-                setActiveTab("projects");
-              }}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
-
-      <CreateNewModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreateProject={handleCreateProject}
-        onCreatePage={handleCreatePage}
-        onCreateChat={handleCreateChat}
-      />
-    </div>
-  );
 
   const handleDirectCreateProject = () => {
-    try {
-      const projectTitle = "New Project";
-      let uniqueTitle = projectTitle;
-      let counter = 1;
-
-      while (projects.some(p => p.title === uniqueTitle)) {
-        uniqueTitle = `${projectTitle} ${counter}`;
-        counter++;
-      }
-
-      const newProject: ProjectType = {
-        id: `project-${Date.now()}`,
-        title: uniqueTitle,
-        pages: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setProjects(prevProjects => [...prevProjects, newProject]);
-      setSelectedProject(newProject);
-      setActiveTab("project");
-
-      toast({
-        title: "Success",
-        description: "Project created successfully.",
-      });
-    } catch (error) {
-      console.error('Error creating project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
-        variant: "destructive",
-      });
+    const uniqueTitle = `Project ${projects.length + 1}`;
+    // Check if title exists
+    let title = uniqueTitle;
+    let counter = 1;
+    while (projects.some(p => p.title === title)) {
+      counter++;
+      title = `Project ${projects.length + counter}`;
     }
+
+    const newProject: ProjectType = {
+      id: `project-${Date.now()}`,
+      title: uniqueTitle,
+      pages: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      organizationId: currentOrganization?.id
+    };
+
+    setProjects(prevProjects => [...prevProjects, newProject]);
+    setSelectedProject(newProject);
+    setActiveTab("project");
+
+    toast({
+      title: "Success",
+      description: "Project created successfully.",
+    });
   };
 
   // Handler for renaming a project
@@ -1068,6 +788,43 @@ const Index = () => {
     });
   };
 
+  const handleCreatePage = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const newPage: PageType = {
+      id: `page-${Date.now()}`,
+      title: "Untitled Page",
+      blocks: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      parentId: projectId,
+      projectId: projectId
+    };
+
+    const updatedProject = {
+      ...project,
+      pages: [...project.pages, newPage]
+    };
+
+    setProjects(prevProjects =>
+      prevProjects.map(p => p.id === projectId ? updatedProject : p)
+    );
+    setSelectedProject(updatedProject);
+
+    toast({
+      title: "Success",
+      description: "Page created successfully.",
+    });
+  };
+
+  const handleCreateChat = (projectId: string) => {
+    toast({
+      title: "Coming Soon",
+      description: "Chat functionality will be available soon.",
+    });
+  };
+
   // Function to navigate to home/projects view
   const navigateToHome = () => {
     setSelectedProject(null);
@@ -1106,7 +863,65 @@ const Index = () => {
         {activeTab === "projects" && (
           <>
             <Header title="Home" />
-            <WelcomeView />
+            <div className="p-8">
+              <h1 className="text-3xl font-bold mb-6">Welcome back!</h1>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Project Cards */}
+                {projects.map(project => (
+                  <div
+                    key={project.id}
+                    className="group relative bg-card hover:bg-accent/50 border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md"
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setActiveTab("project");
+                    }}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        {project.icon ? (
+                          (() => {
+                            const IconComponent = getIcon(project.icon);
+                            return IconComponent ? (
+                              <IconComponent className="h-6 w-6 text-primary" />
+                            ) : (
+                              <span className="text-xl">{project.icon}</span>
+                            );
+                          })()
+                        ) : (
+                          <Folder className="h-6 w-6 text-primary" />
+                        )}
+                      </div>
+                      <ProjectContextMenu
+                        project={project}
+                        onRename={handleRenameProject}
+                        onDuplicate={handleDuplicateProject}
+                        onDelete={handleDeleteProject}
+                      />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {project.description || "No description"}
+                    </p>
+                    <div className="mt-4 flex items-center text-xs text-muted-foreground">
+                      <span>Updated {new Date(project.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Create New Project Card */}
+                <div
+                  className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-6 cursor-pointer hover:bg-accent/50 transition-colors gap-4 text-muted-foreground hover:text-primary hover:border-primary/50"
+                  onClick={handleDirectCreateProject}
+                >
+                  <div className="p-4 bg-secondary rounded-full group-hover:bg-primary/10 transition-colors">
+                    <Plus className="h-8 w-8" />
+                  </div>
+                  <span className="font-medium">Create new project</span>
+                </div>
+              </div>
+            </div>
           </>
         )}
         {activeTab === "project" && selectedProject && (
@@ -1126,14 +941,17 @@ const Index = () => {
             onUpdateOrganization={handleUpdateOrganization}
             onDeleteOrganization={handleDeleteOrganization}
             onNavigateHome={navigateToHome}
+            onRenameProject={handleRenameProject}
+            onDuplicateProject={handleDuplicateProject}
+            onDeleteProject={handleDeleteProject}
           />
         )}
         <CreateNewModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onCreateProject={handleCreateProject}
-          onCreatePage={handleCreatePage}
-          onCreateChat={handleCreateChat}
+          onCreateProject={handleDirectCreateProject}
+          onCreatePage={() => selectedProject && handleCreatePage(selectedProject.id)}
+          onCreateChat={() => selectedProject && handleCreateChat(selectedProject.id)}
         />
       </main>
     </div>
